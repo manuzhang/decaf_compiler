@@ -42,7 +42,6 @@ using namespace std;
 
 class ReportError {
  public:
-
   // Errors used by scanner
   static void UntermComment(); 
   static void LongIdentifier(yyltype *loc, const char *ident);
