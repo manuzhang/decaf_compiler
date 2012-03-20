@@ -12,6 +12,7 @@
  */
 
 #include <string.h>
+#include <ctype.h>
 #include "scanner.h"
 #include "utility.h" // for PrintDebug()
 #include "errors.h"
@@ -56,26 +57,27 @@ int colno = 1;
   * as a simple substitution mechanism that allows for more readable
   * entries in the Rules section later. 
   */
-whitespace         [ \t\r\n]
 punctuation        [!\;,\.\[\]\{\}\(\)]
 arithmetic         [\+\-\*\/%]
 relational         [<>=]
 operator           {arithmetic}|{relational} 
-sign               (+|-)?
 decimal            [0-9]+
 hexadecimal        (0x|0X)[0-9a-fA-F]+
 chars              \"[^\"\n]*\"
-boolean            true|false   
-integer            {sign}({decimal}|{hexadecimal})   
-float              {sign}{decimal}.{decimal}?(E|e){sign}{decimal}
+boolean            (true|false)   
+integer            ({decimal}|{hexadecimal})   
+float              {decimal}\.{decimal}?((E|e)(\+|\-)?{decimal})?
 
+%x COMMENT
 %%             /* BEGIN RULES SECTION */
  /* All patterns and actions should be placed between the start and stop
   * %% markers which delimit the Rules section. 
   */ 
 
  /* skip over white space */
-{whitespace}           ;
+[\n]                   { colno = 1; lineno++; }
+[\t]                   { colno += 8; }
+[ ]                    ;
 
  /* recognize all keywords and return the correct token from scanner.h */
 void                   { return T_Void; }
@@ -105,13 +107,13 @@ ReadLine               { return T_ReadLine; }
  /* recognize punctuation and single-char operators 
   * and return the ASCII value as the token 
   */
-{punctuation}|
+{punctuation} |
 {operator}             { return yytext[0] - '\0'; }
 
 
  /* recognize two-character operators and return the correct token */
-<=                     { return T_LessEqual; }
->=                     { return T_GreaterEqual; }
+\<=                    { return T_LessEqual; }
+\>=                    { return T_GreaterEqual; }
 ==                     { return T_Equal; }
 !=                     { return T_NotEqual; }
 \[\]                   { return T_Dims; }
@@ -122,48 +124,89 @@ ReadLine               { return T_ReadLine; }
   * return the correct token
   * and set appropriate filed of yylval 
   */
-{chars}                  { stringConstant = yytext;
+{chars}                  { 
+                           yylval.stringConstant = yytext;
                            return T_StringConstant;
                          }
-{boolean}                { if (strcmp("true", yytext) == 0)
+{boolean}                { 
+                           if (strcmp("true", yytext) == 0)
                                yylval.boolConstant = true;
                            else
 			       yylval.boolConstant = false;
                            return T_BoolConstant;
                          }
-{integer}                { yylval.integerConstant = atoi(yytext); return T_IntConstant; }
-{float}                  { yylval.doubleConstant = atof(yytext); return T_DoubleConstant; }
+{decimal}                { 
+                           yylval.integerConstant = atoi(yytext); return T_IntConstant; 
+			 }
+{hexadecimal}            {
+                           int i;
+			   int number = 0;
+			   for (i = 2; i < yyleng; i++) 
+			    {
+			      int c = toupper(yytext[i]);
+			      if (c >= 'A' && c <= 'F')
+			        number = number * 16 + c - 'A' + 10;
+			      else 
+			        number = number * 16 + c -'0';
+			    }
+			  yylval.integerConstant = number; 
+			  return T_IntConstant;
+                         }
+{float}                  { 
+                           yylval.doubleConstant = atof(yytext); return T_DoubleConstant; 
+			 }
 
  /* recognize identifiers, 
   * return the correct token and set appropriate fields of yylval 
   */
-[a-zA-Z][a-zA-Z0-9_]*   { if (yyleng > MaxIdentLen)
+[a-zA-Z][a-zA-Z0-9_]*   { 
+                          if (yyleng > MaxIdentLen)
                              {
 			       ReportError::LongIdentifier(&yylloc, yytext);
+			       strncpy(yylval.identifier, yytext, MaxIdentLen);
 			     }
 			  else 
 			     { 
 			       strcpy(yylval.identifier, yytext);
-                               return T_Identifier;
 			     }
+			  return T_Identifier;
 		        }
 
  /* consume single-line comment */
-(\/\/.*\n)|
-(\/\*.*\*\/)            ;
+\/\/.*\n                { 
+                          lineno++; 
+			  colno = 1;
+			}
+\/\*.*\*\/              ;
 
  /* consume multi-line comments 
   * report unterminated comment
   */
-\/\*(.|[\n\r])*?\*\/    ;
-\/\*(.|[\n\r])*?<<EOF>> { UntermComment(); }
+
+\/\*                    { BEGIN COMMENT; }
+<COMMENT>.              ;
+<COMMENT>[\r\n]         { 
+                          lineno++; 
+                          colno = 1;
+			}
+<COMMENT>\*\/           { BEGIN INITIAL; }
+<COMMENT><<EOF>>        { 
+			  ReportError::UntermComment();
+			  BEGIN INITIAL;
+			}
 
  /* report lexical error for improper strings 
   * and invalid characters
   */
-\"[^\"]*\n              { UntermString(&loc, yytext); }
+\"[^\"\n]*\n            { 
+                          ReportError::UntermString(&yylloc, yytext);       
+			  lineno++;
+			  colno = 1;
+			} 
 
-.                       { UnrecogChar(&loc, yytext[0]); }
+.                       { 
+                          ReportError::UnrecogChar(&yylloc, yytext[0]);     
+			}
 
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
@@ -199,14 +242,9 @@ void InitScanner()
  */
 static void DoBeforeEachAction()
 {
-  yylloc.first_line = lineno;
-  int i;
-  for (i = 0; i < yyleng; i++)
-    if (yytext[i] == '\n')
-       lineno++;
-  yylloc.last_line = lineno;
+  yylloc.first_line = yylloc.last_line = lineno;
 
-  yylloc.fitst_column = colno;
+  yylloc.first_column = colno;
+  yylloc.last_column = colno + yyleng - 1;
   colno = colno + yyleng;
-  yylloc.last_column = colno;
 }

@@ -18,11 +18,12 @@ int ReportError::numErrors = 0;
 void ReportError::OutputError(yyltype *loc, string msg) {
     numErrors++;
     fflush(stdout); // make sure any buffered text has been output
+    // change cerr to cout since cerr can't be redirected
     if (loc) {
-        cerr << endl << "*** Error line " << loc->first_line << "." << endl;
+        cout << endl << "*** Error line " << loc->first_line << "." << endl;
     } else
-        cerr << endl << "*** Error." << endl;
-    cerr << "*** " << msg << endl << endl;
+        cout << endl << "*** Error." << endl;
+    cout << "*** " << msg << endl << endl;
 }
 
 
