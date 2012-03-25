@@ -16,7 +16,8 @@ SRCS = errors.cc utility.cc main.cc
 # OBJS can deal with either .cc or .c files listed in SRCS
 OBJS = lex.yy.o $(patsubst %.cc, %.o, $(filter %.cc,$(SRCS))) $(patsubst %.c, %.o, $(filter %.c, $(SRCS)))
 
-JUNK =  *~ *.o lex.yy.c dpp.yy.c y.tab.c y.tab.h *.core core
+TEST = samples/*.test
+JUNK = *~ *.o lex.yy.c dpp.yy.c y.tab.c y.tab.h *.core core
 
 # Define the tools we are going to use
 CC = g++
@@ -76,5 +77,5 @@ depend:
 	makedepend -- $(CFLAGS) -- $(SRCS)
 
 clean:
-	@rm -rf $(JUNK) y.output $(PRODUCTS)
+	@rm -rf $(JUNK) y.output $(PRODUCTS) $(TEST)
 

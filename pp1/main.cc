@@ -61,4 +61,3 @@ int main(int argc, char *argv[])
         PrintOneToken(token, yytext, yylval, yylloc);
     return (ReportError::NumErrors() == 0? 0 : -1);
 }
-
