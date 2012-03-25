@@ -28,8 +28,7 @@ do
     fi
  
     ./dcc < $base.$ext > $tmp 
-    ./dcc < $base.$ext > $base.test
-     
+        
     printf "Checking %-27s: " $file
     if ! diff -B $tmp $file >> error.log
     then 
