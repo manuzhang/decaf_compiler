@@ -17,6 +17,7 @@
 #include "utility.h" // for PrintDebug()
 #include "errors.h"
 
+
 /* Global variable: yylval
  * -----------------------
  * This global variable is how we get attribute information about the token
@@ -47,8 +48,9 @@ struct yyltype yylloc; // manually dclared for pp1, later Yacc provides
 static void DoBeforeEachAction(); 
 #define YY_USER_ACTION DoBeforeEachAction();
 
-int lineno = 1;
-int colno = 1;
+#define TAB_SIZE 8
+
+int lineno, colno;
 %}
 
  /* The section before the first %% is the Definitions section of the lex
@@ -57,16 +59,17 @@ int colno = 1;
   * as a simple substitution mechanism that allows for more readable
   * entries in the Rules section later. 
   */
-punctuation        [!\;,\.\[\]\{\}\(\)]
-arithmetic         [\+\-\*\/%]
-relational         [<>=]
-operator           {arithmetic}|{relational} 
-decimal            [0-9]+
-hexadecimal        (0x|0X)[0-9a-fA-F]+
-chars              \"[^\"\n]*\"
-boolean            (true|false)   
-integer            ({decimal}|{hexadecimal})   
-float              {decimal}\.{decimal}?((E|e)(\+|\-)?{decimal})?
+PUNCTUATION        ([!;,.[\]{}()])
+ARITHMETIC         ([-+*/%])
+RELATIONAL         ([<>=])
+OPERATOR           ({ARITHMETIC}|{RELATIONAL})
+DECIMAL            ([0-9]+)
+HEXADECIMAL        (0[xX][0-9a-fA-F]+)
+CHARS              (\"[^\"\n]*\")
+BOOLEAN            (true|false)   
+INTEGER            ({DECIMAL}|{HEXADECIMAL})   
+FLOAT              ({DECIMAL}\.{DECIMAL}?((E|e)(\+|\-)?{DECIMAL})?)
+IDENTIFIER         ([a-zA-Z][a-zA-Z0-9_]*)
 
 %x COMMENT
 %%             /* BEGIN RULES SECTION */
@@ -76,7 +79,7 @@ float              {decimal}\.{decimal}?((E|e)(\+|\-)?{decimal})?
 
  /* skip over white space */
 [\n]                   { colno = 1; lineno++; }
-[\t]                   { colno += 8; }
+[\t]                   { colno += TAB_SIZE - colno % TAB_SIZE + 1; }
 [ ]                    ;
 
  /* recognize all keywords and return the correct token from scanner.h */
@@ -107,8 +110,8 @@ ReadLine               { return T_ReadLine; }
  /* recognize punctuation and single-char operators 
   * and return the ASCII value as the token 
   */
-{punctuation} |
-{operator}             { return yytext[0] - '\0'; }
+{PUNCTUATION} |
+{OPERATOR}             { return yytext[0]; }
 
 
  /* recognize two-character operators and return the correct token */
@@ -124,51 +127,48 @@ ReadLine               { return T_ReadLine; }
   * return the correct token
   * and set appropriate filed of yylval 
   */
-{chars}                  { 
-                           yylval.stringConstant = yytext;
+{CHARS}                  { 
+                           yylval.stringConstant = strdup(yytext);
                            return T_StringConstant;
                          }
-{boolean}                { 
+{BOOLEAN}                { 
                            if (strcmp("true", yytext) == 0)
                                yylval.boolConstant = true;
                            else
 			       yylval.boolConstant = false;
                            return T_BoolConstant;
                          }
-{decimal}                { 
-                           yylval.integerConstant = atoi(yytext); return T_IntConstant; 
+{DECIMAL}                { 
+                           yylval.integerConstant = strtol(yytext, NULL, 10); return T_IntConstant; 
 			 }
-{hexadecimal}            {
-                           int i;
-			   int number = 0;
-			   for (i = 2; i < yyleng; i++) 
-			    {
-			      int c = toupper(yytext[i]);
-			      if (c >= 'A' && c <= 'F')
-			        number = number * 16 + c - 'A' + 10;
-			      else 
-			        number = number * 16 + c -'0';
-			    }
-			  yylval.integerConstant = number; 
+{HEXADECIMAL}            {
+                           /* int i; */
+			   /* int number = 0; */
+			   /* for (i = 2; i < yyleng; i++)  */
+			   /*  { */
+			   /*    int c = toupper(yytext[i]); */
+			   /*    if (c >= 'A' && c <= 'F') */
+			   /*      number = number * 16 + c - 'A' + 10; */
+			   /*    else  */
+			   /*      number = number * 16 + c -'0'; */
+			   /*  } */
+			  /* yylval.integerConstant = number;  */
+                          yylval.integerConstant = strtol(yytext, NULL, 16); 
 			  return T_IntConstant;
                          }
-{float}                  { 
+{FLOAT}                  { 
                            yylval.doubleConstant = atof(yytext); return T_DoubleConstant; 
 			 }
 
  /* recognize identifiers, 
   * return the correct token and set appropriate fields of yylval 
   */
-[a-zA-Z][a-zA-Z0-9_]*   { 
+{IDENTIFIER}             { 
                           if (yyleng > MaxIdentLen)
-                             {
-			       ReportError::LongIdentifier(&yylloc, yytext);
-			       strncpy(yylval.identifier, yytext, MaxIdentLen);
-			     }
-			  else 
-			     { 
-			       strcpy(yylval.identifier, yytext);
-			     }
+        	            ReportError::LongIdentifier(&yylloc, yytext);
+			  strncpy(yylval.identifier, yytext, MaxIdentLen);
+			  yylval.identifier[MaxIdentLen] = '\0';   
+			  
 			  return T_Identifier;
 		        }
 
@@ -204,6 +204,7 @@ ReadLine               { return T_ReadLine; }
 			  colno = 1;
 			} 
 
+ /* all other characters are reported as errors */
 .                       { 
                           ReportError::UnrecogChar(&yylloc, yytext[0]);     
 			}
@@ -232,6 +233,8 @@ void InitScanner()
 {
     PrintDebug("lex", "Initializing scanner");
     yy_flex_debug = true;
+    lineno = 1;
+    colno = 1;
 }
 
 
