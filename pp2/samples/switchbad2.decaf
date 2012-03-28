@@ -1,0 +1,9 @@
+int main() {
+    switch(expr) {
+        // Error: default case statements must appear last
+        default:
+            break;
+        case 0:
+            break;
+    }
+}

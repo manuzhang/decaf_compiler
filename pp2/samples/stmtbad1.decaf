@@ -1,0 +1,6 @@
+int main() {
+    /* Error: Variable declarations must occur before statements, and the two
+     * cannot be combined as is done here.
+     */
+    int a = 0;
+}

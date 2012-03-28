@@ -1,0 +1,9 @@
+int main() {
+	int a;
+	int b;
+	if (a ! b) {
+		int c;
+	}
+	a = 0;
+	b = 0;
+}

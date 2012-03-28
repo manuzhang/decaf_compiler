@@ -1,0 +1,6 @@
+
+*** Error line 2.
+    0--; // Error: Postfix decrement can only be applied to lvalues
+     ^^
+*** syntax error
+

@@ -1,0 +1,3 @@
+int main() {
+    0++; // Error: Postfix increment can only be applied to lvalues
+}

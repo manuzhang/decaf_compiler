@@ -1,0 +1,6 @@
+
+*** Error line 5.
+    int a = 0;
+          ^
+*** syntax error
+

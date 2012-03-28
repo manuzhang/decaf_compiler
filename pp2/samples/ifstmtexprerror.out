@@ -1,0 +1,6 @@
+
+*** Error line 4.
+	if (a ! b) {
+              ^
+*** syntax error
+

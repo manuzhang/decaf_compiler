@@ -1,0 +1,11 @@
+int main() {
+    switch(expr) {
+        case 0:
+            break;
+        default:
+            break;
+        // Error: Only zero or one default case label is valid
+        default:
+            break;
+    }
+}
