@@ -31,7 +31,7 @@ void yyerror(const char *msg); // standard error-handling routine
 /* yylval
  * ------
  * Here we define the type of the yylval global variable that is used by
- * the scanner to store attibute information about the token just scanned
+ * the scanner to store attribute information about the token just scanned
  * and thus communicate that information to the parser.
  *
  * pp2: You will need to add new fields to this union as you add different
@@ -45,6 +45,15 @@ void yyerror(const char *msg); // standard error-handling routine
     char identifier[MaxIdentLen+1]; // +1 for terminating null
     Decl *decl;
     List<Decl*> *declList;
+
+    VarDecl *vardecl;
+    FnDecl *fndecl;
+    ClassDecl *classdecl;
+    InterfaceDecl *interfacedecl;  
+    
+    Type *simpletype;
+    NamedType *namedtype;
+    ArrayType *arraytype;
 }
 
 
@@ -53,7 +62,7 @@ void yyerror(const char *msg); // standard error-handling routine
  * Here we tell yacc about all the token types that we are using.
  * Bison will assign unique numbers to these and export the #define
  * in the generated y.tab.h header file.
- */
+ */	
 %token   T_Void T_Bool T_Int T_Double T_String T_Class
 %token   T_LessEqual T_GreaterEqual T_Equal T_NotEqual T_Dims
 %token   T_And T_Or T_Null T_Extends T_This T_Interface T_Implements
@@ -74,25 +83,31 @@ void yyerror(const char *msg); // standard error-handling routine
  * must to declare which field is appropriate for the non-terminal.
  * As an example, this first type declaration establishes that the DeclList
  * non-terminal uses the field named "declList" in the yylval union. This
- * means that when we are setting $$ for a reduction for DeclList ore reading
+ * means that when we are setting $$ for a reduction for DeclList or reading
  * $n which corresponds to a DeclList nonterminal we are accessing the field
  * of the union named "declList" which is of type List<Decl*>.
  * pp2: You'll need to add many of these of your own.
  */
-%type <declList>  DeclList
-%type <decl>      Decl
+%type <declList>      DeclList
+%type <decl>          Decl
+%type <vardecl>       VarDecl
+%type <fndecl>        FnDecl
+%type <classdecl>     ClassDecl
+%type <interfacedecl> InterfaceDecl
+%type <simpletype>    Type
+%type <namedtype>     NamedType
+%type <arraytype>     ArrayType
 
 %%
 /* Rules
  * -----
  * All productions and actions should be placed between the start and stop
  * %% markers which delimit the Rules section.
-
  */
 
 /* Postfixes
  * ---------
- * Some of the non terminals in the grammer have one or more post fixed capital
+ * Some of the non terminals in the grammar have one or more post fixed capital
  * letters. These are intentional and have meaning. Each letter corresponds to
  * the following:
  *     P : Plus     (i.e. 'E+', One or more E)
@@ -114,12 +129,24 @@ Program   :    DeclList             {
                                     }
           ;
 
-DeclList  :    DeclList Decl        { ($$=$1)->Append($2); }
+DeclList  :    DeclList Decl        { ($$ = $1)->Append($2); }
           |    Decl                 { ($$ = new List<Decl*>)->Append($1); }
           ;
 
-Decl      :    T_Void               { /* pp2: replace with correct rules */ }
+Decl      :    VarDecl             
+          |    FnDecl                  
+          |    ClassDecl
+          |    InterfaceDecl
           ;
+          
+VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1); }           
+          ;
+        
+Type      :    T_Int                  
+          |    T_Double
+          |    T_Bool
+          |    T_String
+                    
 %%
 
 /* The closing %% above marks the end of the Rules section and the beginning

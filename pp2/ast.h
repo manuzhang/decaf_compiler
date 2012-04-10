@@ -21,12 +21,11 @@
  * during parsing, but is more important in later phases.
  *
  * Printing: The only interesting behavior of the node classes for pp2 is the 
- * bility to print the tree using an in-order walk.  Each node class is 
+ * ability to print the tree using an in-order walk.  Each node class is 
  * responsible for printing itself/children by overriding the virtual 
  * PrintChildren() and GetPrintNameForNode() methods. All the classes we 
  * provide already implement these methods, so your job is to construct the
  * nodes and wire them up during parsing. Once that's done, printing is a snap!
-
  */
 
 #ifndef _H_ast
