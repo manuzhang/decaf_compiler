@@ -17,6 +17,7 @@
 #include "utility.h" // for PrintDebug()
 #include "errors.h"
 #include "parser.h" // for token codes, yylval
+#include "list.h"
 
 /* Global variable: yylval
  * -----------------------
@@ -33,7 +34,7 @@ YYSTYPE yylval;  // manually declared for pp1, later Yacc provides
  * This global variable is how we get position information about the token
  * just scanned to the client. (Operates similarly to yylval above)
  */
-struct yyltype yylloc; // manually dclared for pp1, later Yacc provides
+struct yyltype yylloc; // manually declared for pp1, later Yacc provides
 
 /* Macro: YY_USER_ACTION 
  * ---------------------
@@ -51,6 +52,7 @@ static void DoBeforeEachAction();
 #define TAB_SIZE 8
 
 int lineno, colno;
+List<char *> copy;
 %}
 
  /* The section before the first %% is the Definitions section of the lex
@@ -237,6 +239,25 @@ void InitScanner()
     colno = 1;
 }
 
+void CopyLine()
+{
+  if (copy.NumElements() == 0)
+    {
+      List<char> line;
+      copy.Append(line);
+    }
+  else
+    {
+      int i;
+      for (i = 0; i < sizeof(yytext) / sizeof(char); i++)
+	{
+	  copy.Nth(copy.NumElements() - 1).Append(yytext[i]);
+	  if (yytext[i] == '\n')
+	    List<char> line;
+	  copy.Append(line);
+	}
+    }
+}
 
 /* Function: DoBeforeEachAction()
  * ------------------------------
@@ -250,6 +271,8 @@ static void DoBeforeEachAction()
   yylloc.first_column = colno;
   yylloc.last_column = colno + yyleng - 1;
   colno = colno + yyleng;
+
+  CopyLine();
 }
 
 /* Function: GetLinenumbered()
@@ -261,5 +284,9 @@ static void DoBeforeEachAction()
  */
 const char *GetLineNumbered(int num) 
 {
-  return NULL;
+  if (num >= copy.NumElements())
+    return NULL;
+  else
+    return copy.Nth();
 }
+
