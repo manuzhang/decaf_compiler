@@ -61,12 +61,23 @@ void yyerror(const char *msg); // standard error-handling routine
     StmtBlock *stmtblock;
     Stmt *stmt;
     IfStmt *ifstmt;
+    Stmt *elsestmt;
     ForStmt *forstmt;
     WhileStmt *whilestmt;
     ReturnStmt *rtnstmt;
     BreakStmt *brkstmt;
     PrintStmt *pntstmt;
     List<Stmt*> *stmts;
+   
+    Expr *expr;
+    Expr *optexpr;
+    List<Expr*> *exprs;
+    
+    IntConstant *intconst;
+    DoubleConstant *doubleconst;
+    BoolConstant *boolconst;
+    StringConstant *stringconst;
+    NullConstant *nullconst;
 }
 
 
@@ -121,6 +132,15 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <stmt>          Stmt
 %type <stmts>         Stmts
 %type <stmtblock>     StmtBlock
+%type <elsestmt>      ElseStmt
+%type <expr>          Expr
+%type <expr>          OptExpr
+%type <exprs>         Exprs
+%type <intconst>      IntConstant 
+%type <boolconst>     BoolConstant
+%type <stringconst>   StringConstant
+%type <doubleconst>   DoubleConstant
+%type <nullconst>     NullConstant
 
 %%
 /* Rules
@@ -177,7 +197,7 @@ Type      :    T_Int                 { $$ = new Type("int"); }
 NamedType :    T_Identifier          { $$ = new NamedType($1); }
  		  ;
  		 
-ArrayType :    Type '[]'             { $$ = new ArrayType(@1, $1); }
+ArrayType :    Type T_Dims             { $$ = new ArrayType(@1, $1); }
           ;
           
 FnDecl    :    Type T_Identifier '(' Formals ')' StmtBlock
@@ -224,7 +244,8 @@ Field      :   VarDecl
            
 InterfaceDecl : T_Interface T_Identifier '{' Prototypes '}'
                                      { $$ = new InterfaceDecl($2, $4); }
-
+              ;
+              
 Prototypes : Prototypes Prototype    { ($$ = $1)->Append($2); }
            | Prototype               { ($$ = new List<Decl*>)->Append($1); }
            ;
@@ -248,7 +269,7 @@ Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
            |                         { $$ = new List<Stmt*>;  }
            ;
            
-Stmt       : Exprs ';'        { $$ = new Stmt(@1); }
+Stmt       : OptExpr ';'           
            | IfStmt
            | WhileStmt
            | ForStmt
@@ -257,13 +278,117 @@ Stmt       : Exprs ';'        { $$ = new Stmt(@1); }
            | PrintStmt
            | StmtBlock
            ;
+          
            
-Exprs      : Expr
+IfStmt     : T_If '(' Expr ')' Stmt ElseStmt
+                                     { $$ = new IfStmt($3, $5, $6); }
+           ;
+                                     
+ElseStmt   : T_Else Stmt             { $$ = $2; }
            | 
            ;
            
-IfStmt     : T_If '(' Expr ')' Stmt '<' T_Else Stmt '>'
+WhileStmt  : T_While '(' Expr ')' Stmt
+                                     { $$ = new WhileStmt($3, $5); }
+           ;
+           
+ForStmt    : T_For '(' OptExpr ';' Expr ';' OptExpr ')' Stmt
+                                     { $$ = new ForStmt($3, $5, $7, $9); }
+           ;
+           
+ReturnStmt : T_Return OptExpr ';'    { $$ = new ReturnStmt(@1, $2); }
+           ;
         
+BreakStmt  : T_Break ';'             { $$ = new BreakStmt(@1); }                            
+           ;
+           
+PrintStmt  : T_Print '(' Exprs ')' ';' 
+                                     { $$ = new PrintStmt($3); }
+           ;
+           
+Expr       :  AssignExpr          
+           |  Constant
+           |  LValue
+           |  T_This
+           |  Call
+           |  '(' Expr ')'
+           |  ArithmeticExpr
+           |  EqualityExpr
+           |  RelationalExpr
+           |  LogicalExpr
+           |  '-' Expr
+           |  T_ReadInteger '(' ')'
+           |  T_ReadLine '(' ')'
+           |  T_New T_Identifier
+           |  T_NewArray '(' Expr ',' Type ')'
+           ;
+
+AssignExpr     : LValue '=' Expr
+               ;
+               
+ArithmeticExpr : Expr '+' Expr
+               | Expr '-' Expr
+               | Expr '*' Expr
+               | Expr '/' Expr
+               | Expr '%' Expr
+               ;
+               
+EqualityExpr   : Expr T_Equal Expr
+               | Expr T_NotEqual Expr
+               ;
+                             
+RelationalExpr : Expr '<' Expr
+               | Expr T_LessEqual Expr
+               | Expr '>' Expr
+               | Expr T_GreaterEqual Expr          
+               ;
+               
+LogicalExpr    : Expr T_And Expr
+               | Expr T_Or Expr
+               ;               
+               
+Exprs      : Exprs ',' Expr          { ($$ = $1)->Append($3); }
+           | Expr                    { ($$ = new List<Expr*>)->Append($1); }
+           ; 
+
+OptExpr    : Expr
+           | 
+           ;
+            
+LValue     : T_Identifier            { 
+           | Expr '.' T_Identifier
+           | Expr '[' Expr ']'
+           ; 
+
+Call       : T_Identifier '(' Actuals ')' 
+           | Expr '.' T_Identifier '(' Actuals ')'
+           ;
+           
+Actuals    : Exprs 
+           |
+           ;
+           
+Constant   : T_IntConstant            
+           | T_DoubleConstant
+           | T_BoolConstant
+           | T_StringConstant
+           | T_Null
+           ;
+
+IntConstant    : T_IntConstant       { $$ = new IntConstant(@1, $1);
+               ;
+            
+DoubleConstant : T_DoubleConstant    { $$ = new DoubleConstant(@1, $1); }
+               ;
+               
+BoolConstant   : T_BoolConstant      { $$ = new BoolConstant(@1, $1); }
+               ;
+               
+StringConstant : T_StringConstant    { $$ = new StringConstant(@1, $1); }
+               ;
+               
+NullConstant   : T_Null              { $$ = new NullConstant(@1); }
+               ;
 %%
 
 /* The closing %% above marks the end of the Rules section and the beginning
