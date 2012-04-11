@@ -54,6 +54,19 @@ void yyerror(const char *msg); // standard error-handling routine
     Type *simpletype;
     NamedType *namedtype;
     ArrayType *arraytype;
+    
+    List<NamedType*> *implements;
+    List<VarDecl*> *vardecls;
+    
+    StmtBlock *stmtblock;
+    Stmt *stmt;
+    IfStmt *ifstmt;
+    ForStmt *forstmt;
+    WhileStmt *whilestmt;
+    ReturnStmt *rtnstmt;
+    BreakStmt *brkstmt;
+    PrintStmt *pntstmt;
+    List<Stmt*> *stmts;
 }
 
 
@@ -97,6 +110,17 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <simpletype>    Type
 %type <namedtype>     NamedType
 %type <arraytype>     ArrayType
+%type <declList>      Formals
+%type <declList>      Variables
+%type <implements>    Implements
+%type <implements>    Impl
+%type <identifier>    Extend
+%type <declList>      Fields
+%type <declList>      Prototypes
+%type <vardecls>      VarDecls
+%type <stmt>          Stmt
+%type <stmts>         Stmts
+%type <stmtblock>     StmtBlock
 
 %%
 /* Rules
@@ -142,11 +166,104 @@ Decl      :    VarDecl
 VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1); }           
           ;
         
-Type      :    T_Int                  
-          |    T_Double
-          |    T_Bool
-          |    T_String
-                    
+Type      :    T_Int                 { $$ = new Type("int"); }
+          |    T_Double              { $$ = new Type("double"); }
+          |    T_Bool                { $$ = new Type("bool"); }
+          |    T_String              { $$ = new Type("string"); }
+          |    NamedType             
+          |    ArrayType
+          ;
+          
+NamedType :    T_Identifier          { $$ = new NamedType($1); }
+ 		  ;
+ 		 
+ArrayType :    Type '[]'             { $$ = new ArrayType(@1, $1); }
+          ;
+          
+FnDecl    :    Type T_Identifier '(' Formals ')' StmtBlock
+                                     { $$ = new FnDecl($2, $1, $4); 
+                                       $$->SetFunctionBody($6); }
+          |    T_Void T_Identifier '(' Formals ')' StmtBlock
+                                     { $$ = new FnDecl($2, new Type("void"), $4); 
+                                       $$->SetFunctionBody($6); }
+          ;
+
+Formals   :    Variables  
+          |              
+          ;
+          
+Variables :    Variables ',' Type T_Identifier 
+                                     { ($$ = $1)->Append(new VarDecl($2, $1)); }
+          |    Type T_Identifier     { ($$ = new List<VarDecl*>)->Append(new VarDecl($2, $1); }
+          ;
+          
+ClassDecl :    T_Class T_Identifier Extend Impl '{' Field '}'              
+                                     { $$ = new ClassDecl($2, $3, $4, $6); }
+          ;
+
+Extend    :    T_Extends NamedType   { $$ = $2; }
+          |
+          ;
+          
+Impl      :    T_Implement Implements { $$ = $2; }
+          |
+          ;
+              
+Implements :   Implements ',' NamedType 
+                                     { ($$ = $1)->Append($3); }
+           |   NamedType             { ($$ = new List<NamedType*>)->Append($1); }
+           ;                      
+
+Fields     :   Fields Field          { ($$ = $1)->Append($2); }
+           |                         { $$ = new List<Decl*>;  }
+           ;  
+
+Field      :   VarDecl 
+           |   FnDecl
+           ;
+           
+InterfaceDecl : T_Interface T_Identifier '{' Prototypes '}'
+                                     { $$ = new InterfaceDecl($2, $4); }
+
+Prototypes : Prototypes Prototype    { ($$ = $1)->Append($2); }
+           | Prototype               { ($$ = new List<Decl*>)->Append($1); }
+           ;
+            
+Prototype  : Type T_Identifier '(' Formals ')' ';'
+                                     { $$ = new FnDecl($2, $1, $4); 
+                                       $$->SetFunctionBody(NULL); }
+           | T_Void T_Identifier '(' Formals ')' ';'
+                                     { $$ = new FnDecl($2, new Type("void"), $4);
+                                       $$->SetFunctionBody(NULL); }
+           ;                
+           
+StmtBlock  : '{' VarDecls Stmts '}'  { $$ = new StmtBlock($2, $3); }
+           ;
+           
+VarDecls   : VarDecls VarDecl        { ($$ = $1)->Append($2);    }
+           |                         { $$ = new List<VarDecl*>;  }
+           ;
+
+Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
+           |                         { $$ = new List<Stmt*>;  }
+           ;
+           
+Stmt       : Exprs ';'        { $$ = new Stmt(@1); }
+           | IfStmt
+           | WhileStmt
+           | ForStmt
+           | BreakStmt
+           | ReturnStmt
+           | PrintStmt
+           | StmtBlock
+           ;
+           
+Exprs      : Expr
+           | 
+           ;
+           
+IfStmt     : T_If '(' Expr ')' Stmt '<' T_Else Stmt '>'
+        
 %%
 
 /* The closing %% above marks the end of the Rules section and the beginning
