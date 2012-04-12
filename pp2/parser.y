@@ -72,12 +72,23 @@ void yyerror(const char *msg); // standard error-handling routine
     Expr *expr;
     Expr *optexpr;
     List<Expr*> *exprs;
+    Call *call;
     
     IntConstant *intconst;
     DoubleConstant *doubleconst;
     BoolConstant *boolconst;
     StringConstant *stringconst;
     NullConstant *nullconst;
+    
+    ArithmeticExpr *arithmeticexpr;
+    RelationalExpr *relationalexpr;
+    EqualityExpr   *equalityexpr;
+    LogicalExpr    *logicalexpr;
+    AssignExpr     *assignexpr;
+
+    Lvalue *lvalue;
+    FieldAccess *fieldaccess;
+    ArrayAccess *arrayaccess;
 }
 
 
@@ -141,6 +152,22 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <stringconst>   StringConstant
 %type <doubleconst>   DoubleConstant
 %type <nullconst>     NullConstant
+%type <call>          Call
+%type <arithmeticexpr> ArithmeticExpr
+%type <stringConstant> ArithmeticOptr
+%type <relationalexpr> RelationalExpr
+%type <stringConstant> RelationalOptr
+%type <equalityexpr>   EqualityExpr
+%type <stringConstant> EqualityOptr
+%type <logicalexpr>    LogicalExpr
+%type <stringConstant> LogicalOptr
+%type <lvalue>        LValue
+%type <fieldaccess>   FieldAccess
+%type <arrayaccess>   ArrayAccess
+
+%left '+' '-' 
+%left '*' '/'
+%right '%'
 
 %%
 /* Rules
@@ -309,60 +336,83 @@ PrintStmt  : T_Print '(' Exprs ')' ';'
 Expr       :  AssignExpr          
            |  Constant
            |  LValue
-           |  T_This
+           |  T_This                 { $$ = new This(@2); }
            |  Call
-           |  '(' Expr ')'
+           |  '(' Expr ')'           { $$ = $2; }
            |  ArithmeticExpr
            |  EqualityExpr
            |  RelationalExpr
            |  LogicalExpr
            |  '-' Expr
-           |  T_ReadInteger '(' ')'
-           |  T_ReadLine '(' ')'
-           |  T_New T_Identifier
+	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(@1); }
+           |  T_ReadLine '(' ')'     { $$ = new ReadLineExpr(@1); }
+           |  T_New T_Identifier     { $$ = new NewExpr(@1, new NamedType(new Identifier($2))); }
            |  T_NewArray '(' Expr ',' Type ')'
+                                     { $$ = new NewArrayExpr(@1, $3, $5); }
            ;
 
-AssignExpr     : LValue '=' Expr
+AssignExpr     : LValue '=' Expr     { $$ = new AssignExpr($1, new Operator(@2, $2), $3); } 
                ;
                
-ArithmeticExpr : Expr '+' Expr
-               | Expr '-' Expr
-               | Expr '*' Expr
-               | Expr '/' Expr
-               | Expr '%' Expr
+ArithmeticExpr : Expr ArithmeticOptr Expr  { $$ = new ArithmeticExpr($1, new Operator(@2, $2), $3); } 
+               ;
+
+ArithmeticOptr : '+'
+               | '-'
+               | '*'
+               | '/'
+               | '%'
                ;
                
-EqualityExpr   : Expr T_Equal Expr
-               | Expr T_NotEqual Expr
+EqualityExpr   : Expr EqualityOptr Expr    { $$ = new EqualityOptr($1, new Operator(@2, $2), $3); }
                ;
-                             
-RelationalExpr : Expr '<' Expr
-               | Expr T_LessEqual Expr
-               | Expr '>' Expr
-               | Expr T_GreaterEqual Expr          
+
+EqualityOptr   : T_Equal
+               | T_NotEqual
+               ;
+                                            
+RelationalExpr : Expr RelationalOptr Expr  { $$ = new RelationalExpr($1, new Operator(@2, $2), $3); }         
+               ;
+
+RelationalOptr : '<'
+               | '>'
+               | T_LessEqual
+               | T_GreaterEqual
                ;
                
-LogicalExpr    : Expr T_And Expr
-               | Expr T_Or Expr
+LogicalExpr    : Expr LogicalOptr Expr     { $$ = new LogicalExpr($1, new Operator(@2, $2), $3); }
                ;               
+
+LogicalOptr    : T_And
+               | T_Or
+               ;
                
 Exprs      : Exprs ',' Expr          { ($$ = $1)->Append($3); }
            | Expr                    { ($$ = new List<Expr*>)->Append($1); }
            ; 
 
 OptExpr    : Expr
-           | 
+           |                         { $$ = new EmptyExpr(); }
            ;
+ 
             
-LValue     : T_Identifier            { 
-           | Expr '.' T_Identifier
-           | Expr '[' Expr ']'
+LValue     : FieldAccess             
+           | ArrayAccess 
            ; 
 
+FieldAccess : T_Identifier           { $$ = new FieldAccess(NULL, new Identifier($1)); }
+            | Expr '.' T_Identifier
+                                     { $$ = new FieldAccess($1, new Identifier($3); }
+            ;
+
 Call       : T_Identifier '(' Actuals ')' 
+                                     { $$ = new Call(@1, NULL, $1, $3); }  
            | Expr '.' T_Identifier '(' Actuals ')'
+                                     { $$ = new Call(@1, $1, $3, $5); }
            ;
+
+ArrayAccess : Expr '[' Expr ']'      { $$ = new ArrayAccess(@1, $1, $3); }
+            ;
            
 Actuals    : Exprs 
            |
