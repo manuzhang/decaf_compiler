@@ -40,7 +40,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %union {
     int integerConstant;
     bool boolConstant;
-    char *stringConstant;
+    const char *stringConstant;
     double doubleConstant;
     char identifier[MaxIdentLen+1]; // +1 for terminating null
     Decl *decl;
@@ -62,7 +62,6 @@ void yyerror(const char *msg); // standard error-handling routine
     StmtBlock *stmtblock;
     Stmt *stmt;
     IfStmt *ifstmt;
-    Stmt *elsestmt;
     ForStmt *forstmt;
     WhileStmt *whilestmt;
     ReturnStmt *rtnstmt;	
@@ -137,7 +136,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <vardecls>      Variables
 %type <implements>    Implements
 %type <implements>    Impl
-%type <namedtype>    Extend
+%type <namedtype>     Extend
 %type <decl>	      Field
 %type <declList>      Fields
 %type <fndecl>	      Prototype
@@ -147,7 +146,6 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <stmts>         Stmts
 %type <stmtblock>     StmtBlock
 %type <ifstmt>        IfStmt
-%type <elsestmt>      ElseStmt
 %type <whilestmt>     WhileStmt
 %type <forstmt>	      ForStmt
 %type <rtnstmt>       ReturnStmt
@@ -165,28 +163,27 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <nullconst>     NullConstant
 %type <call>          Call
 %type <arithmeticexpr> ArithmeticExpr
-%type <stringConstant> ArithmeticOptr
 %type <relationalexpr> RelationalExpr
-%type <stringConstant> RelationalOptr
 %type <equalityexpr>   EqualityExpr
-%type <stringConstant> EqualityOptr
 %type <logicalexpr>    LogicalExpr
-%type <stringConstant> LogicalOptr
 %type <assignexpr>     AssignExpr
-%type <stringConstant> AssignOptr
 %type <lvalue>        LValue
 %type <fieldaccess>   FieldAccess
 %type <arrayaccess>   ArrayAccess
 
+%nonassoc LOWER_THAN_ELSE
+%nonassoc T_Else
 %nonassoc '='
-%left     "||"
-%left     "&&"
-%nonassoc "==" "!="
-%nonassoc '<' "<=" '>' ">="
+%left     T_Or
+%left     T_And	
+%nonassoc T_Equal T_NotEqual
+%nonassoc '<' T_LessEqual '>' T_GreaterEqual
 %left     '+' '-' 
 %left     '*' '/' '%'
 %nonassoc '!' UMINUS
 %nonassoc '[' '.'
+%nonassoc LOWER_THAN_ID
+%nonassoc T_Identifier
 
 %%
 /* Rules
@@ -236,16 +233,16 @@ Type      :    T_Int                 { $$ = new Type("int"); }
           |    T_Double              { $$ = new Type("double"); }
           |    T_Bool                { $$ = new Type("bool"); }
           |    T_String              { $$ = new Type("string"); }
-          |    NamedType             
+          |    NamedType
           |    ArrayType
           ;
-          
-NamedType :    T_Identifier          { $$ = new NamedType(new Identifier(@1, $1)); }
-	  ;
- 		 
+
+NamedType :    T_Identifier          { $$ = new NamedType(new Identifier(@1, $1)); }             
+          ;
+
 ArrayType :    Type T_Dims           { $$ = new ArrayType(@1, $1); }
           ;
-          
+
 FnDecl    :    Type T_Identifier '(' Formals ')' StmtBlock
                                      { $$ = new FnDecl(new Identifier(@2, $2), $1, $4); 
                                        $$->SetFunctionBody($6); }
@@ -312,7 +309,7 @@ VarDecls   : VarDecls VarDecl        { ($$ = $1)->Append($2);    }
            ;
 
 Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
-           |                         { $$ = new List<Stmt*>;  }
+           | %prec LOWER_THAN_ID     { $$ = new List<Stmt*>;  }
            ;
            
 Stmt       : OptExpr ';'           
@@ -326,13 +323,12 @@ Stmt       : OptExpr ';'
            ;
           
            
-IfStmt     : T_If '(' Expr ')' Stmt ElseStmt
-                                     { $$ = new IfStmt($3, $5, $6); }
+IfStmt     : T_If '(' Expr ')' Stmt  %prec LOWER_THAN_ELSE
+                                     { $$ = new IfStmt($3, $5, NULL); }
+           | T_If '(' Expr ')' Stmt T_Else Stmt
+                                     { $$ = new IfStmt($3, $5, $7); }
            ;
                                      
-ElseStmt   : T_Else Stmt             { $$ = $2; }
-           | 
-           ;
            
 WhileStmt  : T_While '(' Expr ')' Stmt
                                      { $$ = new WhileStmt($3, $5); }
@@ -362,56 +358,50 @@ Expr       :  AssignExpr
            |  EqualityExpr
            |  RelationalExpr
            |  LogicalExpr
-	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(@1); }
+    	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(@1); }
            |  T_ReadLine '(' ')'     { $$ = new ReadLineExpr(@1); }
            |  T_New T_Identifier     { $$ = new NewExpr(@1, new NamedType(new Identifier(@2, $2))); }
            |  T_NewArray '(' Expr ',' Type ')'
                                      { $$ = new NewArrayExpr(@1, $3, $5); }
            ;
 
-AssignExpr     : LValue AssignOptr Expr     
-                                     { $$ = new AssignExpr($1, new Operator(@2, $2), $3); } 
-               ;
-            
-AssignOptr     : '='
+AssignExpr     : LValue '=' Expr     
+                                     { $$ = new AssignExpr($1, new Operator(@2, "="), $3); } 
                ;
    
-ArithmeticExpr : Expr ArithmeticOptr Expr
-                                     { $$ = new ArithmeticExpr($1, new Operator(@2, $2), $3); } 
+ArithmeticExpr : Expr '+' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "+"), $3); }
+               | Expr '-' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "-"), $3); } 
+               | Expr '*' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "*"), $3); }
+               | Expr '/' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "/"), $3); }
+               | Expr '%' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "+"), $3); }
+               | '-' Expr %prec UMINUS
+                                     { $$ = new ArithmeticExpr(new Operator(@1, "-"), $2); }
                ;
 
-ArithmeticOptr : '+'
-               | '-'
-               | '*'
-               | '/'
-               | '%'
-               ;
                
-EqualityExpr   : Expr EqualityOptr Expr    
-                                     { $$ = new EqualityExpr($1, new Operator(@2, $2), $3); }
-               ;
-
-EqualityOptr   : T_Equal
-               | T_NotEqual
+EqualityExpr   : Expr T_Equal Expr   
+                                     { $$ = new EqualityExpr($1, new Operator(@2, "=="), $3); }
+               | Expr T_NotEqual Expr
+                                     { $$ = new EqualityExpr($1, new Operator(@2, "!="), $3); }                        
                ;
                                             
-RelationalExpr : Expr RelationalOptr Expr
-                                     { $$ = new RelationalExpr($1, new Operator(@2, $2), $3); } 
+RelationalExpr : Expr '<' Expr
+                                     { $$ = new RelationalExpr($1, new Operator(@2, "<"), $3); }
+               | Expr '>' Expr
+                                     { $$ = new RelationalExpr($1, new Operator(@2, ">"), $3); } 
+               | Expr T_LessEqual Expr 
+                                     { $$ = new RelationalExpr($1, new Operator(@2, "<="), $3); }                     
+               | Expr T_GreaterEqual Expr 
+                                     { $$ = new RelationalExpr($1, new Operator(@2, ">="), $3); } 
                ;
 
-RelationalOptr : '<'
-               | '>'
-               | T_LessEqual
-               | T_GreaterEqual
-               ;
-               
-LogicalExpr    : BoolConstant LogicalOptr BoolConstant     
-                                     { $$ = new LogicalExpr($1, new Operator(@2, $2), $3); }
+LogicalExpr    : Expr T_And Expr 
+                                     { $$ = new LogicalExpr($1, new Operator(@2, "&&"), $3); }
+               | Expr T_Or Expr 
+                                     { $$ = new LogicalExpr($1, new Operator(@2, "||"), $3); }
+               | '!' Expr            { $$ = new LogicalExpr(new Operator(@1, "!"), $2); }
                ;               
 
-LogicalOptr    : T_And
-               | T_Or
-               ;
 
 Exprs      : Exprs ',' Expr          { ($$ = $1)->Append($3); }
            | Expr                    { ($$ = new List<Expr*>)->Append($1); }
@@ -452,13 +442,9 @@ Constant   : IntConstant
            ;
 
 IntConstant    : T_IntConstant       { $$ = new IntConstant(@1, $1); }
-               | '-' T_IntConstant %prec UMINUS
-                                     { $$ = new IntConstant(@1, -$2); }
                ;
             
 DoubleConstant : T_DoubleConstant    { $$ = new DoubleConstant(@1, $1); }
-               | '-' T_DoubleConstant %prec UMINUS
-                                     { $$ = new DoubleConstant(@1, -$2); }
                ;
                
 BoolConstant   : T_BoolConstant      { $$ = new BoolConstant(@1, $1); }
