@@ -127,5 +127,9 @@ class PrintStmt : public Stmt
     void PrintChildren(int indentLevel);
 };
 
+class SwitchStmt: public ConditionalStmt
+{
+
+};
 
 #endif

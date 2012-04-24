@@ -104,6 +104,7 @@ END_COMMENT        ("*/")
 "else"                   { return T_Else; }
 "return"                 { return T_Return; }
 "break"                  { return T_Break; }
+"switch"                 { return T_Switch; }
 "new"                    { return T_New; }
 "NewArray"               { return T_NewArray; }
 "Print"                  { return T_Print; }
@@ -111,6 +112,7 @@ END_COMMENT        ("*/")
 "ReadLine"               { return T_ReadLine; }
 
  
+
  /* recognize punctuation and single-char operators 
   * and return the ASCII value as the token 
   */
@@ -126,6 +128,8 @@ END_COMMENT        ("*/")
 "[]"                     { return T_Dims; }
 "&&"                     { return T_And; }
 "||"                     { return T_Or; }
+"++"                     { return T_Increment; }
+"--"                     { return T_Decrement; }
 
  /* recognize int, double, bool and string constants,
   * return the correct token

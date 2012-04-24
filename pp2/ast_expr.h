@@ -236,9 +236,21 @@ class ReadIntegerExpr : public Expr
 class ReadLineExpr : public Expr
 {
   public:
-    ReadLineExpr(yyltype loc) : Expr (loc) {}
+    ReadLineExpr(yyltype loc) : Expr(loc) {}
     const char *GetPrintNameForNode() { return "ReadLineExpr"; }
 };
 
+
+class PostfixExpr : public Expr
+{
+  protected:
+    LValue *lvalue;
+    Operator *optr;
+
+  public:
+    PostfixExpr(yyltype loc, LValue *lv, Operator *op);
+    const char *GetPrintNameForNode() { return "PostfixExpr"; }
+    void PrintChildren(int indentLevel);
+};
     
 #endif

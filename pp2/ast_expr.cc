@@ -90,10 +90,10 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 }
 
 
-  void FieldAccess::PrintChildren(int indentLevel) {
-    if (base) base->Print(indentLevel+1);
-    field->Print(indentLevel+1);
-  }
+void FieldAccess::PrintChildren(int indentLevel) {
+   if (base) base->Print(indentLevel+1);
+   field->Print(indentLevel+1);
+}
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
@@ -130,4 +130,14 @@ void NewArrayExpr::PrintChildren(int indentLevel) {
     elemType->Print(indentLevel+1);
 }
 
-       
+PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
+: Expr(loc) {
+    Assert(lv != NULL && op != NULL);
+    (lvalue=lv)->SetParent(this);
+    (optr=op)->SetParent(this);
+}
+
+void PostfixExpr::PrintChildren(int indentLevel) {
+     lvalue->Print(indentLevel+1);
+     optr->Print(indentLevel+1);
+}

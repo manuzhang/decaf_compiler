@@ -69,6 +69,7 @@ void yyerror(const char *msg); // standard error-handling routine
     WhileStmt *whilestmt;
     ReturnStmt *rtnstmt;	
     BreakStmt *brkstmt;
+    SwitchStmt *switchstmt;
     PrintStmt *pntstmt;
     List<Stmt*> *stmts;
    
@@ -88,7 +89,8 @@ void yyerror(const char *msg); // standard error-handling routine
     EqualityExpr   *equalityexpr;
     LogicalExpr    *logicalexpr;
     AssignExpr     *assignexpr;
-
+    PostfixExpr    *postfixexpr;
+    
     LValue *lvalue;
     FieldAccess *fieldaccess;
     ArrayAccess *arrayaccess;
@@ -102,9 +104,9 @@ void yyerror(const char *msg); // standard error-handling routine
  * in the generated y.tab.h header file.
  */	
 %token   T_Void T_Bool T_Int T_Double T_String T_Class
-%token   T_LessEqual T_GreaterEqual T_Equal T_NotEqual T_Dims
+%token   T_LessEqual T_GreaterEqual T_Equal T_NotEqual T_Dims T_Increment T_Decrement
 %token   T_And T_Or T_Null T_Extends T_This T_Interface T_Implements
-%token   T_While T_For T_If T_Else T_Return T_Break
+%token   T_While T_For T_If T_Else T_Return T_Break T_Switch
 %token   T_New T_NewArray T_Print T_ReadInteger T_ReadLine
 
 
@@ -171,6 +173,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <equalityexpr>   EqualityExpr
 %type <logicalexpr>    LogicalExpr
 %type <assignexpr>     AssignExpr
+%type <postfixexpr>    PostfixExpr
 %type <lvalue>        LValue
 %type <fieldaccess>   FieldAccess
 %type <arrayaccess>   ArrayAccess
@@ -184,7 +187,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %nonassoc '<' T_LessEqual '>' T_GreaterEqual
 %left     '+' '-' 
 %left     '*' '/' '%'
-%nonassoc '!' UMINUS
+%nonassoc '!' UMINUS T_Increment T_Decrement
 %nonassoc '[' '.'
  /* this solved the S/R conflict on Type -> Identifier 
     but there might be a better solution  */
@@ -202,7 +205,7 @@ void yyerror(const char *msg); // standard error-handling routine
  * letters. These are intentional and have meaning. Each letter corresponds to
  * the following:
  *     P : Plus     (i.e. 'E+', One or more E)
- *     C : Comma    (i.e. ',' , Used in Conjunction with P (PC) to denote 'E+,'
+ *     C : Comma    (i.e. ',' , Used in Conjunction with P (jPC) to denote 'E+,'
  *                   One or more E separated by commas)
  *     S : Star     (i.e. 'E*', Zero or more E)
  *     O : Optional (i.e. 'E?', Zero or One E. E is optional)
@@ -367,6 +370,7 @@ Expr       :  AssignExpr
            |  EqualityExpr
            |  RelationalExpr
            |  LogicalExpr
+           |  PostfixExpr
     	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(@1); }
            |  T_ReadLine '(' ')'     { $$ = new ReadLineExpr(@1); }
            |  T_New T_Identifier     { $$ = new NewExpr(@1, new NamedType(new Identifier(@2, $2))); }
@@ -387,6 +391,9 @@ ArithmeticExpr : Expr '+' Expr       { $$ = new ArithmeticExpr($1, new Operator(
                                      { $$ = new ArithmeticExpr(new Operator(@1, "-"), $2); }
                ;
 
+PostfixExpr    : LValue T_Increment  { $$ = new PostfixExpr(@1, $1, new Operator(@2, "++")); }
+               | LValue T_Decrement  { $$ = new PostfixExpr(@1, $1, new Operator(@2, "--")); }
+               ;
                
 EqualityExpr   : Expr T_Equal Expr   
                                      { $$ = new EqualityExpr($1, new Operator(@2, "=="), $3); }
