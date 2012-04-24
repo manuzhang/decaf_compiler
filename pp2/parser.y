@@ -38,13 +38,15 @@ void yyerror(const char *msg); // standard error-handling routine
  *      attributes to your non-terminal symbols.
  */
 %union {
+    Program *program;
+    
     int integerConstant;
     bool boolConstant;
     const char *stringConstant;
     double doubleConstant;
     char identifier[MaxIdentLen+1]; // +1 for terminating null
     Decl *decl;
-    List<Decl*> *declList;
+  
 
     VarDecl *vardecl;
     FnDecl *fndecl;
@@ -56,8 +58,9 @@ void yyerror(const char *msg); // standard error-handling routine
     ArrayType *arraytype;
     
     List<NamedType*> *implements;
+    List<Decl*> *declList;
     List<VarDecl*> *vardecls;
-   
+      
    
     StmtBlock *stmtblock;
     Stmt *stmt;
@@ -123,6 +126,7 @@ void yyerror(const char *msg); // standard error-handling routine
  * of the union named "declList" which is of type List<Decl*>.
  * pp2: You'll need to add many of these of your own.
  */
+%type <program>       Program
 %type <declList>      DeclList
 %type <decl>          Decl
 %type <vardecl>       VarDecl
@@ -139,7 +143,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <namedtype>     Extend
 %type <decl>	      Field
 %type <declList>      Fields
-%type <fndecl>	      Prototype
+%type <decl>	      Prototype
 %type <declList>      Prototypes
 %type <vardecls>      VarDecls
 %type <stmt>          Stmt
@@ -182,8 +186,8 @@ void yyerror(const char *msg); // standard error-handling routine
 %left     '*' '/' '%'
 %nonassoc '!' UMINUS
 %nonassoc '[' '.'
-%nonassoc LOWER_THAN_ID
-%nonassoc T_Identifier
+ /* this solved the S/R conflict on Type -> Identifier 
+    but there might be a better solution  */
 
 %%
 /* Rules
@@ -209,11 +213,11 @@ Program   :    DeclList              {
                                       /* pp2: The @1 is needed to convince
                                        * yacc to set up yylloc. You can remove
                                        * it once you have other uses of @n*/
-                                      Program *program = new Program($1);
+                                      $$ = new Program($1);
                                       // if no errors, advance to next phase
                                       if (ReportError::NumErrors() == 0)
-                                          program->Print(0);
-                                     }
+                                        $$->Print(0);
+                                	 }
           ;
 
 DeclList  :    DeclList Decl         { ($$ = $1)->Append($2); }
@@ -252,7 +256,7 @@ FnDecl    :    Type T_Identifier '(' Formals ')' StmtBlock
           ;
 
 Formals   :    Variables  
-          |              
+          |                          { $$ = new List<VarDecl*>; }
           ;
           
 Variables :    Variables ',' Type T_Identifier 
@@ -262,14 +266,17 @@ Variables :    Variables ',' Type T_Identifier
           
 ClassDecl :    T_Class T_Identifier Extend Impl '{' Fields '}'              
                                      { $$ = new ClassDecl(new Identifier(@2, $2), $3, $4, $6); }
+          |    T_Class T_Identifier Extend Impl '{' '}'
+                                     { $$ = new ClassDecl(new Identifier(@2, $2), $3, $4, new List<Decl*>); }                           
           ;
 
 Extend    :    T_Extends NamedType   { $$ = $2; }
-          |
+          |                                    
           ;
           
-Impl      :    T_Implements Implements { $$ = $2; }
-          |
+Impl      :    T_Implements Implements 
+                                     { $$ = $2; }
+          |                          { $$ = new List<NamedType*>; }
           ;
               
 Implements :   Implements ',' NamedType 
@@ -278,7 +285,7 @@ Implements :   Implements ',' NamedType
            ;                      
 
 Fields     :   Fields Field          { ($$ = $1)->Append($2); }
-           |                         { $$ = new List<Decl*>;  }
+           |   Field                 { ($$ = new List<Decl*>)->Append($1);  }
            ;  
 
 Field      :   VarDecl 
@@ -287,6 +294,8 @@ Field      :   VarDecl
            
 InterfaceDecl : T_Interface T_Identifier '{' Prototypes '}'
                                      { $$ = new InterfaceDecl(new Identifier(@2, $2), $4); }
+              | T_Interface T_Identifier '{' '}'
+                                     { $$ = new InterfaceDecl(new Identifier(@2, $2), new List<Decl*>); }
               ;
               
 Prototypes : Prototypes Prototype    { ($$ = $1)->Append($2); }
@@ -294,14 +303,13 @@ Prototypes : Prototypes Prototype    { ($$ = $1)->Append($2); }
            ;
             
 Prototype  : Type T_Identifier '(' Formals ')' ';'
-                                     { $$ = new FnDecl(new Identifier(@2, $2), $1, $4); 
-                                       $$->SetFunctionBody(NULL); }
+                                     { $$ = new FnDecl(new Identifier(@2, $2), $1, $4); }
            | T_Void T_Identifier '(' Formals ')' ';'
-                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $4);
-                                       $$->SetFunctionBody(NULL); }
+                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $4); }
            ;                
            
 StmtBlock  : '{' VarDecls Stmts '}'  { $$ = new StmtBlock($2, $3); }
+           | '{' VarDecls '}'        { $$ = new StmtBlock($2, new List<Stmt*>); }
            ;
            
 VarDecls   : VarDecls VarDecl        { ($$ = $1)->Append($2);    }
@@ -309,7 +317,7 @@ VarDecls   : VarDecls VarDecl        { ($$ = $1)->Append($2);    }
            ;
 
 Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
-           | %prec LOWER_THAN_ID     { $$ = new List<Stmt*>;  }
+           | Stmt                    { ($$ = new List<Stmt*>)->Append($1);  }
            ;
            
 Stmt       : OptExpr ';'           
@@ -373,7 +381,7 @@ ArithmeticExpr : Expr '+' Expr       { $$ = new ArithmeticExpr($1, new Operator(
                | Expr '-' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "-"), $3); } 
                | Expr '*' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "*"), $3); }
                | Expr '/' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "/"), $3); }
-               | Expr '%' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "+"), $3); }
+               | Expr '%' Expr       { $$ = new ArithmeticExpr($1, new Operator(@2, "%"), $3); }
                | '-' Expr %prec UMINUS
                                      { $$ = new ArithmeticExpr(new Operator(@1, "-"), $2); }
                ;
@@ -431,7 +439,7 @@ ArrayAccess : Expr '[' Expr ']'      { $$ = new ArrayAccess(@1, $1, $3); }
             ;
            
 Actuals    : Exprs 
-           |
+           |                         { $$ = new List<Expr*>; }
            ;
            
 Constant   : IntConstant            
@@ -479,5 +487,5 @@ NullConstant   : T_Null              { $$ = new NullConstant(@1); }
 void InitParser()
 {
    PrintDebug("parser", "Initializing parser");
-   yydebug = false;
+   yydebug = true;
 }

@@ -53,5 +53,5 @@ class ArrayType : public Type
     void PrintChildren(int indentLevel);
 };
 
- 
+
 #endif
