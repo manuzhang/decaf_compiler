@@ -270,8 +270,9 @@ ClassDecl :    T_Class T_Identifier Extend Impl '{' Fields '}'
                                      { $$ = new ClassDecl(new Identifier(@2, $2), $3, $4, new List<Decl*>); }                           
           ;
 
-Extend    :    T_Extends NamedType   { $$ = $2; }
-          |                                    
+Extend    :    T_Extends NamedType
+                                     { $$ = $2; }
+          |                          { $$ = NULL; }          
           ;
           
 Impl      :    T_Implements Implements 
