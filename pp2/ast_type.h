@@ -12,7 +12,6 @@
 #include "ast.h"
 #include "list.h"
 
-
 class Type : public Node 
 {
   protected:

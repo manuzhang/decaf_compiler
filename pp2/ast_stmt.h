@@ -13,12 +13,15 @@
 #ifndef _H_ast_stmt
 #define _H_ast_stmt
 
-#include "list.h"
 #include "ast.h"
+#include "list.h"
 
 class Decl;
 class VarDecl;
 class Expr;
+class IntConstant;
+
+
 
 class Program : public Node
 {
@@ -127,9 +130,40 @@ class PrintStmt : public Stmt
     void PrintChildren(int indentLevel);
 };
 
-class SwitchStmt: public ConditionalStmt
+class CaseStmt : public Stmt
 {
+  protected:
+    IntConstant *intconst;
+    List<Stmt*> *stmts;
 
+  public:
+    CaseStmt(IntConstant *ic, List<Stmt*> *sts);
+    const char *GetPrintNameForNode() { return "Case"; }
+    void PrintChildren(int indentLevel);
+};
+
+class DefaultStmt : public Stmt
+{
+  protected:
+    List<Stmt*> *stmts;
+
+  public:
+    DefaultStmt(List<Stmt*> *sts);
+    const char *GetPrintNameForNode() { return "Default"; }
+    void PrintChildren(int indentLevel);
+};
+
+class SwitchStmt : public Stmt
+{
+  protected:
+    Expr *expr;
+    List<CaseStmt*> *cases;
+    DefaultStmt *defaults;
+
+  public:
+    SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
+    const char *GetPrintNameForNode() { return "SwitchStmt"; }
+    void PrintChildren(int indentLevel);
 };
 
 #endif

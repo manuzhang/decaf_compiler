@@ -70,9 +70,12 @@ void yyerror(const char *msg); // standard error-handling routine
     ReturnStmt *rtnstmt;	
     BreakStmt *brkstmt;
     SwitchStmt *switchstmt;
+    CaseStmt *casestmt;
+    DefaultStmt *defaultstmt;
     PrintStmt *pntstmt;
     List<Stmt*> *stmts;
-   
+    List<CaseStmt*> *casestmts;
+    
     Expr *expr;
     Expr *optexpr;
     List<Expr*> *exprs;
@@ -106,7 +109,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %token   T_Void T_Bool T_Int T_Double T_String T_Class
 %token   T_LessEqual T_GreaterEqual T_Equal T_NotEqual T_Dims T_Increment T_Decrement
 %token   T_And T_Or T_Null T_Extends T_This T_Interface T_Implements
-%token   T_While T_For T_If T_Else T_Return T_Break T_Switch
+%token   T_While T_For T_If T_Else T_Return T_Break T_Switch T_Case T_Default
 %token   T_New T_NewArray T_Print T_ReadInteger T_ReadLine
 
 
@@ -156,6 +159,10 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <forstmt>	      ForStmt
 %type <rtnstmt>       ReturnStmt
 %type <brkstmt>	      BreakStmt
+%type <switchstmt>    SwitchStmt
+%type <casestmts>     Cases
+%type <casestmt>      Case
+%type <defaultstmt>   Default
 %type <pntstmt>	      PrintStmt
 %type <expr>          Expr
 %type <expr>          OptExpr
@@ -330,6 +337,7 @@ Stmt       : OptExpr ';'
            | ForStmt
            | BreakStmt
            | ReturnStmt
+           | SwitchStmt
            | PrintStmt
            | StmtBlock
            ;
@@ -356,6 +364,23 @@ ReturnStmt : T_Return OptExpr ';'    { $$ = new ReturnStmt(@1, $2); }
 BreakStmt  : T_Break ';'             { $$ = new BreakStmt(@1); }                            
            ;
            
+SwitchStmt : T_Switch '(' Expr ')' '{' Cases Default '}'
+                                     { $$ = new SwitchStmt($3, $6, $7); }
+           ;
+
+Cases      : Cases Case              { ($$ = $1)->Append($2); }
+           | Case                    { ($$ = new List<CaseStmt*>)->Append($1); }
+           ;
+
+Case       : T_Case IntConstant ':' Stmts        
+                                     { $$ = new CaseStmt($2, $4); }
+           | T_Case IntConstant ':'  { $$ = new CaseStmt($2, new List<Stmt*>); }
+           ;
+           
+Default    : T_Default ':' Stmts     { $$ = new DefaultStmt($3); }
+           |                         { $$ = NULL; }
+           ;
+
 PrintStmt  : T_Print '(' Exprs ')' ';' 
                                      { $$ = new PrintStmt($3); }
            ;
@@ -495,5 +520,5 @@ NullConstant   : T_Null              { $$ = new NullConstant(@1); }
 void InitParser()
 {
    PrintDebug("parser", "Initializing parser");
-   yydebug = true;
+   yydebug = false;
 }

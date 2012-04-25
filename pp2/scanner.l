@@ -44,7 +44,7 @@ List<const char*> savedlines;
   * as a simple substitution mechanism that allows for more readable
   * entries in the Rules section later. 
   */
-PUNCTUATION        ([!;,.[\]{}()])
+PUNCTUATION        ([!:;,.[\]{}()])
 ARITHMETIC         ([-+/*%])
 RELATIONAL         ([<>=])
 OPERATOR           ({ARITHMETIC}|{RELATIONAL})
@@ -105,6 +105,8 @@ END_COMMENT        ("*/")
 "return"                 { return T_Return; }
 "break"                  { return T_Break; }
 "switch"                 { return T_Switch; }
+"case"                   { return T_Case; }
+"default"                { return T_Default; }
 "new"                    { return T_New; }
 "NewArray"               { return T_NewArray; }
 "Print"                  { return T_Print; }

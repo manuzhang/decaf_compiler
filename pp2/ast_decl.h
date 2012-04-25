@@ -18,7 +18,6 @@ class Identifier;
 class Stmt;
 
 
-
 class Decl : public Node 
 {
   protected:
