@@ -5,21 +5,24 @@
  * language (for, if, return, etc.) there is a corresponding
  * node class for that construct. 
  *
- * pp3: You will need to extend the Stmt classes to implement
- * semantic analysis for rules pertaining to statements.
+ * pp2: You will need to add new expression and statement node c
+ * classes for the additional grammar elements (Switch/Postfix)
  */
 
 
 #ifndef _H_ast_stmt
 #define _H_ast_stmt
 
-#include "list.h"
 #include "ast.h"
+#include "list.h"
 
 class Decl;
 class VarDecl;
 class Expr;
-  
+class IntConstant;
+
+
+
 class Program : public Node
 {
   protected:
@@ -27,7 +30,8 @@ class Program : public Node
      
   public:
      Program(List<Decl*> *declList);
-     void Check();
+     const char *GetPrintNameForNode() { return "Program"; }
+     void PrintChildren(int indentLevel);
 };
 
 class Stmt : public Node
@@ -45,6 +49,8 @@ class StmtBlock : public Stmt
     
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
+    const char *GetPrintNameForNode() { return "StmtBlock"; }
+    void PrintChildren(int indentLevel);
 };
 
   
@@ -72,12 +78,16 @@ class ForStmt : public LoopStmt
   
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
+    const char *GetPrintNameForNode() { return "ForStmt"; }
+    void PrintChildren(int indentLevel);
 };
 
 class WhileStmt : public LoopStmt 
 {
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
+    const char *GetPrintNameForNode() { return "WhileStmt"; }
+    void PrintChildren(int indentLevel);
 };
 
 class IfStmt : public ConditionalStmt 
@@ -87,12 +97,15 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
+    const char *GetPrintNameForNode() { return "IfStmt"; }
+    void PrintChildren(int indentLevel);
 };
 
 class BreakStmt : public Stmt 
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
+    const char *GetPrintNameForNode() { return "BreakStmt"; }
 };
 
 class ReturnStmt : public Stmt  
@@ -102,6 +115,8 @@ class ReturnStmt : public Stmt
   
   public:
     ReturnStmt(yyltype loc, Expr *expr);
+    const char *GetPrintNameForNode() { return "ReturnStmt"; }
+    void PrintChildren(int indentLevel);
 };
 
 class PrintStmt : public Stmt
@@ -111,7 +126,44 @@ class PrintStmt : public Stmt
     
   public:
     PrintStmt(List<Expr*> *arguments);
+    const char *GetPrintNameForNode() { return "PrintStmt"; }
+    void PrintChildren(int indentLevel);
 };
 
+class CaseStmt : public Stmt
+{
+  protected:
+    IntConstant *intconst;
+    List<Stmt*> *stmts;
+
+  public:
+    CaseStmt(IntConstant *ic, List<Stmt*> *sts);
+    const char *GetPrintNameForNode() { return "Case"; }
+    void PrintChildren(int indentLevel);
+};
+
+class DefaultStmt : public Stmt
+{
+  protected:
+    List<Stmt*> *stmts;
+
+  public:
+    DefaultStmt(List<Stmt*> *sts);
+    const char *GetPrintNameForNode() { return "Default"; }
+    void PrintChildren(int indentLevel);
+};
+
+class SwitchStmt : public Stmt
+{
+  protected:
+    Expr *expr;
+    List<CaseStmt*> *cases;
+    DefaultStmt *defaults;
+
+  public:
+    SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
+    const char *GetPrintNameForNode() { return "SwitchStmt"; }
+    void PrintChildren(int indentLevel);
+};
 
 #endif

@@ -18,6 +18,10 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     (type=t)->SetParent(this);
 }
   
+void VarDecl::PrintChildren(int indentLevel) { 
+   if (type) type->Print(indentLevel+1);
+   if (id) id->Print(indentLevel+1);
+}
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
@@ -28,12 +32,23 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
 }
 
+void ClassDecl::PrintChildren(int indentLevel) {
+    id->Print(indentLevel+1);
+    if (extends) extends->Print(indentLevel+1, "(extends) ");
+    implements->PrintAll(indentLevel+1, "(implements) ");
+    members->PrintAll(indentLevel+1);
+}
+
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);
     (members=m)->SetParentAll(this);
 }
 
+void InterfaceDecl::PrintChildren(int indentLevel) {
+    id->Print(indentLevel+1);
+    members->PrintAll(indentLevel+1);
+}
 	
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
     Assert(n != NULL && r!= NULL && d != NULL);
@@ -46,5 +61,11 @@ void FnDecl::SetFunctionBody(Stmt *b) {
     (body=b)->SetParent(this);
 }
 
+void FnDecl::PrintChildren(int indentLevel) {
+    if (returnType) returnType->Print(indentLevel+1, "(return type) ");
+    if (id) id->Print(indentLevel+1);
+    if (formals) formals->PrintAll(indentLevel+1, "(formals) ");
+    if (body) body->Print(indentLevel+1, "(body) ");
+}
 
 
