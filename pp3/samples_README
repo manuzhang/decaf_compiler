@@ -1,0 +1,12 @@
+There are two directories of sample output for pp3. The samples-checkpoint 
+directory contains files for testing the checkpoint submission.  At the 
+milestone marker, only a small subset of errors are expected to be caught,
+these files focus on those areas. The samples directory are files for testing
+the final submission. All aspects of semantic analysis are fair game 
+for testing the final submission. 
+
+In each directory, each *.decaf file is a syntactically-correct Decaf 
+program.  For each input, there is a matching .out file that contains
+any errors printed in response to semantic violations.  If the input is 
+semantically valid, the matching *.out file is empty.
+
