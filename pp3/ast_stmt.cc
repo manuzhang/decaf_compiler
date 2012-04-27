@@ -13,10 +13,10 @@ Program::Program(List<Decl*> *d) {
     (decls=d)->SetParentAll(this);
 }
 
-void Program::PrintChildren(int indentLevel) {
+/*void Program::PrintChildren(int indentLevel) {
     decls->PrintAll(indentLevel+1);
     printf("\n");
-}
+}*/
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     Assert(d != NULL && s != NULL);
@@ -24,10 +24,10 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     (stmts=s)->SetParentAll(this);
 }
 
-void StmtBlock::PrintChildren(int indentLevel) {
+/*void StmtBlock::PrintChildren(int indentLevel) {
     decls->PrintAll(indentLevel+1);
     stmts->PrintAll(indentLevel+1);
-}
+}*/
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
     Assert(t != NULL && b != NULL);
@@ -41,7 +41,7 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
     (step=s)->SetParent(this);
 }
 
-void ForStmt::PrintChildren(int indentLevel) {
+/*void ForStmt::PrintChildren(int indentLevel) {
     init->Print(indentLevel+1, "(init) ");
     test->Print(indentLevel+1, "(test) ");
     step->Print(indentLevel+1, "(step) ");
@@ -51,7 +51,7 @@ void ForStmt::PrintChildren(int indentLevel) {
 void WhileStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1, "(test) ");
     body->Print(indentLevel+1, "(body) ");
-}
+}*/
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
     Assert(t != NULL && tb != NULL); // else can be NULL
@@ -59,11 +59,11 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     if (elseBody) elseBody->SetParent(this);
 }
 
-void IfStmt::PrintChildren(int indentLevel) {
+/*void IfStmt::PrintChildren(int indentLevel) {
     if (test) test->Print(indentLevel+1, "(test) ");
     if (body) body->Print(indentLevel+1, "(then) ");
     if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
-}
+}*/
 
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
@@ -71,36 +71,36 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     (expr=e)->SetParent(this);
 }
 
-void ReturnStmt::PrintChildren(int indentLevel) {
+/*void ReturnStmt::PrintChildren(int indentLevel) {
     expr->Print(indentLevel+1);
-}
+}*/
   
 PrintStmt::PrintStmt(List<Expr*> *a) {    
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
 }
 
-void PrintStmt::PrintChildren(int indentLevel) {
+/*void PrintStmt::PrintChildren(int indentLevel) {
     args->PrintAll(indentLevel+1, "(args) ");
-}
+}*/
 
 CaseStmt::CaseStmt(IntConstant *ic, List<Stmt*> *sts) {
     (intconst=ic)->SetParent(this);
     (stmts=sts)->SetParentAll(this);
 }
 
-void CaseStmt::PrintChildren(int indentLevel) {
+/*void CaseStmt::PrintChildren(int indentLevel) {
     intconst->Print(indentLevel+1);
     if (stmts) stmts->PrintAll(indentLevel+1);
-}
+}*/
 
 DefaultStmt::DefaultStmt(List<Stmt*> *sts) {
     if (sts) (stmts=sts)->SetParentAll(this);
 }
 
-void DefaultStmt::PrintChildren(int indentLevel) {
+/*void DefaultStmt::PrintChildren(int indentLevel) {
     if (stmts) stmts->PrintAll(indentLevel+1);
-}
+}*/
 
 SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
     Assert(e != NULL && cs != NULL);
@@ -109,8 +109,8 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
     if (ds) (defaults=ds)->SetParent(this);
 }
 
-void SwitchStmt::PrintChildren(int indentLevel) {
+/*void SwitchStmt::PrintChildren(int indentLevel) {
     expr->Print(indentLevel+1);
     cases->PrintAll(indentLevel+1);
     if (defaults) defaults->Print(indentLevel+1);
-}
+}*/

@@ -28,9 +28,9 @@ Type::Type(const char *n) {
     typeName = strdup(n);
 }
 
-void Type::PrintChildren(int indentLevel) {
+/*void Type::PrintChildren(int indentLevel) {
     printf("%s", typeName);
-}
+}*/
 
 	
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
@@ -38,16 +38,16 @@ NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     (id=i)->SetParent(this);
 } 
 
-void NamedType::PrintChildren(int indentLevel) {
+/*void NamedType::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
-}
+}*/
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     Assert(et != NULL);
     (elemType=et)->SetParent(this);
 }
-void ArrayType::PrintChildren(int indentLevel) {
+/*void ArrayType::PrintChildren(int indentLevel) {
     elemType->Print(indentLevel+1);
-}
+}*/
 
 

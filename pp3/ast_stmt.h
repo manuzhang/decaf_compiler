@@ -27,7 +27,7 @@ class Program : public Node
 {
   protected:
      List<Decl*> *decls;
-     
+
   public:
      Program(List<Decl*> *declList);
      const char *GetPrintNameForNode() { return "Program"; }

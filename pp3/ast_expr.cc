@@ -12,40 +12,42 @@
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
 }
-void IntConstant::PrintChildren(int indentLevel) { 
+/*void IntConstant::PrintChildren(int indentLevel) {
     printf("%d", value);
-}
+}*/
 
 DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc) {
     value = val;
 }
-void DoubleConstant::PrintChildren(int indentLevel) { 
+/*void DoubleConstant::PrintChildren(int indentLevel) {
     printf("%g", value);
-}
+}*/
 
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
     value = val;
 }
+/*
 void BoolConstant::PrintChildren(int indentLevel) { 
     printf("%s", value ? "true" : "false");
 }
+*/
 
 StringConstant::StringConstant(yyltype loc, const char *val) : Expr(loc) {
     Assert(val != NULL);
     value = strdup(val);
 }
-void StringConstant::PrintChildren(int indentLevel) { 
+/*void StringConstant::PrintChildren(int indentLevel) {
     printf("%s",value);
-}
+}*/
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
     Assert(tok != NULL);
     strncpy(tokenString, tok, sizeof(tokenString));
 }
 
-void Operator::PrintChildren(int indentLevel) {
+/*void Operator::PrintChildren(int indentLevel) {
     printf("%s",tokenString);
-}
+}*/
 
 CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r) 
   : Expr(Join(l->GetLocation(), r->GetLocation())) {
@@ -64,11 +66,11 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
 
 
-void CompoundExpr::PrintChildren(int indentLevel) {
+/*void CompoundExpr::PrintChildren(int indentLevel) {
    if (left) left->Print(indentLevel+1);
    op->Print(indentLevel+1);
    if (right) right->Print(indentLevel+1);
-}
+}*/
    
   
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -76,10 +78,10 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
-void ArrayAccess::PrintChildren(int indentLevel) {
+/*void ArrayAccess::PrintChildren(int indentLevel) {
     base->Print(indentLevel+1);
     subscript->Print(indentLevel+1, "(subscript) ");
-  }
+  }*/
      
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
   : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
@@ -90,10 +92,10 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 }
 
 
-void FieldAccess::PrintChildren(int indentLevel) {
+/*void FieldAccess::PrintChildren(int indentLevel) {
    if (base) base->Print(indentLevel+1);
    field->Print(indentLevel+1);
-}
+}*/
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
@@ -103,11 +105,11 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     (actuals=a)->SetParentAll(this);
 }
 
- void Call::PrintChildren(int indentLevel) {
+/* void Call::PrintChildren(int indentLevel) {
     if (base) base->Print(indentLevel+1);
     if (field) field->Print(indentLevel+1);
     if (actuals) actuals->PrintAll(indentLevel+1, "(actuals) ");
-  }
+  }*/
  
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
@@ -115,9 +117,9 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
   (cType=c)->SetParent(this);
 }
 
-void NewExpr::PrintChildren(int indentLevel) {	
+/*void NewExpr::PrintChildren(int indentLevel) {
     cType->Print(indentLevel+1);
-}
+}*/
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
     Assert(sz != NULL && et != NULL);
@@ -125,10 +127,10 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
     (elemType=et)->SetParent(this);
 }
 
-void NewArrayExpr::PrintChildren(int indentLevel) {
+/*void NewArrayExpr::PrintChildren(int indentLevel) {
     size->Print(indentLevel+1);
     elemType->Print(indentLevel+1);
-}
+}*/
 
 PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
 : Expr(loc) {
@@ -137,7 +139,7 @@ PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
     (optr=op)->SetParent(this);
 }
 
-void PostfixExpr::PrintChildren(int indentLevel) {
+/*void PostfixExpr::PrintChildren(int indentLevel) {
      lvalue->Print(indentLevel+1);
      optr->Print(indentLevel+1);
-}
+}*/

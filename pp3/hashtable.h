@@ -43,7 +43,7 @@ struct ltstr {
 };
 
 
-template <class Value> class Iterator; 
+template <class Value> class Iterator;
  
 template<class Value> class Hashtable {
 
