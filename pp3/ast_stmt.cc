@@ -6,7 +6,8 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 #include "ast_expr.h"
-
+#include "hashtable.h"
+#include "errors.h"
 
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
@@ -17,6 +18,28 @@ Program::Program(List<Decl*> *d) {
     decls->PrintAll(indentLevel+1);
     printf("\n");
 }*/
+
+void Program::CheckDeclConflict() {
+  if (decls)
+    {
+      Hashtable<Decl*> *sym_table  = new Hashtable<Decl*>;
+      for (int i = 0; i < decls->NumElements(); i++)
+        {
+         Decl *cur = decls->Nth(i);
+         Decl *prev;
+         char *name = cur->getID()->getName();
+         if ((prev = sym_table->Lookup(name)) != NULL)
+           {
+             ReportError::DeclConflict(cur, prev);
+           }
+         else
+           {
+             sym_table->Enter(name, cur);
+           }
+        }
+      delete sym_table;
+    }
+}
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     Assert(d != NULL && s != NULL);

@@ -19,11 +19,7 @@
 #include "parser.h"
 #include "errors.h"
 
-void yyerror(const char *msg);
-
-list<Hashtable<Value>*> *sym_table_list; // list of symbol tables
-list<Hashtable<Value>*>::iterator cur; // current symbol table
-
+void yyerror(const char *msg); // standard error-handling routine
 
 %}
 
@@ -64,9 +60,7 @@ list<Hashtable<Value>*>::iterator cur; // current symbol table
     List<NamedType*> *implements;
     List<Decl*> *declList;
     List<VarDecl*> *vardecls;
-    List<Stmt*> *stmts;
-    List<CaseStmt*> *casestmts;
-    List<Expr*> *exprs;    
+      
    
     StmtBlock *stmtblock;
     Stmt *stmt;
@@ -79,8 +73,12 @@ list<Hashtable<Value>*>::iterator cur; // current symbol table
     CaseStmt *casestmt;
     DefaultStmt *defaultstmt;
     PrintStmt *pntstmt;
+    List<Stmt*> *stmts;
+    List<CaseStmt*> *casestmts;
+    
     Expr *expr;
     Expr *optexpr;
+    List<Expr*> *exprs;
     Call *call;
     
     IntConstant *intconst;
@@ -198,7 +196,6 @@ list<Hashtable<Value>*>::iterator cur; // current symbol table
 %left     '*' '/' '%'
 %nonassoc '!' UMINUS T_Increment T_Decrement
 %nonassoc '[' '.'
-
  /* this solved the S/R conflict on Type -> Identifier 
     but there might be a better solution  */
 
@@ -228,27 +225,23 @@ Program   :    DeclList              {
                                        * it once you have other uses of @n*/
                                       $$ = new Program($1);
                                       // if no errors, advance to next phase
-                                      // if (ReportError::NumErrors() == 0)
-                                      //  $$->Print(0);
-                                      
-                                      // global symbol table
-                                      PushSymTable();
-                                	 }
+                                      if (ReportError::NumErrors() == 0)
+                                        //$$->Print(0);
+                                        $$->CheckDeclConflict();
+                                     }
           ;
 
 DeclList  :    DeclList Decl         { ($$ = $1)->Append($2); }
           |    Decl                  { ($$ = new List<Decl*>)->Append($1); }
           ;
 
-Decl      :    VarDecl             
+Decl      :    VarDecl              
           |    FnDecl                  
           |    ClassDecl
           |    InterfaceDecl
           ;
           
-VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1);
-                                       AddDecl($$, $2);
-                                     }     
+VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1); }     
           ;
         
 Type      :    T_Int                 { $$ = new Type("int"); }
@@ -265,44 +258,27 @@ NamedType :    T_Identifier          { $$ = new NamedType(new Identifier(@1, $1)
 ArrayType :    Type T_Dims           { $$ = new ArrayType(@1, $1); }
           ;
 
-FnDecl    :    Type T_Identifier     { AddDecl($<fndecl>$, $2); } 
-                    '('              { PushSymTable(); }
-                    Formals 
-                    ')'              { PopSymTable(); }  
-                    StmtBlock
-                                     { $$ = new FnDecl(new Identifier(@2, $2), $1, $6); 
-                                       $$->SetFunctionBody($9); 
-                                     }
-          |    T_Void T_Identifier   { AddDecl($<fndecl>$, $2); }
-                      '('            { PushSymTable(); }
-                      Formals 
-                      ')'            { PopSymTable(); }
-                      StmtBlock
-                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $6); 
-                                       $$->SetFunctionBody($9); }          
+FnDecl    :    Type T_Identifier '(' Formals ')' StmtBlock
+                                     { $$ = new FnDecl(new Identifier(@2, $2), $1, $4); 
+                                       $$->SetFunctionBody($6); }
+          |    T_Void T_Identifier '(' Formals ')' StmtBlock
+                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $4); 
+                                       $$->SetFunctionBody($6); }
           ;
 
 Formals   :    Variables  
           |                          { $$ = new List<VarDecl*>; }
           ;
           
-Variables :    Variables ',' Type T_Identifier 
-                                     { VarDecl *vardecl = new VarDecl(new Identifier(@4, $4), $3);
-                                       ($$ = $1)->Append(vardecl);
-                                       AddDecl(vardecl, $4); 
-                                     }
-          |    Type T_Identifier     { VarDecl *vardecl = new VarDecl(new Identifier(@2, $2), $1);
-                                       ($$ = new List<VarDecl*>)->Append(vardecl);
-                                       AddDecl(vardecl, $2);  
-                                     }
+Variables :    Variables ',' Type T_Identifier
+                                     { ($$ = $1)->Append(new VarDecl(new Identifier(@4, $4), $3)); }
+          |     Type T_Identifier    { ($$ = new List<VarDecl*>)->Append(new VarDecl(new Identifier(@2, $2), $1)); }
           ;
           
-ClassDecl :    T_Class T_Identifier  { AddDecl($<classdecl>$, $2); }
-                        Extend Impl 
-                                '{'  { PushSymTable(); } 
-                             Fields 
-                                '}'  { PopSymTable(); 
-                                       $$ = new ClassDecl(new Identifier(@2, $2), $4, $5, $8); }
+ClassDecl :    T_Class T_Identifier Extend Impl '{' Fields '}'              
+                                     { $$ = new ClassDecl(new Identifier(@2, $2), $3, $4, $6); }
+          |    T_Class T_Identifier Extend Impl '{' '}'
+                                     { $$ = new ClassDecl(new Identifier(@2, $2), $3, $4, new List<Decl*>); }                           
           ;
 
 Extend    :    T_Extends NamedType
@@ -321,44 +297,31 @@ Implements :   Implements ',' NamedType
            ;                      
 
 Fields     :   Fields Field          { ($$ = $1)->Append($2); }
-           |                         { $$ = new List<Decl*>;  }
+           |   Field                 { ($$ = new List<Decl*>)->Append($1);  }
            ;  
 
 Field      :   VarDecl 
            |   FnDecl
            ;
            
-InterfaceDecl : T_Interface T_Identifier { AddDecl($<interfacedecl>$, $2); } 
-                            '{'          { PushSymTable(); }
-                            Prototypes 
-                            '}'          { PopSymTable();
-                                           $$ = new InterfaceDecl(new Identifier(@2, $2), $6); }
+InterfaceDecl : T_Interface T_Identifier '{' Prototypes '}'
+                                     { $$ = new InterfaceDecl(new Identifier(@2, $2), $4); }
+              | T_Interface T_Identifier '{' '}'
+                                     { $$ = new InterfaceDecl(new Identifier(@2, $2), new List<Decl*>); }
               ;
               
 Prototypes : Prototypes Prototype    { ($$ = $1)->Append($2); }
-           |                         { $$ = new List<Decl*>; }
+           | Prototype               { ($$ = new List<Decl*>)->Append($1); }
            ;
             
-Prototype  : Type T_Identifier '('   { PushSymTable(); }
-                                Formals 
-                               ')'   { PopSymTable(); }
-                               ';'
-                                     { $$ = new FnDecl(new Identifier(@2, $2), $1, $5); }
-           | T_Void T_Identifier '(' { PushSymTable(); }
-                                 Formals 
-                                 ')' { PopSymTable(); }
-                                 ';'
-                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $5); }
+Prototype  : Type T_Identifier '(' Formals ')' ';'
+                                     { $$ = new FnDecl(new Identifier(@2, $2), $1, $4); }
+           | T_Void T_Identifier '(' Formals ')' ';'
+                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $4); }
            ;                
            
-StmtBlock  : '{'                     { PushSymTable(); }
-              VarDecls Stmts 
-              '}'                    { PopSymTable(); }
-                                     { $$ = new StmtBlock($3, $4); }
-           | '{'                     { PushSymTable(); }
-              VarDecls          
-              '}'                    { PopSymTable(); }
-                                     { $$ = new StmtBlock($3, new List<Stmt*>); }
+StmtBlock  : '{' VarDecls Stmts '}'  { $$ = new StmtBlock($2, $3); }
+           | '{' VarDecls '}'        { $$ = new StmtBlock($2, new List<Stmt*>); }
            ;
            
 VarDecls   : VarDecls VarDecl        { ($$ = $1)->Append($2);    }
@@ -370,6 +333,7 @@ Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
            ;
            
 Stmt       : OptExpr ';'  
+       //    | error ';'               // introduce a segmentation fault
            | IfStmt
            | WhileStmt
            | ForStmt
@@ -402,12 +366,8 @@ ReturnStmt : T_Return OptExpr ';'    { $$ = new ReturnStmt(@1, $2); }
 BreakStmt  : T_Break ';'             { $$ = new BreakStmt(@1); }                            
            ;
            
-SwitchStmt : T_Switch '(' Expr ')' '{' 
-                                     { PushSymTable(); }
-                                   Cases Default 
-                                   '}'
-                                     { PopSymTable(); }
-                                   { $$ = new SwitchStmt($3, $7, $8); }
+SwitchStmt : T_Switch '(' Expr ')' '{' Cases Default '}'
+                                     { $$ = new SwitchStmt($3, $6, $7); }
            ;
 
 Cases      : Cases Case              { ($$ = $1)->Append($2); }
@@ -563,30 +523,4 @@ void InitParser()
 {
    PrintDebug("parser", "Initializing parser");
    yydebug = false;
-   
-   // init stack to keep pointers to symbol table
-   sym_table_list = new list<Hashtable<Value>*>;
-   cur = sym_table_list->begin();
-}
-
-void PushSymTable()
-{
-  Hashtable<Value> *sym_table = new Hashtable<Value>;
-  sym_table_list->push_back(sym_table);
-  cur++;
-}
-
-void PopSymTable()
-{
-  sym_table_list->pop_back();
-  cur--;
-}
-
-void AddDecl(Decl *decl, const char *id)
-{
- Decl *prev; 
- if ((prev = (*cur)->Lookup(id)) != NULL)
-   ReportError::DeclConflict(decl, prev);
- else
-   (*cur)->Enter(id, decl);
 }

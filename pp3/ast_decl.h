@@ -25,6 +25,8 @@ class Decl : public Node
   
   public:
     Decl(Identifier *name);
+    Identifier *getID() { return id; }
+    friend ostream& operator<<(ostream &out, Decl *decl) { return out << decl->id; }
 };
 
 class VarDecl : public Decl 

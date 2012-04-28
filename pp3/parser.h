@@ -17,13 +17,6 @@
 #include "ast_decl.h"
 #include "ast_expr.h"
 #include "ast_stmt.h"
-#include "hashtable.h"
-#include <list>
-
-using std::list;
-using std::iterator;
-
-#define Value Decl*
 
  
 // Next, we want to get the exported defines for the token codes and
@@ -42,8 +35,5 @@ using std::iterator;
 int yyparse();              // Defined in the generated y.tab.c file
 void InitParser();          // Defined in parser.y
 
-void PushSymTable();
-void PopSymTable();
-void AddDecl(Decl *decl, const char *id);
 
 #endif

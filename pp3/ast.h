@@ -58,6 +58,7 @@ class Identifier : public Node
     
   public:
     Identifier(yyltype loc, const char *name);
+    char *getName() { return name; }
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
 
