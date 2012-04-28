@@ -10,6 +10,7 @@ void main()
        int c;
        {
            string c;
+           double c;
            Unknown b;
        }
     }

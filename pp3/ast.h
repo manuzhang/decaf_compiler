@@ -33,6 +33,7 @@
 #include <stdlib.h>   // for NULL
 #include "location.h"
 #include <iostream>
+#include "list.h"
 using namespace std;
 
 class Node  {
@@ -48,6 +49,8 @@ class Node  {
     yyltype *GetLocation()   { return location; }
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
+
+    virtual void CheckDeclConflict() {}
 };
    
 

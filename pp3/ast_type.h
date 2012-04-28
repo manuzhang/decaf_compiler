@@ -23,9 +23,6 @@ class Type : public Node
 
     Type(yyltype loc) : Node(loc) {}
     Type(const char *str);
-    
-    const char *GetPrintNameForNode() { return "Type"; }
-    void PrintChildren(int indentLevel);
 };
 
 class NamedType : public Type 
@@ -35,9 +32,6 @@ class NamedType : public Type
     
   public:
     NamedType(Identifier *i);
-    
-    const char *GetPrintNameForNode() { return "NamedType"; }
-    void PrintChildren(int indentLevel);
 };
 
 class ArrayType : public Type 
@@ -47,9 +41,6 @@ class ArrayType : public Type
 
   public:
     ArrayType(yyltype loc, Type *elemType);
-    
-    const char *GetPrintNameForNode() { return "ArrayType"; }
-    void PrintChildren(int indentLevel);
 };
 
 

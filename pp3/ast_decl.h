@@ -11,6 +11,7 @@
 
 #include "ast.h"
 #include "list.h"
+#include "hashtable.h"
 
 class Type;
 class NamedType;
@@ -36,8 +37,6 @@ class VarDecl : public Decl
     
   public:
     VarDecl(Identifier *name, Type *type);
-   // const char *GetPrintNameForNode() { return "VarDecl"; }
-   // void PrintChildren(int indentLevel);
 };
 
 
@@ -51,19 +50,19 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
-  //  const char *GetPrintNameForNode() { return "ClassDecl"; }
-  //  void PrintChildren(int indentLevel);
+    void CheckDeclConflict();
+    Hashtable<Decl*> *sym_table;
 };
 
 class InterfaceDecl : public Decl 
 {
   protected:
     List<Decl*> *members;
-    
+
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
-  //  const char *GetPrintNameForNode() { return "InterfaceDecl"; }
-  //  void PrintChildren(int indentLevel);
+    void CheckDeclConflict();
+    Hashtable<Decl*> *sym_table;
 };
 
 class FnDecl : public Decl 
@@ -76,8 +75,8 @@ class FnDecl : public Decl
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
-  //  const char *GetPrintNameForNode() { return "FnDecl"; }
-  //  void PrintChildren(int indentLevel);
+    void CheckDeclConflict();
+    Hashtable<Decl*> *sym_table;
 };
 
 

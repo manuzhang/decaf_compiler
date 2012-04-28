@@ -15,13 +15,12 @@
 
 #include "ast.h"
 #include "list.h"
+#include "hashtable.h"
 
 class Decl;
 class VarDecl;
 class Expr;
 class IntConstant;
-
-
 
 class Program : public Node
 {
@@ -30,9 +29,8 @@ class Program : public Node
 
   public:
      Program(List<Decl*> *declList);
-     const char *GetPrintNameForNode() { return "Program"; }
-     void PrintChildren(int indentLevel);
      void CheckDeclConflict();
+     Hashtable<Decl*> *sym_table; // global symbol table
 };
 
 class Stmt : public Node
@@ -40,6 +38,7 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
+     void CheckDeclConflict() {}
 };
 
 class StmtBlock : public Stmt 
@@ -47,11 +46,11 @@ class StmtBlock : public Stmt
   protected:
     List<VarDecl*> *decls;
     List<Stmt*> *stmts;
-    
+
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
-    const char *GetPrintNameForNode() { return "StmtBlock"; }
-    void PrintChildren(int indentLevel);
+    void CheckDeclConflict();
+    Hashtable<Decl*> *sym_table;
 };
 
   
@@ -60,9 +59,10 @@ class ConditionalStmt : public Stmt
   protected:
     Expr *test;
     Stmt *body;
-  
+
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
+    void CheckDeclConflict();
 };
 
 class LoopStmt : public ConditionalStmt 
@@ -79,17 +79,13 @@ class ForStmt : public LoopStmt
   
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
-    const char *GetPrintNameForNode() { return "ForStmt"; }
-    void PrintChildren(int indentLevel);
 };
 
 class WhileStmt : public LoopStmt 
 {
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
-    const char *GetPrintNameForNode() { return "WhileStmt"; }
-    void PrintChildren(int indentLevel);
-};
+ };
 
 class IfStmt : public ConditionalStmt 
 {
@@ -98,15 +94,13 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
-    const char *GetPrintNameForNode() { return "IfStmt"; }
-    void PrintChildren(int indentLevel);
+    void CheckDeclConflict();
 };
 
 class BreakStmt : public Stmt 
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
-    const char *GetPrintNameForNode() { return "BreakStmt"; }
 };
 
 class ReturnStmt : public Stmt  
@@ -116,8 +110,6 @@ class ReturnStmt : public Stmt
   
   public:
     ReturnStmt(yyltype loc, Expr *expr);
-    const char *GetPrintNameForNode() { return "ReturnStmt"; }
-    void PrintChildren(int indentLevel);
 };
 
 class PrintStmt : public Stmt
@@ -127,8 +119,6 @@ class PrintStmt : public Stmt
     
   public:
     PrintStmt(List<Expr*> *arguments);
-    const char *GetPrintNameForNode() { return "PrintStmt"; }
-    void PrintChildren(int indentLevel);
 };
 
 class CaseStmt : public Stmt
@@ -139,8 +129,7 @@ class CaseStmt : public Stmt
 
   public:
     CaseStmt(IntConstant *ic, List<Stmt*> *sts);
-    const char *GetPrintNameForNode() { return "Case"; }
-    void PrintChildren(int indentLevel);
+    void CheckDeclConflict();
 };
 
 class DefaultStmt : public Stmt
@@ -150,8 +139,6 @@ class DefaultStmt : public Stmt
 
   public:
     DefaultStmt(List<Stmt*> *sts);
-    const char *GetPrintNameForNode() { return "Default"; }
-    void PrintChildren(int indentLevel);
 };
 
 class SwitchStmt : public Stmt
@@ -163,8 +150,7 @@ class SwitchStmt : public Stmt
 
   public:
     SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
-    const char *GetPrintNameForNode() { return "SwitchStmt"; }
-    void PrintChildren(int indentLevel);
+    void CheckDeclConflict();
 };
 
 #endif
