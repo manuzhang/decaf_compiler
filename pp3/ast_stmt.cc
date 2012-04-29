@@ -8,41 +8,33 @@
 #include "ast_expr.h"
 #include "errors.h"
 
+Hashtable<Decl*> *Program::sym_table  = new Hashtable<Decl*>;
+
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
-    sym_table  = new Hashtable<Decl*>;
 }
 
 
 void Program::CheckDeclError() {
-  // declarations of functions and variables
-  // their types need be checked against the symbol table
-  // after all the class declarations have been added
-  // since their type signatures may contain NamedType
-  List<Decl*> *nonclass = new List<Decl*>;
-  if (decls)
+  if (this->decls)
     {
-      for (int i = 0; i < decls->NumElements(); i++)
+      // check if identifiers in the global scope are unique
+      for (int i = 0; i < this->decls->NumElements(); i++)
         {
          Decl *cur = decls->Nth(i);
          Decl *prev;
          char *name = cur->GetID()->GetName();
          if ((prev = sym_table->Lookup(name)) != NULL)
-           {
-             ReportError::DeclConflict(cur, prev);
-           }
+           ReportError::DeclConflict(cur, prev);
          else
-           {
-             sym_table->Enter(name, cur);
-             if (typeid(cur) != typeid(ClassDecl*))
-               nonclass->Append(cur);
-             else
-               cur->CheckDeclError();
-           }
+           sym_table->Enter(name, cur);
         }
-      for (int i = 0; i < nonclass->NumElements(); i++)
-         nonclass->Nth(i)->CheckDeclError();
+      // check NamedType errors in vardecls
+      // check classdecl errors in class scope
+      // check fndecl errors in local scope (formals and body)
+      for (int i = 0; i < this->decls->NumElements(); i++)
+         this->decls->Nth(i)->CheckDeclError();
     }
 
 }
@@ -69,6 +61,7 @@ void StmtBlock::CheckDeclError() {
          else
            {
              sym_table->Enter(name, cur);
+             cur->CheckDeclError();
            }
         }
     }

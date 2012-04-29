@@ -34,7 +34,9 @@
 #include "location.h"
 #include <iostream>
 #include "list.h"
+
 using namespace std;
+
 
 class Node  {
   protected:

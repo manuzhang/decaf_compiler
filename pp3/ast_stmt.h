@@ -30,7 +30,7 @@ class Program : public Node
   public:
      Program(List<Decl*> *declList);
      void CheckDeclError();
-     Hashtable<Decl*> *sym_table; // global symbol table
+     static Hashtable<Decl*> *sym_table; // global symbol table
 };
 
 class Stmt : public Node
@@ -38,7 +38,7 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
-     void CheckDeclError() {}
+     virtual void CheckDeclError() {}
 };
 
 class StmtBlock : public Stmt 
@@ -152,5 +152,6 @@ class SwitchStmt : public Stmt
     SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
     void CheckDeclError();
 };
+
 
 #endif

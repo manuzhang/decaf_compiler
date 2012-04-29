@@ -21,10 +21,13 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
 }
 
 bool VarDecl::HasSameTypeSig(VarDecl *vd) {
-  return type->HasSameType(vd->GetType());
+  return this->type->HasSameType(vd->GetType());
 }
 
+
+// check NamedType errors
 void VarDecl::CheckDeclError() {
+  this->type->CheckTypeError();
 }
 
 
@@ -58,14 +61,12 @@ void ClassDecl::CheckDeclError() {
         }
     }
 
-  // to look for base class and interface in the global symbol table
-  Program *parent = dynamic_cast<Program*>(GetParent());
 
   NamedType *ex = this->extends;
   while (ex)
     {
       char *name = ex->GetID()->GetName();
-      Node *node = parent->sym_table->Lookup(name);
+      Node *node = Program::sym_table->Lookup(name);
       if (node == NULL)
         {
           ReportError::IdentifierNotDeclared(ex->GetID(), LookingForClass);
@@ -73,67 +74,74 @@ void ClassDecl::CheckDeclError() {
         }
       else
         {
-	  ClassDecl *base = dynamic_cast<ClassDecl*>(node);
-	  List<Decl*> *base_members = base->members;
-	  // check the declaration of base class against derived class symbol table
-	  if (base_members)
-	    {
-	      for (int i = 0; i < base_members->NumElements(); i++)
-		{
-		  Decl *cur = base_members->Nth(i);
-		  Decl *prev;
-		  char *name = cur->GetID()->GetName();
-		  if ((prev = sym_table->Lookup(name)) != NULL)
-		    {
-		      if (typeid(cur) == typeid(VarDecl*) || typeid(cur) != typeid(prev))
-			ReportError::DeclConflict(cur, prev);
-		      else if (typeid(cur) == typeid(FnDecl*) && typeid(cur) == typeid(prev))
-			{
-			  FnDecl *fdcur = dynamic_cast<FnDecl*>(cur);
-			  FnDecl *fdprev = dynamic_cast<FnDecl*>(prev);
-			  if (!fdcur->HasSameTypeSig(fdprev))
-			    ReportError::OverrideMismatch(fdcur);
-			}
-		    }
-		}
-	    }
-	  ex = base->GetExtends();
-	}
-
+          ClassDecl *base = dynamic_cast<ClassDecl*>(node);
+          List<Decl*> *base_members = base->members;
+          // check the declaration of base class against derived class symbol table
+          if (base_members)
+            {
+              for (int i = 0; i < base_members->NumElements(); i++)
+                {
+                  Decl *cur = base_members->Nth(i);
+                  Decl *prev;
+                  char *name = cur->GetID()->GetName();
+                  if ((prev = this->sym_table->Lookup(name)) != NULL)
+                    {
+                      if (typeid(*cur) == typeid(VarDecl) || typeid(*cur) != typeid(*prev))
+                        ReportError::DeclConflict(prev, cur);
+                      else if (typeid(*cur) == typeid(FnDecl) && typeid(*cur) == typeid(*prev))
+                        {
+                          FnDecl *fdcur = dynamic_cast<FnDecl*>(cur);
+                          FnDecl *fdprev = dynamic_cast<FnDecl*>(prev);
+                          if (!fdcur->HasSameTypeSig(fdprev))
+                            ReportError::OverrideMismatch(fdprev);
+                        }
+                    }
+                  else // methods that override implemented methods may come from base class
+                    {
+                      this->sym_table->Enter(name, cur);
+                    }
+                }
+            }
+          ex = base->GetExtends();
+        }
     }
 
   if (this->implements)
-    {
-      for (int i = 0; i < this->implements->NumElements(); i++)
-        {
-          Identifier *id = this->implements->Nth(i)->GetID();
-          Node *node = parent->sym_table->Lookup(id->GetName());
-          if (node == NULL)
-            {
-              ReportError::IdentifierNotDeclared(id, LookingForInterface);
-            }
-          else
-            {
-              InterfaceDecl *ifd = dynamic_cast<InterfaceDecl*>(node);
-	      List<Decl*> *members = ifd->GetMembers();
-	      for (int j = 0; j < members->NumElements(); j++)
-	         {
-                   FnDecl *cur = dynamic_cast<FnDecl*>(members->Nth(i));
-	           Decl *prev;
-	           char *name = cur->GetID()->GetName();
-	           if ((prev = sym_table->Lookup(name)) != NULL)
-	             {
-	               if (typeid(prev) != typeid(FnDecl*))
-		         ReportError::DeclConflict(cur, prev);
-		       else if (!cur->HasSameTypeSig(dynamic_cast<FnDecl*>(prev)))
-		         ReportError::OverrideMismatch(cur);
-		     }
-	           else
-		     ReportError::InterfaceNotImplemented(this, new NamedType(ifd->GetID()));
-		 }
-	    }
-	}
-    }
+     {
+       for (int i = 0; i < this->implements->NumElements(); i++)
+         {
+           Identifier *id = this->implements->Nth(i)->GetID();
+           Node *node = Program::sym_table->Lookup(id->GetName());
+           if (node == NULL)
+             {
+               ReportError::IdentifierNotDeclared(id, LookingForInterface);
+             }
+           else
+             {
+               InterfaceDecl *ifd = dynamic_cast<InterfaceDecl*>(node);
+               List<Decl*> *members = ifd->GetMembers();
+               for (int j = 0; j < members->NumElements(); j++)
+                  {
+                    FnDecl *cur = dynamic_cast<FnDecl*>(members->Nth(i));
+                    Decl *prev;
+                    char *name = cur->GetID()->GetName();
+                    if ((prev = sym_table->Lookup(name)) != NULL)
+                      {
+                        if (typeid(*prev) != typeid(FnDecl))
+                          ReportError::DeclConflict(cur, prev);
+                        else if (!cur->HasSameTypeSig(dynamic_cast<FnDecl*>(prev)))
+                          ReportError::OverrideMismatch(prev);
+                      }
+                    else
+                      ReportError::InterfaceNotImplemented(this, new NamedType(ifd->GetID()));
+                  }
+             }
+         }
+     }
+
+
+
+
 }
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
@@ -185,7 +193,7 @@ bool FnDecl::HasSameTypeSig(FnDecl *fd) {
 		{
 		  VarDecl *vd1 = f1->Nth(i);
 		  VarDecl *vd2 = f2->Nth(i);
-		  if (vd1->HasSameTypeSig(vd2))
+		  if (!vd1->HasSameTypeSig(vd2))
 		    return false;
 		}
 	      return true;
@@ -201,7 +209,7 @@ void FnDecl::CheckDeclError() {
     {
       for (int i = 0; i < formals->NumElements(); i++)
 	{
-	  Decl *cur = formals->Nth(i);
+	  VarDecl *cur = formals->Nth(i);
 	  Decl *prev;
 	  char *name = cur->GetID()->GetName();
 	  if ((prev = sym_table->Lookup(name)) != NULL)
@@ -211,6 +219,7 @@ void FnDecl::CheckDeclError() {
 	  else
 	    {
 	      sym_table->Enter(name, cur);
+	      cur->CheckDeclError();
 	    }
 	}
     }

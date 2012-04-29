@@ -28,7 +28,7 @@ class Decl : public Node
     Decl(Identifier *name);
     Identifier *GetID() { return id; }
     friend ostream& operator<<(ostream &out, Decl *decl) { return out << decl->id; }
-    virtual void CheckDeclError() = 0;
+    virtual void CheckDeclError() {}
 };
 
 class VarDecl : public Decl 

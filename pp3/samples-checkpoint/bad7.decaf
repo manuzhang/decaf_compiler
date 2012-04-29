@@ -9,7 +9,6 @@ void main()
      while (true) {
        int c;
        {
-           string c;
            double c;
            Unknown b;
        }

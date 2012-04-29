@@ -6,6 +6,8 @@
 #include <string.h>
 #include "ast_type.h"
 #include "ast_decl.h"
+#include "ast_stmt.h"
+#include "errors.h"
 
 /* Class constants
  * ---------------
@@ -28,25 +30,41 @@ Type::Type(const char *n) {
     typeName = strdup(n);
 }
 
+bool Type::HasSameType(Type *t) {
+  char *typeName2 = t->GetTypeName();
+  if (typeName && typeName2)
+    return !strcmp(typeName, typeName2);
+  else
+    return false;
+}
+
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     Assert(i != NULL);
     (id=i)->SetParent(this);
 } 
+
+bool NamedType::HasSameType(Type *nt) {
+  return !strcmp(id->GetName(), dynamic_cast<NamedType*>(nt)->GetID()->GetName());
+}
+
+void NamedType::CheckTypeError() {
+  if (Program::sym_table)
+    {
+      char *name = id->GetName();
+      if (Program::sym_table->Lookup(name) == NULL)
+        ReportError::IdentifierNotDeclared(id, LookingForType);
+    }
+}
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     Assert(et != NULL);
     (elemType=et)->SetParent(this);
 }
 
-
-bool Type::HasSameType(Type *t) {
-  return !strcmp(typeName, t->GetTypeName());
+bool ArrayType::HasSameType(Type *at) {
+  return elemType->HasSameType(dynamic_cast<ArrayType*>(at)->GetElemType());
 }
 
-bool NamedType::HasSameType(NamedType *nt) {
-  return !strcmp(id->GetName(), nt->GetID()->GetName());
-}
-
-bool ArrayType::HasSameType(ArrayType *at) {
-  return elemType->HasSameType(at->GetElemType());
+void ArrayType::CheckTypeError() {
+  this->elemType->CheckTypeError();
 }
