@@ -11,6 +11,7 @@
 
 #include "ast.h"
 #include "list.h"
+#include <string>
 
 class Type : public Node 
 {
@@ -23,6 +24,8 @@ class Type : public Node
 
     Type(yyltype loc) : Node(loc) {}
     Type(const char *str);
+    char *GetTypeName() { return typeName; }
+    virtual bool HasSameType(Type *t);
 };
 
 class NamedType : public Type 
@@ -32,6 +35,8 @@ class NamedType : public Type
     
   public:
     NamedType(Identifier *i);
+    Identifier *GetID() { return id; }
+    bool HasSameType(NamedType *nt);
 };
 
 class ArrayType : public Type 
@@ -41,7 +46,8 @@ class ArrayType : public Type
 
   public:
     ArrayType(yyltype loc, Type *elemType);
+    Type *GetElemType() { return elemType; }
+    bool HasSameType(ArrayType *at);
 };
-
 
 #endif

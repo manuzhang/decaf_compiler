@@ -29,7 +29,7 @@ class Program : public Node
 
   public:
      Program(List<Decl*> *declList);
-     void CheckDeclConflict();
+     void CheckDeclError();
      Hashtable<Decl*> *sym_table; // global symbol table
 };
 
@@ -38,7 +38,7 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
-     void CheckDeclConflict() {}
+     void CheckDeclError() {}
 };
 
 class StmtBlock : public Stmt 
@@ -49,7 +49,7 @@ class StmtBlock : public Stmt
 
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
-    void CheckDeclConflict();
+    void CheckDeclError();
     Hashtable<Decl*> *sym_table;
 };
 
@@ -62,7 +62,7 @@ class ConditionalStmt : public Stmt
 
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
-    void CheckDeclConflict();
+    void CheckDeclError();
 };
 
 class LoopStmt : public ConditionalStmt 
@@ -94,7 +94,7 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
-    void CheckDeclConflict();
+    void CheckDeclError();
 };
 
 class BreakStmt : public Stmt 
@@ -129,7 +129,7 @@ class CaseStmt : public Stmt
 
   public:
     CaseStmt(IntConstant *ic, List<Stmt*> *sts);
-    void CheckDeclConflict();
+    void CheckDeclError();
 };
 
 class DefaultStmt : public Stmt
@@ -150,7 +150,7 @@ class SwitchStmt : public Stmt
 
   public:
     SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
-    void CheckDeclConflict();
+    void CheckDeclError();
 };
 
 #endif

@@ -15,14 +15,19 @@ Program::Program(List<Decl*> *d) {
 }
 
 
-void Program::CheckDeclConflict() {
+void Program::CheckDeclError() {
+  // declarations of functions and variables
+  // their types need be checked against the symbol table
+  // after all the class declarations have been added
+  // since their type signatures may contain NamedType
+  List<Decl*> *nonclass = new List<Decl*>;
   if (decls)
     {
       for (int i = 0; i < decls->NumElements(); i++)
         {
          Decl *cur = decls->Nth(i);
          Decl *prev;
-         char *name = cur->getID()->getName();
+         char *name = cur->GetID()->GetName();
          if ((prev = sym_table->Lookup(name)) != NULL)
            {
              ReportError::DeclConflict(cur, prev);
@@ -30,10 +35,16 @@ void Program::CheckDeclConflict() {
          else
            {
              sym_table->Enter(name, cur);
-             cur->CheckDeclConflict();
+             if (typeid(cur) != typeid(ClassDecl*))
+               nonclass->Append(cur);
+             else
+               cur->CheckDeclError();
            }
         }
+      for (int i = 0; i < nonclass->NumElements(); i++)
+         nonclass->Nth(i)->CheckDeclError();
     }
+
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
@@ -43,14 +54,14 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     sym_table  = new Hashtable<Decl*>;
 }
 
-void StmtBlock::CheckDeclConflict() {
+void StmtBlock::CheckDeclError() {
   if (decls)
     {
       for (int i = 0; i < decls->NumElements(); i++)
         {
          Decl *cur = decls->Nth(i);
          Decl *prev;
-         char *name = cur->getID()->getName();
+         char *name = cur->GetID()->GetName();
          if ((prev = sym_table->Lookup(name)) != NULL)
            {
              ReportError::DeclConflict(cur, prev);
@@ -66,7 +77,7 @@ void StmtBlock::CheckDeclConflict() {
       for (int i = 0; i < stmts->NumElements(); i++)
         {
           Stmt *stmt = stmts->Nth(i);
-          stmt->CheckDeclConflict();
+          stmt->CheckDeclError();
         }
     }
 }
@@ -77,9 +88,9 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     (body=b)->SetParent(this);
 }
 
-void ConditionalStmt::CheckDeclConflict() {
+void ConditionalStmt::CheckDeclError() {
   if (body)
-    body->CheckDeclConflict();
+    body->CheckDeclError();
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
@@ -95,10 +106,10 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     if (elseBody) elseBody->SetParent(this);
 }
 
-void IfStmt::CheckDeclConflict() {
-  ConditionalStmt::CheckDeclConflict();
+void IfStmt::CheckDeclError() {
+  ConditionalStmt::CheckDeclError();
   if (elseBody)
-    elseBody->CheckDeclConflict();
+    elseBody->CheckDeclError();
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
@@ -117,13 +128,13 @@ CaseStmt::CaseStmt(IntConstant *ic, List<Stmt*> *sts) {
     (stmts=sts)->SetParentAll(this);
 }
 
-void CaseStmt::CheckDeclConflict() {
+void CaseStmt::CheckDeclError() {
   if (stmts)
     {
       for (int i = 0; i < stmts->NumElements(); i++)
         {
           Stmt *stmt = stmts->Nth(i);
-          stmt->CheckDeclConflict();
+          stmt->CheckDeclError();
         }
     }
 }
@@ -140,13 +151,13 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
     if (ds) (defaults=ds)->SetParent(this);
 }
 
-void SwitchStmt::CheckDeclConflict() {
+void SwitchStmt::CheckDeclError() {
   if (cases)
     {
       for (int i = 0; i < cases->NumElements(); i++)
         {
           CaseStmt *stmt = cases->Nth(i);
-          stmt->CheckDeclConflict();
+          stmt->CheckDeclError();
         }
     }
 }

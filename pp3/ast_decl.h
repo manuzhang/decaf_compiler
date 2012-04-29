@@ -26,8 +26,9 @@ class Decl : public Node
   
   public:
     Decl(Identifier *name);
-    Identifier *getID() { return id; }
+    Identifier *GetID() { return id; }
     friend ostream& operator<<(ostream &out, Decl *decl) { return out << decl->id; }
+    virtual void CheckDeclError() = 0;
 };
 
 class VarDecl : public Decl 
@@ -37,6 +38,9 @@ class VarDecl : public Decl
     
   public:
     VarDecl(Identifier *name, Type *type);
+    Type *GetType() { return type; }
+    bool HasSameTypeSig(VarDecl *vd);
+    void CheckDeclError();
 };
 
 
@@ -50,7 +54,8 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
-    void CheckDeclConflict();
+    NamedType *GetExtends() { return extends; }
+    void CheckDeclError();
     Hashtable<Decl*> *sym_table;
 };
 
@@ -61,7 +66,8 @@ class InterfaceDecl : public Decl
 
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
-    void CheckDeclConflict();
+    void CheckDeclError();
+    List<Decl*> *GetMembers() { return members; }
     Hashtable<Decl*> *sym_table;
 };
 
@@ -75,7 +81,10 @@ class FnDecl : public Decl
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
-    void CheckDeclConflict();
+    void CheckDeclError();
+    Type *GetReturnType() { return returnType; }
+    List<VarDecl*> *GetFormals() { return formals; }
+    bool HasSameTypeSig(FnDecl *fd);
     Hashtable<Decl*> *sym_table;
 };
 
