@@ -4,10 +4,13 @@
  */
 
 #include <string.h>
+
+#include <typeinfo>
+
 #include "ast_expr.h"
 #include "ast_type.h"
 #include "ast_decl.h"
-
+#include "errors.h"
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -48,6 +51,15 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
   
+void ArithmeticExpr::CheckSemantics() {
+
+  CheckOperandsCompatibility();
+}
+
+void ArithmeticExpr::CheckOperandsCompatibility() {
+
+}
+
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
@@ -61,12 +73,47 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 
+void FieldAccess::CheckSemantics() {
+  field->CheckIdDecl(LookingForVariable);
+}
+
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
     base = b;
     if (base) base->SetParent(this);
     (field=f)->SetParent(this);
     (actuals=a)->SetParentAll(this);
+}
+
+void Call::CheckSemantics() {
+  if (base && typeid(*base) == typeid(FieldAccess))
+    {
+      // check whether base is declared
+      Identifier *id = dynamic_cast<FieldAccess*>(base)->GetField();
+      Decl *id_decl = id->CheckIdDecl(LookingForClass);
+
+      // check whether the field is a member function of base
+      if (id_decl != NULL)
+        if (typeid(*id_decl) == typeid(VarDecl))
+           {
+            char *name = dynamic_cast<VarDecl*>(id_decl)->GetType()->GetTypeName();
+            Decl *decl;
+            if ((decl = Program::sym_table->Lookup(name)) != NULL) // fetch base symbol table
+              {
+                if (typeid(*decl) == typeid(ClassDecl))
+                  this->field->CheckIdDecl(dynamic_cast<ClassDecl*>(decl)->GetSymTable(),
+                                           this->field->GetName(),
+                                            LookingForFunction);
+              }
+            else
+                  ReportError::FieldNotFoundInBase(this->field, new NamedType(id));
+           }
+    }
+  else
+    {
+      // no base, just check whether the field is declared
+      this->field->CheckIdDecl(LookingForFunction);
+    }
 }
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 

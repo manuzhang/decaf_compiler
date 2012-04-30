@@ -16,29 +16,29 @@ Program::Program(List<Decl*> *d) {
 }
 
 void Program::CheckSemantics() {
-  CheckDeclError();
+  for (int i = 0; i < this->decls->NumElements(); i++)
+     this->decls->Nth(i)->CheckSemantics();
 }
 
 void Program::CheckDeclError() {
   if (this->decls)
-    {
-      // check if identifiers in the global scope are unique
-      for (int i = 0; i < this->decls->NumElements(); i++)
-        {
-         Decl *cur = decls->Nth(i);
-         Decl *prev;
-         char *name = cur->GetID()->GetName();
-         if ((prev = sym_table->Lookup(name)) != NULL)
-           ReportError::DeclConflict(cur, prev);
-         else
-           sym_table->Enter(name, cur);
-        }
-      // check NamedType errors in vardecls
-      // check classdecl errors in class scope
-      // check fndecl errors in local scope (formals and body)
-      for (int i = 0; i < this->decls->NumElements(); i++)
-         this->decls->Nth(i)->CheckDeclError();
-    }
+     {
+       // check if identifiers in the global scope are unique
+       for (int i = 0; i < this->decls->NumElements(); i++)
+         {
+          Decl *cur = decls->Nth(i);
+          Decl *prev;
+          char *name = cur->GetID()->GetName();
+          if ((prev = sym_table->Lookup(name)) != NULL)
+            ReportError::DeclConflict(cur, prev);
+          else
+            sym_table->Enter(name, cur);
+
+         }
+       for (int i = 0; i < this->decls->NumElements(); i++)
+          this->decls->Nth(i)->CheckDeclError();
+       // all the declarations should be added to hashtables of their scopes
+     }
 
 }
 
@@ -50,7 +50,14 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
 }
 
 void StmtBlock::CheckSemantics() {
-  CheckDeclError();
+  if (stmts)
+    {
+      for (int i = 0; i < stmts->NumElements(); i++)
+        {
+          Stmt *stmt = stmts->Nth(i);
+          stmt->CheckSemantics();
+        }
+    }
 }
 
 void StmtBlock::CheckDeclError() {
@@ -58,7 +65,7 @@ void StmtBlock::CheckDeclError() {
     {
       for (int i = 0; i < decls->NumElements(); i++)
         {
-         Decl *cur = decls->Nth(i);
+         VarDecl *cur = decls->Nth(i);
          Decl *prev;
          char *name = cur->GetID()->GetName();
          if ((prev = sym_table->Lookup(name)) != NULL)
@@ -89,7 +96,8 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 }
 
 void ConditionalStmt::CheckSemantics() {
-  CheckDeclError();
+  if (body)
+    body->CheckSemantics();
 }
 
 void ConditionalStmt::CheckDeclError() {
@@ -110,14 +118,16 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     if (elseBody) elseBody->SetParent(this);
 }
 
-void IfStmt::CheckSemantics() {
-  CheckDeclError();
-}
-
 void IfStmt::CheckDeclError() {
   ConditionalStmt::CheckDeclError();
   if (elseBody)
     elseBody->CheckDeclError();
+}
+
+void IfStmt::CheckSemantics() {
+  ConditionalStmt::CheckSemantics();
+  if (elseBody)
+    elseBody->CheckSemantics();
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
@@ -131,16 +141,27 @@ PrintStmt::PrintStmt(List<Expr*> *a) {
     (args=a)->SetParentAll(this);
 }
 
-CaseStmt::CaseStmt(IntConstant *ic, List<Stmt*> *sts) {
+CaseStmt::CaseStmt(IntConstant *ic, List<Stmt*> *sts)
+: DefaultStmt(sts) {
     (intconst=ic)->SetParent(this);
-    (stmts=sts)->SetParentAll(this);
 }
 
-void CaseStmt::CheckSemantics() {
-  CheckDeclError();
+DefaultStmt::DefaultStmt(List<Stmt*> *sts) {
+    if (sts) (stmts=sts)->SetParentAll(this);
 }
 
-void CaseStmt::CheckDeclError() {
+void DefaultStmt::CheckSemantics() {
+  if (stmts)
+    {
+      for (int i = 0; i < stmts->NumElements(); i++)
+        {
+          Stmt *stmt = stmts->Nth(i);
+          stmt->CheckSemantics();
+        }
+    }
+}
+
+void DefaultStmt::CheckDeclError() {
   if (stmts)
     {
       for (int i = 0; i < stmts->NumElements(); i++)
@@ -151,11 +172,6 @@ void CaseStmt::CheckDeclError() {
     }
 }
 
-
-DefaultStmt::DefaultStmt(List<Stmt*> *sts) {
-    if (sts) (stmts=sts)->SetParentAll(this);
-}
-
 SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
     Assert(e != NULL && cs != NULL);
     (expr=e)->SetParent(this);
@@ -164,7 +180,20 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
 }
 
 void SwitchStmt::CheckSemantics() {
-  CheckDeclError();
+  if (expr)
+    expr->CheckSemantics();
+
+  if (cases)
+    {
+      for (int i = 0; i < cases->NumElements(); i++)
+        {
+          CaseStmt *stmt = cases->Nth(i);
+          stmt->CheckSemantics();
+        }
+    }
+
+  if (defaults)
+    defaults->CheckSemantics();
 }
 
 void SwitchStmt::CheckDeclError() {
@@ -176,4 +205,7 @@ void SwitchStmt::CheckDeclError() {
           stmt->CheckDeclError();
         }
     }
+
+  if (defaults)
+    defaults->CheckDeclError();
 }

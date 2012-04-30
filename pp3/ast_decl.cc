@@ -3,6 +3,7 @@
  * Implementation of Decl node classes.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include <typeinfo>
@@ -29,7 +30,7 @@ bool VarDecl::HasSameTypeSig(VarDecl *vd) {
 }
 
 void VarDecl::CheckSemantics() {
-  CheckDeclError();
+  // do nothing here
 }
 
 // check NamedType errors
@@ -48,7 +49,11 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 }
 
 void ClassDecl::CheckSemantics() {
-  CheckDeclError();
+  if (this->members)
+     {
+       for (int i = 0; i < this->members->NumElements(); i++)
+         this->members->Nth(i)->CheckSemantics();
+     }
 }
 
 void ClassDecl::CheckDeclError() {
@@ -60,14 +65,9 @@ void ClassDecl::CheckDeclError() {
 	  Decl *prev;
 	  char *name = cur->GetID()->GetName();
 	  if ((prev = sym_table->Lookup(name)) != NULL)
-	    {
-	      ReportError::DeclConflict(cur, prev);
-	    }
+	    ReportError::DeclConflict(cur, prev);
 	  else
-	    {
-	      sym_table->Enter(name, cur);
-	      cur->CheckDeclError();
-	    }
+            sym_table->Enter(name, cur);
         }
     }
 
@@ -157,9 +157,12 @@ void ClassDecl::CheckDeclError() {
 	}
     }
 
-
-
-
+  // look into local scopes
+  if (this->members)
+      {
+        for (int i = 0; i < this->members->NumElements(); i++)
+          this->members->Nth(i)->CheckDeclError();
+      }
 }
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
@@ -169,7 +172,7 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 void InterfaceDecl::CheckSemantics() {
-  CheckDeclError();
+ // do nothing here
 }
 
 void InterfaceDecl::CheckDeclError() {
@@ -227,7 +230,8 @@ bool FnDecl::HasSameTypeSig(FnDecl *fd) {
 }
 
 void FnDecl::CheckSemantics() {
-  CheckDeclError();
+  if (body)
+    body->CheckSemantics();
 }
 
 void FnDecl::CheckDeclError() {
@@ -250,7 +254,7 @@ void FnDecl::CheckDeclError() {
 	}
     }
   if (body)
-    body->CheckSemantics();
+    body->CheckDeclError();
 }
 
 void FnDecl::SetFunctionBody(StmtBlock *b) {

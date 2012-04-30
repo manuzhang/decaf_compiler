@@ -19,6 +19,7 @@ class Type : public Node
 {
   protected:
     char *typeName;
+    virtual void print(ostream &out) const { out << typeName;}
 
   public :
     static Type *intType, *doubleType, *boolType, *voidType,
@@ -26,33 +27,38 @@ class Type : public Node
 
     Type(yyltype loc) : Node(loc) {}
     Type(const char *str);
-    char *GetTypeName() { return typeName; }
+    virtual char *GetTypeName() { return typeName; }
     virtual bool HasSameType(Type *t);
     virtual void CheckTypeError() {}
+    friend ostream& operator<<(ostream &out, Type *type) { type->print(out); return out; }
 };
 
 class NamedType : public Type 
 {
   protected:
     Identifier *id;
+    virtual void print(ostream &out) const { out << id; }
     
   public:
     NamedType(Identifier *i);
     Identifier *GetID() { return id; }
     bool HasSameType(Type *nt);
+    char *GetTypeName() { return id->GetName(); }
     void CheckSemantics();
     void CheckTypeError();
+
 };
 
 class ArrayType : public Type 
 {
   protected:
     Type *elemType;
-
+    virtual void print(ostream &out) const { out << elemType; }
   public:
     ArrayType(yyltype loc, Type *elemType);
     Type *GetElemType() { return elemType; }
     bool HasSameType(Type *at);
+    char *GetTypeName() { return elemType->GetTypeName(); }
     void CheckSemantics();
     void CheckTypeError();
 };

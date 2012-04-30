@@ -226,8 +226,10 @@ Program   :    DeclList              {
                                       $$ = new Program($1);
                                       // if no errors, advance to next phase
                                       if (ReportError::NumErrors() == 0)
-                                        //$$->Print(0);
-                                        $$->CheckDeclError();
+                                        {
+                                          $$->CheckDeclError();
+                                          $$->CheckSemantics();
+                                        }
                                      }
           ;
 

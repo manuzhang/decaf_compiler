@@ -192,3 +192,494 @@ samples-checkpoint/bad6.decaf
 >         ^^^^^^^
 > *** Method 'Method2' must match inherited type signature
 samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+0a1,12
+> 
+> *** Error line 7.
+>         int b;
+>             ^
+> *** Declaration of 'b' here conflicts with declaration on line 6
+> 
+> 
+> *** Error line 13.
+>            Unknown b;
+>            ^^^^^^^
+> *** No declaration found for type 'Unknown'
+> 
+samples-checkpoint/bad7.decaf
+1,72d0
+< 
+< *** Error line 228.
+<     gRnd.Init(ReadInteger());
+<          ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 232.
+<     deck.Init();
+<          ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 233.
+<     deck.Shuffle();
+<          ^^^^^^^
+< *** No declaration found for function 'Shuffle'
+< 
+< 
+< *** Error line 282.
+<     dealer.Init(0);
+<            ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 283.
+<     dealer.Hit(deck);
+<            ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 285.
+<     dealer.TakeTurn(deck);
+<            ^^^^^^^^
+< *** No declaration found for function 'TakeTurn'
+< 
+< 
+< *** Error line 304.
+<   house.SetupGame();
+<   ^^^^^
+< *** No declaration found for variable 'house'
+< 
+< 
+< *** Error line 304.
+<   house.SetupGame();
+<         ^^^^^^^^^
+< *** No declaration found for function 'SetupGame'
+< 
+< 
+< *** Error line 305.
+<   house.SetupPlayers();
+<   ^^^^^
+< *** No declaration found for variable 'house'
+< 
+< 
+< *** Error line 305.
+<   house.SetupPlayers();
+<         ^^^^^^^^^^^^
+< *** No declaration found for function 'SetupPlayers'
+< 
+< 
+< *** Error line 310.
+<   house.PrintAllMoney();
+<   ^^^^^
+< *** No declaration found for variable 'house'
+< 
+< 
+< *** Error line 310.
+<   house.PrintAllMoney();
+<         ^^^^^^^^^^^^^
+< *** No declaration found for function 'PrintAllMoney'
+< 
+samples-checkpoint/blackjack.decaf
+1,72d0
+< 
+< *** Error line 130.
+<   m.Init();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 130.
+<   m.Init();
+<     ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 131.
+<   m.SeedMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 131.
+<   m.SeedMatrix();
+<     ^^^^^^^^^^
+< *** No declaration found for function 'SeedMatrix'
+< 
+< 
+< *** Error line 132.
+<   m.PrintMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 132.
+<   m.PrintMatrix();
+<     ^^^^^^^^^^^
+< *** No declaration found for function 'PrintMatrix'
+< 
+< 
+< *** Error line 137.
+<   m.Init();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 137.
+<   m.Init();
+<     ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 138.
+<   m.SeedMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 138.
+<   m.SeedMatrix();
+<     ^^^^^^^^^^
+< *** No declaration found for function 'SeedMatrix'
+< 
+< 
+< *** Error line 139.
+<   m.PrintMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 139.
+<   m.PrintMatrix();
+<     ^^^^^^^^^^^
+< *** No declaration found for function 'PrintMatrix'
+< 
+samples-checkpoint/matrix.decaf
+1,30d0
+< 
+< *** Error line 26.
+<     InitAnimal(h,m);
+<     ^^^^^^^^^^
+< *** No declaration found for function 'InitAnimal'
+< 
+< 
+< *** Error line 39.
+<   betsy.InitCow(5, null, true);
+<   ^^^^^
+< *** No declaration found for variable 'betsy'
+< 
+< 
+< *** Error line 39.
+<   betsy.InitCow(5, null, true);
+<         ^^^^^^^
+< *** No declaration found for function 'InitCow'
+< 
+< 
+< *** Error line 41.
+<   b.GetMom();
+<   ^
+< *** No declaration found for variable 'b'
+< 
+< 
+< *** Error line 41.
+<   b.GetMom();
+<     ^^^^^^
+< *** No declaration found for function 'GetMom'
+< 
+samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,126d0
+< 
+< *** Error line 208.
+<       Hit(deck);
+<       ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 228.
+<     gRnd.Init(ReadInteger());
+<          ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 232.
+<     deck.Init();
+<          ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 233.
+<     deck.Shuffle();
+<          ^^^^^^^
+< *** No declaration found for function 'Shuffle'
+< 
+< 
+< *** Error line 244.
+<       players[i].Init(i+1);
+<                  ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 252.
+<       if (players[i].HasMoney()) players[i].PlaceBet();
+<                                             ^^^^^^^^
+< *** No declaration found for function 'PlaceBet'
+< 
+< 
+< *** Error line 258.
+<       if (players[i].HasMoney()) players[i].TakeTurn(deck);
+<                                             ^^^^^^^^
+< *** No declaration found for function 'TakeTurn'
+< 
+< 
+< *** Error line 267.
+<         players[i].Resolve(dealer.GetTotal());
+<                    ^^^^^^^
+< *** No declaration found for function 'Resolve'
+< 
+< 
+< *** Error line 274.
+<       players[i].PrintMoney();
+<                  ^^^^^^^^^^
+< *** No declaration found for function 'PrintMoney'
+< 
+< 
+< *** Error line 279.
+<     if (deck.NumCardsRemaining() < 26) deck.Shuffle();
+<                                             ^^^^^^^
+< *** No declaration found for function 'Shuffle'
+< 
+< 
+< *** Error line 282.
+<     dealer.Init(0);
+<            ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 283.
+<     dealer.Hit(deck);
+<            ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 285.
+<     dealer.TakeTurn(deck);
+<            ^^^^^^^^
+< *** No declaration found for function 'TakeTurn'
+< 
+< 
+< *** Error line 304.
+<   house.SetupGame();
+<   ^^^^^
+< *** No declaration found for variable 'house'
+< 
+< 
+< *** Error line 304.
+<   house.SetupGame();
+<         ^^^^^^^^^
+< *** No declaration found for function 'SetupGame'
+< 
+< 
+< *** Error line 305.
+<   house.SetupPlayers();
+<   ^^^^^
+< *** No declaration found for variable 'house'
+< 
+< 
+< *** Error line 305.
+<   house.SetupPlayers();
+<         ^^^^^^^^^^^^
+< *** No declaration found for function 'SetupPlayers'
+< 
+< 
+< *** Error line 307.
+<     house.PlayOneGame();
+<     ^^^^^
+< *** No declaration found for variable 'house'
+< 
+< 
+< *** Error line 307.
+<     house.PlayOneGame();
+<           ^^^^^^^^^^^
+< *** No declaration found for function 'PlayOneGame'
+< 
+< 
+< *** Error line 310.
+<   house.PrintAllMoney();
+<   ^^^^^
+< *** No declaration found for variable 'house'
+< 
+< 
+< *** Error line 310.
+<   house.PrintAllMoney();
+<         ^^^^^^^^^^^^^
+< *** No declaration found for function 'PrintAllMoney'
+< 
+samples-checkpoint/blackjack.decaf
+1,90d0
+< 
+< *** Error line 107.
+<       elem.SetData(value);
+<       ^^^^
+< *** No declaration found for variable 'elem'
+< 
+< 
+< *** Error line 107.
+<       elem.SetData(value);
+<            ^^^^^^^
+< *** No declaration found for function 'SetData'
+< 
+< 
+< *** Error line 110.
+<       elem.Init(value, y, m[x]);
+<       ^^^^
+< *** No declaration found for variable 'elem'
+< 
+< 
+< *** Error line 130.
+<   m.Init();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 130.
+<   m.Init();
+<     ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 131.
+<   m.SeedMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 131.
+<   m.SeedMatrix();
+<     ^^^^^^^^^^
+< *** No declaration found for function 'SeedMatrix'
+< 
+< 
+< *** Error line 132.
+<   m.PrintMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 132.
+<   m.PrintMatrix();
+<     ^^^^^^^^^^^
+< *** No declaration found for function 'PrintMatrix'
+< 
+< 
+< *** Error line 137.
+<   m.Init();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 137.
+<   m.Init();
+<     ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 138.
+<   m.SeedMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 138.
+<   m.SeedMatrix();
+<     ^^^^^^^^^^
+< *** No declaration found for function 'SeedMatrix'
+< 
+< 
+< *** Error line 139.
+<   m.PrintMatrix();
+<   ^
+< *** No declaration found for variable 'm'
+< 
+< 
+< *** Error line 139.
+<   m.PrintMatrix();
+<     ^^^^^^^^^^^
+< *** No declaration found for function 'PrintMatrix'
+< 
+samples-checkpoint/matrix.decaf
+1,30d0
+< 
+< *** Error line 26.
+<     InitAnimal(h,m);
+<     ^^^^^^^^^^
+< *** No declaration found for function 'InitAnimal'
+< 
+< 
+< *** Error line 39.
+<   betsy.InitCow(5, null, true);
+<   ^^^^^
+< *** No declaration found for variable 'betsy'
+< 
+< 
+< *** Error line 39.
+<   betsy.InitCow(5, null, true);
+<         ^^^^^^^
+< *** No declaration found for function 'InitCow'
+< 
+< 
+< *** Error line 41.
+<   b.GetMom();
+<   ^
+< *** No declaration found for variable 'b'
+< 
+< 
+< *** Error line 41.
+<   b.GetMom();
+<     ^^^^^^
+< *** No declaration found for function 'GetMom'
+< 
+samples-checkpoint/t9.decaf

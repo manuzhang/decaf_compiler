@@ -34,9 +34,12 @@
 
 #include <iostream>
 
+#include "errors.h"
+#include "hashtable.h"
 #include "list.h"
 #include "location.h"
 
+class Decl;
 
 class Node  {
   protected:
@@ -53,6 +56,7 @@ class Node  {
     Node *GetParent()        { return parent; }
 
     virtual void CheckSemantics() {}
+    virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
 };
    
 
@@ -64,6 +68,8 @@ class Identifier : public Node
   public:
     Identifier(yyltype loc, const char *name);
     char *GetName() { return name; }
+    Decl *CheckIdDecl(reasonT whyNeeded);
+    Decl *CheckIdDecl(Hashtable<Decl*> *sym_table, char *name, reasonT whyNeeded);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
 

@@ -31,7 +31,7 @@ class Expr : public Stmt
 class EmptyExpr : public Expr
 {
   public:
-    const char *GetPrintNameForNode() { return "Empty"; }
+   // const char *GetPrintNameForNode() { return "Empty"; }
 };
 
 class IntConstant : public Expr
@@ -101,7 +101,8 @@ class ArithmeticExpr : public CompoundExpr
   public:
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
-
+    void CheckSemantics();
+    void CheckOperandsCompatibility();
 };
 
 class RelationalExpr : public CompoundExpr
@@ -163,6 +164,8 @@ class FieldAccess : public LValue
     
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
+    void CheckSemantics();
+    Identifier *GetField() { return field; }
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -178,6 +181,8 @@ class Call : public Expr
     
   public:
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
+
+    void CheckSemantics();
 };
 
 class NewExpr : public Expr

@@ -53,6 +53,7 @@ class StmtBlock : public Stmt
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     void CheckSemantics();
     void CheckDeclError();
+    Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;
 };
 
@@ -126,17 +127,7 @@ class PrintStmt : public Stmt
     PrintStmt(List<Expr*> *arguments);
 };
 
-class CaseStmt : public Stmt
-{
-  protected:
-    IntConstant *intconst;
-    List<Stmt*> *stmts;
 
-  public:
-    CaseStmt(IntConstant *ic, List<Stmt*> *sts);
-    void CheckSemantics();
-    void CheckDeclError();
-};
 
 class DefaultStmt : public Stmt
 {
@@ -145,6 +136,18 @@ class DefaultStmt : public Stmt
 
   public:
     DefaultStmt(List<Stmt*> *sts);
+    void CheckSemantics();
+    void CheckDeclError();
+};
+
+
+class CaseStmt : public DefaultStmt
+{
+  protected:
+    IntConstant *intconst;
+
+  public:
+    CaseStmt(IntConstant *ic, List<Stmt*> *sts);
 };
 
 class SwitchStmt : public Stmt

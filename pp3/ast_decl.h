@@ -28,7 +28,7 @@ class Decl : public Node
     Decl(Identifier *name);
     Identifier *GetID() { return id; }
     friend ostream& operator<<(ostream &out, Decl *decl) { return out << decl->id; }
-    virtual void CheckDeclError() = 0;
+    virtual void CheckDeclError() {}
 };
 
 class VarDecl : public Decl 
@@ -58,6 +58,7 @@ class ClassDecl : public Decl
     NamedType *GetExtends() { return extends; }
     void CheckSemantics();
     void CheckDeclError();
+    Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;
 };
 
@@ -71,6 +72,7 @@ class InterfaceDecl : public Decl
     void CheckSemantics();
     void CheckDeclError();
     List<Decl*> *GetMembers() { return members; }
+    Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;
 };
 
@@ -89,6 +91,7 @@ class FnDecl : public Decl
     Type *GetReturnType() { return returnType; }
     List<VarDecl*> *GetFormals() { return formals; }
     bool HasSameTypeSig(FnDecl *fd);
+    Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;
 };
 
