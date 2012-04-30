@@ -15,7 +15,7 @@
 class Type;
 class NamedType;
 class Identifier;
-class Stmt;
+class StmtBlock;
 
 
 class Decl : public Node 
@@ -69,11 +69,11 @@ class FnDecl : public Decl
   protected:
     List<VarDecl*> *formals;
     Type *returnType;
-    Stmt *body;
+    StmtBlock *body;
     
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
-    void SetFunctionBody(Stmt *b);
+    void SetFunctionBody(StmtBlock *b);
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);
 };

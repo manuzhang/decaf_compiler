@@ -227,20 +227,20 @@ Program   :    DeclList              {
                                       // if no errors, advance to next phase
                                       if (ReportError::NumErrors() == 0)
                                         $$->Print(0);
-                                	 }
+                                     }
           ;
 
 DeclList  :    DeclList Decl         { ($$ = $1)->Append($2); }
           |    Decl                  { ($$ = new List<Decl*>)->Append($1); }
           ;
 
-Decl      :    VarDecl             
+Decl      :    VarDecl              
           |    FnDecl                  
           |    ClassDecl
           |    InterfaceDecl
           ;
           
-VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1); }           
+VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1); }     
           ;
         
 Type      :    T_Int                 { $$ = new Type("int"); }
@@ -269,9 +269,9 @@ Formals   :    Variables
           |                          { $$ = new List<VarDecl*>; }
           ;
           
-Variables :    Variables ',' Type T_Identifier 
+Variables :    Variables ',' Type T_Identifier
                                      { ($$ = $1)->Append(new VarDecl(new Identifier(@4, $4), $3)); }
-          |    Type T_Identifier     { ($$ = new List<VarDecl*>)->Append(new VarDecl(new Identifier(@2, $2), $1)); }
+          |     Type T_Identifier    { ($$ = new List<VarDecl*>)->Append(new VarDecl(new Identifier(@2, $2), $1)); }
           ;
           
 ClassDecl :    T_Class T_Identifier Extend Impl '{' Fields '}'              
@@ -331,7 +331,8 @@ Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
            | Stmt                    { ($$ = new List<Stmt*>)->Append($1);  }
            ;
            
-Stmt       : OptExpr ';'           
+Stmt       : OptExpr ';'  
+       //    | error ';'               // introduce a segmentation fault
            | IfStmt
            | WhileStmt
            | ForStmt

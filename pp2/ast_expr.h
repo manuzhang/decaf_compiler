@@ -17,6 +17,7 @@
 class NamedType; // for new
 class Type; // for NewArray
 
+
 class Expr : public Stmt
 {
   public:
