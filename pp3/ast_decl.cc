@@ -29,7 +29,7 @@ bool VarDecl::HasSameTypeSig(VarDecl *vd) {
   return this->type->HasSameType(vd->GetType());
 }
 
-void VarDecl::CheckSemantics() {
+void VarDecl::CheckStatements() {
   // do nothing here
 }
 
@@ -48,11 +48,11 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
   sym_table = new Hashtable<Decl*>;
 }
 
-void ClassDecl::CheckSemantics() {
+void ClassDecl::CheckStatements() {
   if (this->members)
      {
        for (int i = 0; i < this->members->NumElements(); i++)
-         this->members->Nth(i)->CheckSemantics();
+         this->members->Nth(i)->CheckStatements();
      }
 }
 
@@ -171,7 +171,7 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
   sym_table  = new Hashtable<Decl*>;
 }
 
-void InterfaceDecl::CheckSemantics() {
+void InterfaceDecl::CheckStatements() {
  // do nothing here
 }
 
@@ -229,9 +229,9 @@ bool FnDecl::HasSameTypeSig(FnDecl *fd) {
 
 }
 
-void FnDecl::CheckSemantics() {
+void FnDecl::CheckStatements() {
   if (body)
-    body->CheckSemantics();
+    body->CheckStatements();
 }
 
 void FnDecl::CheckDeclError() {

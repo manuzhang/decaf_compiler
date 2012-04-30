@@ -10,11 +10,10 @@
 #define _H_ast_decl
 
 #include "ast.h"
+#include "ast_type.h"
 #include "hashtable.h"
 #include "list.h"
 
-class Type;
-class NamedType;
 class Identifier;
 class StmtBlock;
 
@@ -29,6 +28,7 @@ class Decl : public Node
     Identifier *GetID() { return id; }
     friend ostream& operator<<(ostream &out, Decl *decl) { return out << decl->id; }
     virtual void CheckDeclError() {}
+    virtual char *GetTypeName() { return NULL; }
 };
 
 class VarDecl : public Decl 
@@ -39,8 +39,9 @@ class VarDecl : public Decl
   public:
     VarDecl(Identifier *name, Type *type);
     Type *GetType() { return type; }
+    char *GetTypeName() { return type->GetTypeName(); }
     bool HasSameTypeSig(VarDecl *vd);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
 };
 
@@ -56,7 +57,7 @@ class ClassDecl : public Decl
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     NamedType *GetExtends() { return extends; }
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;
@@ -69,7 +70,7 @@ class InterfaceDecl : public Decl
 
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
     List<Decl*> *GetMembers() { return members; }
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
@@ -86,10 +87,11 @@ class FnDecl : public Decl
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(StmtBlock *b);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
     Type *GetReturnType() { return returnType; }
     List<VarDecl*> *GetFormals() { return formals; }
+    char *GetTypeName() { return returnType->GetTypeName(); }
     bool HasSameTypeSig(FnDecl *fd);
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;

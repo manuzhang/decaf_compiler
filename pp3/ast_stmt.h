@@ -30,7 +30,7 @@ class Program : public Node
 
   public:
      Program(List<Decl*> *declList);
-     void CheckSemantics();
+     void CheckStatements();
      void CheckDeclError();
      static Hashtable<Decl*> *sym_table; // global symbol table
 };
@@ -51,7 +51,7 @@ class StmtBlock : public Stmt
 
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;
@@ -66,7 +66,7 @@ class ConditionalStmt : public Stmt
 
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
 };
 
@@ -99,7 +99,7 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
 };
 
@@ -136,7 +136,7 @@ class DefaultStmt : public Stmt
 
   public:
     DefaultStmt(List<Stmt*> *sts);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
 };
 
@@ -159,7 +159,7 @@ class SwitchStmt : public Stmt
 
   public:
     SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
-    void CheckSemantics();
+    void CheckStatements();
     void CheckDeclError();
 };
 

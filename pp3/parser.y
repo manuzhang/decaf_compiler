@@ -228,7 +228,7 @@ Program   :    DeclList              {
                                       if (ReportError::NumErrors() == 0)
                                         {
                                           $$->CheckDeclError();
-                                          $$->CheckSemantics();
+                                          $$->CheckStatements();
                                         }
                                      }
           ;

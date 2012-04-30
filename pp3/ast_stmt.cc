@@ -15,9 +15,9 @@ Program::Program(List<Decl*> *d) {
     (decls=d)->SetParentAll(this);
 }
 
-void Program::CheckSemantics() {
+void Program::CheckStatements() {
   for (int i = 0; i < this->decls->NumElements(); i++)
-     this->decls->Nth(i)->CheckSemantics();
+     this->decls->Nth(i)->CheckStatements();
 }
 
 void Program::CheckDeclError() {
@@ -49,13 +49,13 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     sym_table  = new Hashtable<Decl*>;
 }
 
-void StmtBlock::CheckSemantics() {
+void StmtBlock::CheckStatements() {
   if (stmts)
     {
       for (int i = 0; i < stmts->NumElements(); i++)
         {
           Stmt *stmt = stmts->Nth(i);
-          stmt->CheckSemantics();
+          stmt->CheckStatements();
         }
     }
 }
@@ -95,9 +95,9 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     (body=b)->SetParent(this);
 }
 
-void ConditionalStmt::CheckSemantics() {
+void ConditionalStmt::CheckStatements() {
   if (body)
-    body->CheckSemantics();
+    body->CheckStatements();
 }
 
 void ConditionalStmt::CheckDeclError() {
@@ -124,10 +124,10 @@ void IfStmt::CheckDeclError() {
     elseBody->CheckDeclError();
 }
 
-void IfStmt::CheckSemantics() {
-  ConditionalStmt::CheckSemantics();
+void IfStmt::CheckStatements() {
+  ConditionalStmt::CheckStatements();
   if (elseBody)
-    elseBody->CheckSemantics();
+    elseBody->CheckStatements();
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
@@ -150,13 +150,13 @@ DefaultStmt::DefaultStmt(List<Stmt*> *sts) {
     if (sts) (stmts=sts)->SetParentAll(this);
 }
 
-void DefaultStmt::CheckSemantics() {
+void DefaultStmt::CheckStatements() {
   if (stmts)
     {
       for (int i = 0; i < stmts->NumElements(); i++)
         {
           Stmt *stmt = stmts->Nth(i);
-          stmt->CheckSemantics();
+          stmt->CheckStatements();
         }
     }
 }
@@ -179,21 +179,21 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
     if (ds) (defaults=ds)->SetParent(this);
 }
 
-void SwitchStmt::CheckSemantics() {
+void SwitchStmt::CheckStatements() {
   if (expr)
-    expr->CheckSemantics();
+    expr->CheckStatements();
 
   if (cases)
     {
       for (int i = 0; i < cases->NumElements(); i++)
         {
           CaseStmt *stmt = cases->Nth(i);
-          stmt->CheckSemantics();
+          stmt->CheckStatements();
         }
     }
 
   if (defaults)
-    defaults->CheckSemantics();
+    defaults->CheckStatements();
 }
 
 void SwitchStmt::CheckDeclError() {

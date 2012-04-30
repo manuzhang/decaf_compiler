@@ -53,7 +53,7 @@ bool NamedType::HasSameType(Type *nt) {
     return false;
 }
 
-void NamedType::CheckSemantics() {
+void NamedType::CheckStatements() {
   CheckTypeError();
 }
 
@@ -78,7 +78,7 @@ bool ArrayType::HasSameType(Type *at) {
     return false;
 }
 
-void ArrayType::CheckSemantics() {
+void ArrayType::CheckStatements() {
   CheckTypeError();
 }
 

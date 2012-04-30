@@ -683,3 +683,111 @@ samples-checkpoint/matrix.decaf
 < *** No declaration found for function 'GetMom'
 < 
 samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,30d0
+< 
+< *** Error line 244.
+<       players[i].Init(i+1);
+<                  ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 252.
+<       if (players[i].HasMoney()) players[i].PlaceBet();
+<                                             ^^^^^^^^
+< *** No declaration found for function 'PlaceBet'
+< 
+< 
+< *** Error line 258.
+<       if (players[i].HasMoney()) players[i].TakeTurn(deck);
+<                                             ^^^^^^^^
+< *** No declaration found for function 'TakeTurn'
+< 
+< 
+< *** Error line 267.
+<         players[i].Resolve(dealer.GetTotal());
+<                    ^^^^^^^
+< *** No declaration found for function 'Resolve'
+< 
+< 
+< *** Error line 274.
+<       players[i].PrintMoney();
+<                  ^^^^^^^^^^
+< *** No declaration found for function 'PrintMoney'
+< 
+samples-checkpoint/blackjack.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,36d0
+< 
+< *** Error line 77.
+<       c = decks[d].GetCard();
+<                    ^^^^^^^
+< *** No declaration found for function 'GetCard'
+< 
+< 
+< *** Error line 244.
+<       players[i].Init(i+1);
+<                  ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 252.
+<       if (players[i].HasMoney()) players[i].PlaceBet();
+<                                             ^^^^^^^^
+< *** No declaration found for function 'PlaceBet'
+< 
+< 
+< *** Error line 258.
+<       if (players[i].HasMoney()) players[i].TakeTurn(deck);
+<                                             ^^^^^^^^
+< *** No declaration found for function 'TakeTurn'
+< 
+< 
+< *** Error line 267.
+<         players[i].Resolve(dealer.GetTotal());
+<                    ^^^^^^^
+< *** No declaration found for function 'Resolve'
+< 
+< 
+< *** Error line 274.
+<       players[i].PrintMoney();
+<                  ^^^^^^^^^^
+< *** No declaration found for function 'PrintMoney'
+< 
+samples-checkpoint/blackjack.decaf
+1,6d0
+< 
+< *** Error line 40.
+<   b = betsy;
+<     ^
+< *** Incompatible operands: Animal = Cow
+< 
+samples-checkpoint/t9.decaf

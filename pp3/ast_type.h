@@ -44,7 +44,7 @@ class NamedType : public Type
     Identifier *GetID() { return id; }
     bool HasSameType(Type *nt);
     char *GetTypeName() { return id->GetName(); }
-    void CheckSemantics();
+    void CheckStatements();
     void CheckTypeError();
 
 };
@@ -59,7 +59,7 @@ class ArrayType : public Type
     Type *GetElemType() { return elemType; }
     bool HasSameType(Type *at);
     char *GetTypeName() { return elemType->GetTypeName(); }
-    void CheckSemantics();
+    void CheckStatements();
     void CheckTypeError();
 };
 

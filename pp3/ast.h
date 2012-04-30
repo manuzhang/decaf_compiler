@@ -55,7 +55,7 @@ class Node  {
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
 
-    virtual void CheckSemantics() {}
+    virtual void CheckStatements() {}
     virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
 };
    
@@ -69,7 +69,7 @@ class Identifier : public Node
     Identifier(yyltype loc, const char *name);
     char *GetName() { return name; }
     Decl *CheckIdDecl(reasonT whyNeeded);
-    Decl *CheckIdDecl(Hashtable<Decl*> *sym_table, char *name, reasonT whyNeeded);
+    Decl *CheckIdDecl(Hashtable<Decl*> *sym_table, char *name);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
 

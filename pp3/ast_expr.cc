@@ -51,13 +51,119 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
   
-void ArithmeticExpr::CheckSemantics() {
+void ArithmeticExpr::CheckStatements() {
+  const char *lt, *rt;
+  if (this->left) // binary
+    {
+      this->left->CheckStatements();
+      lt = this->left->GetType();
+    }
 
-  CheckOperandsCompatibility();
+  this->right->CheckStatements();
+  rt = this->right->GetType();
+  if (lt && rt) // binary
+    {
+      if ((strcmp(lt, "int") && strcmp(lt, "double")) ||
+          (strcmp(rt, "int") && strcmp(rt, "double")) ||
+          (strcmp(lt, rt)))
+        ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
+    }
+  else if (rt) // unary
+    {
+      if (strcmp(rt, "int") && strcmp(rt, "double"))
+        ReportError::IncompatibleOperand(this->op, new Type(rt));
+    }
 }
 
-void ArithmeticExpr::CheckOperandsCompatibility() {
+void RelationalExpr::CheckStatements() {
+   this->left->CheckStatements();
+   const char *lt = this->left->GetType();
 
+   this->right->CheckStatements();
+   const char *rt = this->right->GetType();
+   if (lt && rt) // binary
+     {
+       if ((strcmp(lt, "int") && strcmp(lt, "double")) ||
+           (strcmp(rt, "int") && strcmp(rt, "double")) ||
+           (strcmp(lt, rt)))
+         ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
+     }
+}
+
+void EqualityExpr::CheckStatements() {
+  this->left->CheckStatements();
+  this->right->CheckStatements();
+  const char *lt = this->left->GetType();
+  const char *rt = this->right->GetType();
+  if (lt && rt)
+    if (strcmp(lt, rt))
+      ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
+  // to be implemented:
+  // two objects or an object and null
+}
+
+void LogicalExpr::CheckStatements() {
+  const char *lt, *rt;
+  if (this->left)
+    {
+      this->left->CheckStatements();
+      lt = this->left->GetType();
+    }
+  this->right->CheckStatements();
+  rt = this->right->GetType();
+  if (lt && rt)
+    {
+      if (strcmp(lt, "bool") || strcmp(rt, "bool"))
+        ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
+    }
+  else if (rt)
+    {
+      if (strcmp(rt, "bool"))
+        ReportError::IncompatibleOperand(this->op, new Type(rt));
+    }
+
+}
+
+void AssignExpr::CheckStatements() {
+  this->left->CheckStatements();
+  this->right->CheckStatements();
+  const char *lt = this->left->GetType();
+  const char *rt = this->right->GetType();
+
+  if (lt && rt)
+    {
+      Decl *ldecl = Program::sym_table->Lookup(lt);
+      Decl *rdecl = Program::sym_table->Lookup(rt);
+
+      if (ldecl && rdecl) // objects
+        {
+          if (!strcmp(lt, rt))
+            return;
+          else if (typeid(*ldecl) == typeid(ClassDecl) && typeid(*rdecl) == typeid(ClassDecl))
+            {
+              ClassDecl *lcldecl = dynamic_cast<ClassDecl*>(ldecl);
+              ClassDecl *rcldecl = dynamic_cast<ClassDecl*>(rdecl);
+              NamedType *extends = rcldecl->GetExtends();
+              if (extends && !strcmp(lcldecl->GetID()->GetName(), extends->GetTypeName()))
+                return;
+            }
+        }
+       else if (!strcmp(lt, rt)) // non-objects
+           return;
+
+      ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
+    }
+}
+
+void This::CheckStatements() {
+  Node *parent = this->GetParent();
+  while (parent)
+    {
+      if (typeid(*parent) == typeid(ClassDecl))
+        return;
+      parent = parent->GetParent();
+    }
+  ReportError::ThisOutsideClassScope(this);
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -73,8 +179,32 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 
-void FieldAccess::CheckSemantics() {
-  field->CheckIdDecl(LookingForVariable);
+void FieldAccess::CheckStatements() {
+  Decl *decl; // to keep the result from looking up the symbol table
+  if (base && typeid(*base) == typeid(FieldAccess))
+    {
+      Identifier *id = dynamic_cast<FieldAccess*>(base)->GetField();
+      Decl *id_decl = id->CheckIdDecl(LookingForClass);
+      // check whether the field is a data member of base
+      if (id_decl != NULL)
+          {
+            // class name
+            char *name = dynamic_cast<VarDecl*>(id_decl)->GetType()->GetTypeName();
+            if ((decl = Program::sym_table->Lookup(name)) != NULL) // fetch base symbol table
+              {
+                if ((decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName())) == NULL)
+                  ReportError::FieldNotFoundInBase(this->field, new Type(id_decl->GetTypeName()));
+              }
+          }
+    }
+  else
+    {
+      // no base, just check whether the field is declared
+      decl = this->field->CheckIdDecl(LookingForVariable);
+    }
+
+  if (decl != NULL)
+    this->typeName = decl->GetTypeName();
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
@@ -85,34 +215,40 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     (actuals=a)->SetParentAll(this);
 }
 
-void Call::CheckSemantics() {
+void Call::CheckStatements() {
+  Decl *decl; // to keep the result from looking up the symbol table
   if (base && typeid(*base) == typeid(FieldAccess))
     {
       // check whether base is declared
       Identifier *id = dynamic_cast<FieldAccess*>(base)->GetField();
+      // actually, it's LookingForClass or LookingForInterface
+      // to be fixed
       Decl *id_decl = id->CheckIdDecl(LookingForClass);
 
       // check whether the field is a member function of base
       if (id_decl != NULL)
-        if (typeid(*id_decl) == typeid(VarDecl))
-           {
-            char *name = dynamic_cast<VarDecl*>(id_decl)->GetType()->GetTypeName();
-            Decl *decl;
+        {
+             // class name
+            char *name = id_decl->GetTypeName();
             if ((decl = Program::sym_table->Lookup(name)) != NULL) // fetch base symbol table
               {
-                if (typeid(*decl) == typeid(ClassDecl))
-                  this->field->CheckIdDecl(dynamic_cast<ClassDecl*>(decl)->GetSymTable(),
-                                           this->field->GetName(),
-                                            LookingForFunction);
+                if ((decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName())) == NULL)
+                  ReportError::FieldNotFoundInBase(this->field, new Type(id_decl->GetTypeName()));
               }
-            else
-                  ReportError::FieldNotFoundInBase(this->field, new NamedType(id));
-           }
+        }
     }
   else
     {
       // no base, just check whether the field is declared
-      this->field->CheckIdDecl(LookingForFunction);
+      decl = this->field->CheckIdDecl(LookingForFunction);
+    }
+  if (decl != NULL)
+    this->typeName = decl->GetTypeName(); // returnType
+
+  if (actuals)
+    {
+      for (int i = 0; i < actuals->NumElements(); i++)
+        actuals->Nth(i)->CheckStatements();
     }
 }
 

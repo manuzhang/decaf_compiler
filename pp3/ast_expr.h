@@ -23,6 +23,7 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
+    virtual const char *GetType() { return NULL; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -41,6 +42,7 @@ class IntConstant : public Expr
   
   public:
     IntConstant(yyltype loc, int val);
+    const char *GetType() { return "int"; }
 };
 
 class DoubleConstant : public Expr
@@ -50,6 +52,7 @@ class DoubleConstant : public Expr
     
   public:
     DoubleConstant(yyltype loc, double val);
+    const char *GetType() { return "double"; }
 };
 
 class BoolConstant : public Expr
@@ -59,6 +62,7 @@ class BoolConstant : public Expr
     
   public:
     BoolConstant(yyltype loc, bool val);
+    const char *GetType() { return "bool"; }
 };
 
 class StringConstant : public Expr
@@ -68,12 +72,14 @@ class StringConstant : public Expr
     
   public:
     StringConstant(yyltype loc, const char *val);
+    const char *GetType() { return "string"; }
 };
 
 class NullConstant: public Expr
 {
   public:
     NullConstant(yyltype loc) : Expr(loc) {}
+    const char *GetType() { return "null"; }
 };
 
 class Operator : public Node
@@ -83,6 +89,7 @@ class Operator : public Node
     
   public:
     Operator(yyltype loc, const char *tok);
+    friend ostream &operator<<(ostream &out, Operator *op) { return out << op->tokenString; }
  };
  
 class CompoundExpr : public Expr
@@ -101,20 +108,24 @@ class ArithmeticExpr : public CompoundExpr
   public:
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
-    void CheckSemantics();
-    void CheckOperandsCompatibility();
+    void CheckStatements();
+    const char *GetType() { return right->GetType(); }
 };
 
 class RelationalExpr : public CompoundExpr
 {
   public:
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
+    void CheckStatements();
+    const char *GetType() { return "bool"; }
 };
 
 class EqualityExpr : public CompoundExpr
 {
   public:
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
+    void CheckStatements();
+    const char *GetType() { return "bool"; }
 };
 
 class LogicalExpr : public CompoundExpr
@@ -122,12 +133,16 @@ class LogicalExpr : public CompoundExpr
   public:
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
+    void CheckStatements();
+    const char *GetType() { return "bool"; }
 };
 
 class AssignExpr : public CompoundExpr
 {
   public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
+    const char *GetType() { return left->GetType(); }
+    void CheckStatements();
 };
 
 class LValue : public Expr
@@ -140,6 +155,7 @@ class This : public Expr
 {
   public:
     This(yyltype loc) : Expr(loc) {}
+    void CheckStatements();
 };
 
 class ArrayAccess : public LValue
@@ -161,11 +177,13 @@ class FieldAccess : public LValue
   protected:
     Expr *base; // will be NULL if no explicit base
     Identifier *field;
+    char *typeName;
     
   public:
-    FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
-    void CheckSemantics();
+    FieldAccess(Expr *base, Identifier *field); // ok to pass NULL base
+    void CheckStatements(); // its type is decided here
     Identifier *GetField() { return field; }
+    const char *GetType() { return typeName; }
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -178,11 +196,12 @@ class Call : public Expr
     Expr *base; // will be NULL if no explicit base
     Identifier *field;
     List<Expr*> *actuals;
+    char *typeName;
     
   public:
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
-
-    void CheckSemantics();
+    void CheckStatements(); // its type is decided here
+    const char *GetType() { return typeName; }
 };
 
 class NewExpr : public Expr

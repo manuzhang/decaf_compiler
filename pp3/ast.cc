@@ -31,9 +31,6 @@ Decl *Identifier::CheckIdDecl(reasonT whyNeeded) {
    Node *parent = this->GetParent();
    while (parent)
      {
-       if (typeid(*parent) == typeid(FnDecl))
-         FnDecl *fd = dynamic_cast<FnDecl*>(parent);
-
        Hashtable<Decl*> *sym_table = parent->GetSymTable();
        if (sym_table != NULL)
          {
@@ -50,12 +47,10 @@ Decl *Identifier::CheckIdDecl(reasonT whyNeeded) {
 }
 
 // look for declaration in the provided scope
-Decl *Identifier::CheckIdDecl(Hashtable<Decl*> *sym_table, char *name, reasonT whyNeeded)
+Decl *Identifier::CheckIdDecl(Hashtable<Decl*> *sym_table, char *name)
 {
   Decl *decl = NULL;
   if (sym_table != NULL)
-    if ((decl = sym_table->Lookup(name)) == NULL)
-      ReportError::IdentifierNotDeclared(this, whyNeeded);
-
+    decl = sym_table->Lookup(name);
   return decl;
 }
