@@ -15,7 +15,9 @@
 
 #include <string>
 #include "location.h"
-using namespace std;
+
+using std::string;
+
 class Type;
 class Identifier;
 class Expr;

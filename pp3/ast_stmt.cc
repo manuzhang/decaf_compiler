@@ -15,6 +15,9 @@ Program::Program(List<Decl*> *d) {
     (decls=d)->SetParentAll(this);
 }
 
+void Program::CheckSemantics() {
+  CheckDeclError();
+}
 
 void Program::CheckDeclError() {
   if (this->decls)
@@ -44,6 +47,10 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
     sym_table  = new Hashtable<Decl*>;
+}
+
+void StmtBlock::CheckSemantics() {
+  CheckDeclError();
 }
 
 void StmtBlock::CheckDeclError() {
@@ -81,6 +88,10 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     (body=b)->SetParent(this);
 }
 
+void ConditionalStmt::CheckSemantics() {
+  CheckDeclError();
+}
+
 void ConditionalStmt::CheckDeclError() {
   if (body)
     body->CheckDeclError();
@@ -97,6 +108,10 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
+}
+
+void IfStmt::CheckSemantics() {
+  CheckDeclError();
 }
 
 void IfStmt::CheckDeclError() {
@@ -121,6 +136,10 @@ CaseStmt::CaseStmt(IntConstant *ic, List<Stmt*> *sts) {
     (stmts=sts)->SetParentAll(this);
 }
 
+void CaseStmt::CheckSemantics() {
+  CheckDeclError();
+}
+
 void CaseStmt::CheckDeclError() {
   if (stmts)
     {
@@ -142,6 +161,10 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
     (expr=e)->SetParent(this);
     (cases=cs)->SetParentAll(this);
     if (ds) (defaults=ds)->SetParent(this);
+}
+
+void SwitchStmt::CheckSemantics() {
+  CheckDeclError();
 }
 
 void SwitchStmt::CheckDeclError() {

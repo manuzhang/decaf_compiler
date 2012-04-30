@@ -14,8 +14,9 @@
 #define _H_ast_stmt
 
 #include "ast.h"
-#include "list.h"
 #include "hashtable.h"
+#include "list.h"
+
 
 class Decl;
 class VarDecl;
@@ -29,6 +30,7 @@ class Program : public Node
 
   public:
      Program(List<Decl*> *declList);
+     void CheckSemantics();
      void CheckDeclError();
      static Hashtable<Decl*> *sym_table; // global symbol table
 };
@@ -49,6 +51,7 @@ class StmtBlock : public Stmt
 
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
+    void CheckSemantics();
     void CheckDeclError();
     Hashtable<Decl*> *sym_table;
 };
@@ -62,6 +65,7 @@ class ConditionalStmt : public Stmt
 
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
+    void CheckSemantics();
     void CheckDeclError();
 };
 
@@ -94,6 +98,7 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
+    void CheckSemantics();
     void CheckDeclError();
 };
 
@@ -129,6 +134,7 @@ class CaseStmt : public Stmt
 
   public:
     CaseStmt(IntConstant *ic, List<Stmt*> *sts);
+    void CheckSemantics();
     void CheckDeclError();
 };
 
@@ -150,6 +156,7 @@ class SwitchStmt : public Stmt
 
   public:
     SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
+    void CheckSemantics();
     void CheckDeclError();
 };
 

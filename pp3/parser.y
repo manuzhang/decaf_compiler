@@ -333,7 +333,6 @@ Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
            ;
            
 Stmt       : OptExpr ';'  
-       //    | error ';'               // introduce a segmentation fault
            | IfStmt
            | WhileStmt
            | ForStmt

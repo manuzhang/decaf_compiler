@@ -1,0 +1,194 @@
+0a1,6
+> 
+> *** Error line 6.
+>   double b;
+>          ^
+> *** Declaration of 'b' here conflicts with declaration on line 4
+> 
+samples-checkpoint/bad1.decaf
+0a1,6
+> 
+> *** Error line 5.
+> int Rutabaga(int a, double b, bool c) {
+>     ^^^^^^^^
+> *** Declaration of 'Rutabaga' here conflicts with declaration on line 1
+> 
+samples-checkpoint/bad2.decaf
+0a1,18
+> 
+> *** Error line 1.
+> void Mystery(Unknown a) {}
+>              ^^^^^^^
+> *** No declaration found for type 'Unknown'
+> 
+> 
+> *** Error line 3.
+> class Trouble extends Missing implements Gone
+>                       ^^^^^^^
+> *** No declaration found for class 'Missing'
+> 
+> 
+> *** Error line 3.
+> class Trouble extends Missing implements Gone
+>                                          ^^^^
+> *** No declaration found for interface 'Gone'
+> 
+samples-checkpoint/bad3.decaf
+0a1,18
+> 
+> *** Error line 9.
+> class Block {
+>       ^^^^^
+> *** Declaration of 'Block' here conflicts with declaration on line 5
+> 
+> 
+> *** Error line 17.
+> int Shape;
+>     ^^^^^
+> *** Declaration of 'Shape' here conflicts with declaration on line 1
+> 
+> 
+> *** Error line 14.
+>   ABlock[] test;
+>   ^^^^^^
+> *** No declaration found for type 'ABlock'
+> 
+samples-checkpoint/bad4.decaf
+0a1,12
+> 
+> *** Error line 1.
+> int Oops(int x, int x) {
+>                     ^
+> *** Declaration of 'x' here conflicts with declaration on line 1
+> 
+> 
+> *** Error line 5.
+>     void Winky(int a, double b, int[] a) {
+>                                       ^
+> *** Declaration of 'a' here conflicts with declaration on line 5
+> 
+samples-checkpoint/bad5.decaf
+0a1,12
+> 
+> *** Error line 11.
+>     void Method3(bool a) {}
+>          ^^^^^^^
+> *** Method 'Method3' must match inherited type signature
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+> 
+samples-checkpoint/bad6.decaf
+0a1,12
+> 
+> *** Error line 7.
+>         int b;
+>             ^
+> *** Declaration of 'b' here conflicts with declaration on line 6
+> 
+> 
+> *** Error line 13.
+>            Unknown b;
+>            ^^^^^^^
+> *** No declaration found for type 'Unknown'
+> 
+samples-checkpoint/bad7.decaf
+0a1,12
+> 
+> *** Error line 4.
+>    bool f(int[] a) {}
+>         ^
+> *** Declaration of 'f' here conflicts with declaration on line 3
+> 
+> 
+> *** Error line 9.
+>    int a;
+>        ^
+> *** Declaration of 'a' here conflicts with declaration on line 2
+> 
+samples-checkpoint/bad8.decaf
+0a1,12
+> 
+> *** Error line 12.
+>   void root() {
+>        ^^^^
+> *** Declaration of 'root' here conflicts with declaration on line 10
+> 
+> 
+> *** Error line 15.
+>   bool IsRipe(int weight, double weather) {
+>        ^^^^^^
+> *** Method 'IsRipe' must match inherited type signature
+> 
+samples-checkpoint/bad9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+13,18d12
+< 
+< *** Error line 3.
+<    void f(int y) {}
+<         ^
+< *** Method 'f' must match inherited type signature
+< 
+samples-checkpoint/bad8.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf

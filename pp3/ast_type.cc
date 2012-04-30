@@ -4,6 +4,9 @@
  */
 
 #include <string.h>
+
+#include <typeinfo>
+
 #include "ast_type.h"
 #include "ast_decl.h"
 #include "ast_stmt.h"
@@ -44,7 +47,14 @@ NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
 } 
 
 bool NamedType::HasSameType(Type *nt) {
-  return !strcmp(id->GetName(), dynamic_cast<NamedType*>(nt)->GetID()->GetName());
+  if (typeid(*nt) == typeid(NamedType))
+    return !strcmp(id->GetName(), dynamic_cast<NamedType*>(nt)->GetID()->GetName());
+  else
+    return false;
+}
+
+void NamedType::CheckSemantics() {
+  CheckTypeError();
 }
 
 void NamedType::CheckTypeError() {
@@ -62,7 +72,14 @@ ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
 }
 
 bool ArrayType::HasSameType(Type *at) {
-  return elemType->HasSameType(dynamic_cast<ArrayType*>(at)->GetElemType());
+  if (typeid(*at) == typeid(ArrayType))
+    return elemType->HasSameType(dynamic_cast<ArrayType*>(at)->GetElemType());
+  else
+    return false;
+}
+
+void ArrayType::CheckSemantics() {
+  CheckTypeError();
 }
 
 void ArrayType::CheckTypeError() {

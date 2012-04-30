@@ -9,9 +9,11 @@
 #ifndef _H_ast_type
 #define _H_ast_type
 
+#include <string>
+
 #include "ast.h"
 #include "list.h"
-#include <string>
+
 
 class Type : public Node 
 {
@@ -38,6 +40,7 @@ class NamedType : public Type
     NamedType(Identifier *i);
     Identifier *GetID() { return id; }
     bool HasSameType(Type *nt);
+    void CheckSemantics();
     void CheckTypeError();
 };
 
@@ -50,6 +53,7 @@ class ArrayType : public Type
     ArrayType(yyltype loc, Type *elemType);
     Type *GetElemType() { return elemType; }
     bool HasSameType(Type *at);
+    void CheckSemantics();
     void CheckTypeError();
 };
 

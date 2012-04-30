@@ -2,11 +2,12 @@
  * ------------
  */
 
-#include "ast.h"
-#include "ast_type.h"
-#include "ast_decl.h"
-#include <string.h> // strdup
 #include <stdio.h>  // printf
+#include <string.h> // strdup
+
+#include "ast.h"
+#include "ast_decl.h"
+#include "ast_type.h"
 
 Node::Node(yyltype loc) {
     location = new yyltype(loc);

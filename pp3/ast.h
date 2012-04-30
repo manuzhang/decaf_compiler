@@ -31,11 +31,11 @@
 #define _H_ast
 
 #include <stdlib.h>   // for NULL
-#include "location.h"
-#include <iostream>
-#include "list.h"
 
-using namespace std;
+#include <iostream>
+
+#include "list.h"
+#include "location.h"
 
 
 class Node  {
@@ -52,7 +52,7 @@ class Node  {
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
 
-    virtual void CheckDeclConflict() {}
+    virtual void CheckSemantics() {}
 };
    
 
