@@ -27,8 +27,8 @@ class Decl : public Node
     Decl(Identifier *name);
     Identifier *GetID() { return id; }
     friend ostream& operator<<(ostream &out, Decl *decl) { return out << decl->id; }
-    virtual void CheckDeclError() {}
-    virtual char *GetTypeName() { return NULL; }
+    virtual const char *GetTypeName() { return NULL; }
+    virtual Type *GetType() { return NULL; }
 };
 
 class VarDecl : public Decl 
@@ -39,7 +39,7 @@ class VarDecl : public Decl
   public:
     VarDecl(Identifier *name, Type *type);
     Type *GetType() { return type; }
-    char *GetTypeName() { return type->GetTypeName(); }
+    const char *GetTypeName() { return type->GetTypeName(); }
     bool HasSameTypeSig(VarDecl *vd);
     void CheckStatements();
     void CheckDeclError();
@@ -89,9 +89,9 @@ class FnDecl : public Decl
     void SetFunctionBody(StmtBlock *b);
     void CheckStatements();
     void CheckDeclError();
-    Type *GetReturnType() { return returnType; }
+    Type *GetType() { return returnType; }
     List<VarDecl*> *GetFormals() { return formals; }
-    char *GetTypeName() { return returnType->GetTypeName(); }
+    const char *GetTypeName() { return returnType->GetTypeName(); }
     bool HasSameTypeSig(FnDecl *fd);
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;

@@ -10,20 +10,20 @@
 #ifndef _H_ast_expr
 #define _H_ast_expr
 
+#include <string>
+
 #include "ast.h"
 #include "ast_stmt.h"
+#include "ast_type.h"
 #include "list.h"
-
-class NamedType; // for new
-class Type; // for NewArray
-
 
 class Expr : public Stmt
 {
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
-    virtual const char *GetType() { return NULL; }
+    virtual Type *GetType() { return NULL; }
+    virtual const char *GetTypeName() { return NULL; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -39,10 +39,10 @@ class IntConstant : public Expr
 {
   protected:
     int value;
-  
+
   public:
     IntConstant(yyltype loc, int val);
-    const char *GetType() { return "int"; }
+    const char *GetTypeName() { return "int"; }
 };
 
 class DoubleConstant : public Expr
@@ -52,7 +52,7 @@ class DoubleConstant : public Expr
     
   public:
     DoubleConstant(yyltype loc, double val);
-    const char *GetType() { return "double"; }
+    const char *GetTypeName() { return "double"; }
 };
 
 class BoolConstant : public Expr
@@ -62,7 +62,7 @@ class BoolConstant : public Expr
     
   public:
     BoolConstant(yyltype loc, bool val);
-    const char *GetType() { return "bool"; }
+    const char *GetTypeName() { return "bool"; }
 };
 
 class StringConstant : public Expr
@@ -72,14 +72,14 @@ class StringConstant : public Expr
     
   public:
     StringConstant(yyltype loc, const char *val);
-    const char *GetType() { return "string"; }
+    const char *GetTypeName() { return "string"; }
 };
 
 class NullConstant: public Expr
 {
   public:
     NullConstant(yyltype loc) : Expr(loc) {}
-    const char *GetType() { return "null"; }
+    const char *GetTypeName() { return "null"; }
 };
 
 class Operator : public Node
@@ -109,7 +109,7 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     void CheckStatements();
-    const char *GetType() { return right->GetType(); }
+    const char *GetTypeName() { return right->GetTypeName(); }
 };
 
 class RelationalExpr : public CompoundExpr
@@ -117,7 +117,7 @@ class RelationalExpr : public CompoundExpr
   public:
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     void CheckStatements();
-    const char *GetType() { return "bool"; }
+    const char *GetTypeName() { return "bool"; }
 };
 
 class EqualityExpr : public CompoundExpr
@@ -125,7 +125,7 @@ class EqualityExpr : public CompoundExpr
   public:
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     void CheckStatements();
-    const char *GetType() { return "bool"; }
+    const char *GetTypeName() { return "bool"; }
 };
 
 class LogicalExpr : public CompoundExpr
@@ -134,14 +134,14 @@ class LogicalExpr : public CompoundExpr
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     void CheckStatements();
-    const char *GetType() { return "bool"; }
+    const char *GetTypeName() { return "bool"; }
 };
 
 class AssignExpr : public CompoundExpr
 {
   public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
-    const char *GetType() { return left->GetType(); }
+    const char *GetTypeName() { return left->GetTypeName(); }
     void CheckStatements();
 };
 
@@ -165,6 +165,9 @@ class ArrayAccess : public LValue
     
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
+    void CheckStatements();
+    Type *GetType() { return base->GetType()->GetElemType(); }
+    const char *GetTypeName() { return base->GetType()->GetElemType()->GetTypeName(); }
 };
 
 /* Note that field access is used both for qualified names
@@ -177,13 +180,14 @@ class FieldAccess : public LValue
   protected:
     Expr *base; // will be NULL if no explicit base
     Identifier *field;
-    char *typeName;
+    Type *type;
     
   public:
     FieldAccess(Expr *base, Identifier *field); // ok to pass NULL base
     void CheckStatements(); // its type is decided here
     Identifier *GetField() { return field; }
-    const char *GetType() { return typeName; }
+    Type *GetType() { return type; }
+    const char *GetTypeName() { return type->GetTypeName(); }
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -196,12 +200,13 @@ class Call : public Expr
     Expr *base; // will be NULL if no explicit base
     Identifier *field;
     List<Expr*> *actuals;
-    char *typeName;
+    Type *type;
     
   public:
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
     void CheckStatements(); // its type is decided here
-    const char *GetType() { return typeName; }
+    Type *GetType() { return type; }
+    const char *GetTypeName() { return type->GetTypeName(); }
 };
 
 class NewExpr : public Expr
@@ -221,6 +226,10 @@ class NewArrayExpr : public Expr
     
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
+    void CheckStatements();
+    const char *GetTypeName() { string delim = "[]";
+                                string str = elemType->GetTypeName() + delim;
+                                return str.c_str(); }
 };
 
 class ReadIntegerExpr : public Expr

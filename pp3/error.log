@@ -791,3 +791,273 @@ samples-checkpoint/blackjack.decaf
 < *** Incompatible operands: Animal = Cow
 < 
 samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,36d0
+< 
+< *** Error line 77.
+<       c = decks[d].GetCard();
+<                    ^^^^^^^
+< *** No declaration found for function 'GetCard'
+< 
+< 
+< *** Error line 244.
+<       players[i].Init(i+1);
+<                  ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 252.
+<       if (players[i].HasMoney()) players[i].PlaceBet();
+<                                             ^^^^^^^^
+< *** No declaration found for function 'PlaceBet'
+< 
+< 
+< *** Error line 258.
+<       if (players[i].HasMoney()) players[i].TakeTurn(deck);
+<                                             ^^^^^^^^
+< *** No declaration found for function 'TakeTurn'
+< 
+< 
+< *** Error line 267.
+<         players[i].Resolve(dealer.GetTotal());
+<                    ^^^^^^^
+< *** No declaration found for function 'Resolve'
+< 
+< 
+< *** Error line 274.
+<       players[i].PrintMoney();
+<                  ^^^^^^^^^^
+< *** No declaration found for function 'PrintMoney'
+< 
+samples-checkpoint/blackjack.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,78d0
+< 
+< *** Error line 29.
+<     cards = NewArray(52, int);
+<           ^
+< *** Incompatible operands: int[] = int
+< 
+< 
+< *** Error line 34.
+<       cards[current] = (current + 1) % 13;
+<                      ^
+< *** Incompatible operands: int[] = int
+< 
+< 
+< *** Error line 41.
+<       temp = cards[current];
+<            ^
+< *** Incompatible operands: int = int[]
+< 
+< 
+< *** Error line 43.
+<       cards[r] = temp;
+<                ^
+< *** Incompatible operands: int[] = int
+< 
+< 
+< *** Error line 50.
+<     result = cards[current];
+<            ^
+< *** Incompatible operands: int = int[]
+< 
+< 
+< *** Error line 63.
+<     decks = NewArray(8, Deck);
+<           ^
+< *** Incompatible operands: Deck[] = Deck
+< 
+< 
+< *** Error line 77.
+<       c = decks[d].GetCard();
+<                    ^^^^^^^
+< *** No declaration found for function 'GetCard'
+< 
+< 
+< *** Error line 241.
+<     players = NewArray(numPlayers, Player);
+<             ^
+< *** Incompatible operands: Player[] = Player
+< 
+< 
+< *** Error line 244.
+<       players[i].Init(i+1);
+<                  ^^^^
+< *** No declaration found for function 'Init'
+< 
+< 
+< *** Error line 252.
+<       if (players[i].HasMoney()) players[i].PlaceBet();
+<                                             ^^^^^^^^
+< *** No declaration found for function 'PlaceBet'
+< 
+< 
+< *** Error line 258.
+<       if (players[i].HasMoney()) players[i].TakeTurn(deck);
+<                                             ^^^^^^^^
+< *** No declaration found for function 'TakeTurn'
+< 
+< 
+< *** Error line 267.
+<         players[i].Resolve(dealer.GetTotal());
+<                    ^^^^^^^
+< *** No declaration found for function 'Resolve'
+< 
+< 
+< *** Error line 274.
+<       players[i].PrintMoney();
+<                  ^^^^^^^^^^
+< *** No declaration found for function 'PrintMoney'
+< 
+samples-checkpoint/blackjack.decaf
+1,42d0
+< 
+< *** Error line 46.
+<       m[i] = NewArray(10, int);
+<            ^
+< *** Incompatible operands: int[][] = int
+< 
+< 
+< *** Error line 51.
+< 		m[i][j] = 0;
+<                         ^
+< *** Incompatible operands: int[][] = int
+< 
+< 
+< *** Error line 54.
+<     m[x][y] = value;
+<             ^
+< *** Incompatible operands: int[][] = int
+< 
+< 
+< *** Error line 85.
+<     m = NewArray(10, SparseItem);
+<       ^
+< *** Incompatible operands: SparseItem[] = SparseItem
+< 
+< 
+< *** Error line 87.
+<       m[i] = null;
+<            ^
+< *** Incompatible operands: SparseItem[] = null
+< 
+< 
+< *** Error line 93.
+<     elem = m[x];
+<          ^
+< *** Incompatible operands: SparseItem = SparseItem[]
+< 
+< 
+< *** Error line 111.
+<       m[x] = elem;
+<            ^
+< *** Incompatible operands: SparseItem[] = SparseItem
+< 
+samples-checkpoint/matrix.decaf
+1a2,7
+> *** Error line 1.
+> void Mystery(Unknown a) {}
+>              ^^^^^^^
+> *** No declaration found for type 'Unknown'
+> 
+> 
+samples-checkpoint/bad3.decaf
+12a13,18
+> 
+> *** Error line 14.
+>   ABlock[] test;
+>   ^^^^^^
+> *** No declaration found for type 'ABlock'
+> 
+samples-checkpoint/bad4.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+6a7,12
+> 
+> *** Error line 13.
+>            Unknown b;
+>            ^^^^^^^
+> *** No declaration found for type 'Unknown'
+> 
+samples-checkpoint/bad7.decaf
+1,7d0
+< 
+< *** Error line 77.
+<       c = decks[d].GetCard();
+<                    ^^^^^^^
+< *** No declaration found for function 'GetCard'
+< 
+< Segmentation fault
+samples-checkpoint/blackjack.decaf
+1d0
+< Segmentation fault
+samples-checkpoint/matrix.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,7d0
+< 
+< *** Error line 77.
+<       c = decks[d].GetCard();
+<                    ^^^^^^^
+< *** No declaration found for function 'GetCard'
+< 
+< Segmentation fault
+samples-checkpoint/blackjack.decaf
+1d0
+< Segmentation fault
+samples-checkpoint/matrix.decaf

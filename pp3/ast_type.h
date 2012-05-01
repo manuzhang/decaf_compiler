@@ -9,6 +9,8 @@
 #ifndef _H_ast_type
 #define _H_ast_type
 
+#include <string.h>
+
 #include <string>
 
 #include "ast.h"
@@ -27,7 +29,8 @@ class Type : public Node
 
     Type(yyltype loc) : Node(loc) {}
     Type(const char *str);
-    virtual char *GetTypeName() { return typeName; }
+    virtual Type *GetElemType() { return this; }
+    virtual const char *GetTypeName() { return typeName; }
     virtual bool HasSameType(Type *t);
     virtual void CheckTypeError() {}
     friend ostream& operator<<(ostream &out, Type *type) { type->print(out); return out; }
@@ -43,10 +46,9 @@ class NamedType : public Type
     NamedType(Identifier *i);
     Identifier *GetID() { return id; }
     bool HasSameType(Type *nt);
-    char *GetTypeName() { return id->GetName(); }
-    void CheckStatements();
+    Type *GetElemType() { return this; }
+    const char *GetTypeName() { return id->GetName(); }
     void CheckTypeError();
-
 };
 
 class ArrayType : public Type 
@@ -58,8 +60,9 @@ class ArrayType : public Type
     ArrayType(yyltype loc, Type *elemType);
     Type *GetElemType() { return elemType; }
     bool HasSameType(Type *at);
-    char *GetTypeName() { return elemType->GetTypeName(); }
-    void CheckStatements();
+    const char *GetTypeName() { string delim = "[]";
+                                string str = elemType->GetTypeName() + delim;
+                                return str.c_str(); }
     void CheckTypeError();
 };
 

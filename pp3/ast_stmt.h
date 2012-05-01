@@ -40,7 +40,6 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
-     virtual void CheckDeclError() {}
 };
 
 class StmtBlock : public Stmt 

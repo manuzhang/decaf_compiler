@@ -34,7 +34,7 @@ Type::Type(const char *n) {
 }
 
 bool Type::HasSameType(Type *t) {
-  char *typeName2 = t->GetTypeName();
+  const char *typeName2 = t->GetTypeName();
   if (typeName && typeName2)
     return !strcmp(typeName, typeName2);
   else
@@ -53,17 +53,11 @@ bool NamedType::HasSameType(Type *nt) {
     return false;
 }
 
-void NamedType::CheckStatements() {
-  CheckTypeError();
-}
-
 void NamedType::CheckTypeError() {
-  if (Program::sym_table)
-    {
-      char *name = id->GetName();
-      if (Program::sym_table->Lookup(name) == NULL)
-        ReportError::IdentifierNotDeclared(id, LookingForType);
-    }
+  const char *name = id->GetName();
+  if (Program::sym_table->Lookup(name) == NULL)
+    ReportError::IdentifierNotDeclared(id, LookingForType);
+
 }
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
@@ -72,14 +66,8 @@ ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
 }
 
 bool ArrayType::HasSameType(Type *at) {
-  if (typeid(*at) == typeid(ArrayType))
-    return elemType->HasSameType(dynamic_cast<ArrayType*>(at)->GetElemType());
-  else
-    return false;
-}
+  return elemType->HasSameType(at->GetElemType());
 
-void ArrayType::CheckStatements() {
-  CheckTypeError();
 }
 
 void ArrayType::CheckTypeError() {

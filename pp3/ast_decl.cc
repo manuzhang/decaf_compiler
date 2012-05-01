@@ -63,7 +63,7 @@ void ClassDecl::CheckDeclError() {
         {
 	  Decl *cur = this->members->Nth(i);
 	  Decl *prev;
-	  char *name = cur->GetID()->GetName();
+	  const char *name = cur->GetID()->GetName();
 	  if ((prev = sym_table->Lookup(name)) != NULL)
 	    ReportError::DeclConflict(cur, prev);
 	  else
@@ -75,7 +75,7 @@ void ClassDecl::CheckDeclError() {
   NamedType *ex = this->extends;
   while (ex)
     {
-      char *name = ex->GetID()->GetName();
+      const char *name = ex->GetID()->GetName();
       Node *node = Program::sym_table->Lookup(name);
       if (node == NULL)
         {
@@ -94,7 +94,7 @@ void ClassDecl::CheckDeclError() {
                 {
                   Decl *cur = base_members->Nth(i);
                   Decl *prev;
-                  char *name = cur->GetID()->GetName();
+                  const char *name = cur->GetID()->GetName();
                   if ((prev = this->sym_table->Lookup(name)) != NULL)
                     {
                       if (typeid(*cur) == typeid(VarDecl) || typeid(*cur) != typeid(*prev))
@@ -142,7 +142,7 @@ void ClassDecl::CheckDeclError() {
 		{
 		  FnDecl *cur = dynamic_cast<FnDecl*>(members->Nth(i));
 		  Decl *prev;
-		  char *name = cur->GetID()->GetName();
+		  const char *name = cur->GetID()->GetName();
 		  if ((prev = sym_table->Lookup(name)) != NULL)
 		    {
 		      if (typeid(*prev) != typeid(FnDecl))
@@ -182,7 +182,7 @@ void InterfaceDecl::CheckDeclError() {
 	{
 	  Decl *cur = members->Nth(i);
 	  Decl *prev;
-	  char *name = cur->GetID()->GetName();
+	  const char *name = cur->GetID()->GetName();
 	  if ((prev = sym_table->Lookup(name)) != NULL)
 	    {
 	      ReportError::DeclConflict(cur, prev);
@@ -206,7 +206,7 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
 
 bool FnDecl::HasSameTypeSig(FnDecl *fd) {
   if (!strcmp(id->GetName(), fd->GetID()->GetName()))
-    if (returnType->HasSameType(fd->GetReturnType()))
+    if (returnType->HasSameType(fd->GetType()))
       {
 	List<VarDecl*> *f1 = formals;
 	List<VarDecl*> *f2 = fd->GetFormals();
@@ -241,7 +241,7 @@ void FnDecl::CheckDeclError() {
 	{
 	  VarDecl *cur = formals->Nth(i);
 	  Decl *prev;
-	  char *name = cur->GetID()->GetName();
+	  const char *name = cur->GetID()->GetName();
 	  if ((prev = sym_table->Lookup(name)) != NULL)
 	    {
 	      ReportError::DeclConflict(cur, prev);

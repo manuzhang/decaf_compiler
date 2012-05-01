@@ -28,7 +28,7 @@ void Program::CheckDeclError() {
          {
           Decl *cur = decls->Nth(i);
           Decl *prev;
-          char *name = cur->GetID()->GetName();
+          const char *name = cur->GetID()->GetName();
           if ((prev = sym_table->Lookup(name)) != NULL)
             ReportError::DeclConflict(cur, prev);
           else
@@ -67,7 +67,7 @@ void StmtBlock::CheckDeclError() {
         {
          VarDecl *cur = decls->Nth(i);
          Decl *prev;
-         char *name = cur->GetID()->GetName();
+         const char *name = cur->GetID()->GetName();
          if ((prev = sym_table->Lookup(name)) != NULL)
            {
              ReportError::DeclConflict(cur, prev);

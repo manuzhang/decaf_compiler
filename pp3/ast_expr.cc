@@ -56,11 +56,11 @@ void ArithmeticExpr::CheckStatements() {
   if (this->left) // binary
     {
       this->left->CheckStatements();
-      lt = this->left->GetType();
+      lt = this->left->GetTypeName();
     }
 
   this->right->CheckStatements();
-  rt = this->right->GetType();
+  rt = this->right->GetTypeName();
   if (lt && rt) // binary
     {
       if ((strcmp(lt, "int") && strcmp(lt, "double")) ||
@@ -77,10 +77,10 @@ void ArithmeticExpr::CheckStatements() {
 
 void RelationalExpr::CheckStatements() {
    this->left->CheckStatements();
-   const char *lt = this->left->GetType();
+   const char *lt = this->left->GetTypeName();
 
    this->right->CheckStatements();
-   const char *rt = this->right->GetType();
+   const char *rt = this->right->GetTypeName();
    if (lt && rt) // binary
      {
        if ((strcmp(lt, "int") && strcmp(lt, "double")) ||
@@ -93,8 +93,8 @@ void RelationalExpr::CheckStatements() {
 void EqualityExpr::CheckStatements() {
   this->left->CheckStatements();
   this->right->CheckStatements();
-  const char *lt = this->left->GetType();
-  const char *rt = this->right->GetType();
+  const char *lt = this->left->GetTypeName();
+  const char *rt = this->right->GetTypeName();
   if (lt && rt)
     if (strcmp(lt, rt))
       ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
@@ -107,10 +107,10 @@ void LogicalExpr::CheckStatements() {
   if (this->left)
     {
       this->left->CheckStatements();
-      lt = this->left->GetType();
+      lt = this->left->GetTypeName();
     }
   this->right->CheckStatements();
-  rt = this->right->GetType();
+  rt = this->right->GetTypeName();
   if (lt && rt)
     {
       if (strcmp(lt, "bool") || strcmp(rt, "bool"))
@@ -127,8 +127,8 @@ void LogicalExpr::CheckStatements() {
 void AssignExpr::CheckStatements() {
   this->left->CheckStatements();
   this->right->CheckStatements();
-  const char *lt = this->left->GetType();
-  const char *rt = this->right->GetType();
+  const char *lt = this->left->GetTypeName();
+  const char *rt = this->right->GetTypeName();
 
   if (lt && rt)
     {
@@ -148,9 +148,10 @@ void AssignExpr::CheckStatements() {
                 return;
             }
         }
+       else if (ldecl && !strcmp(rt, "null")) // object = null
+           return;
        else if (!strcmp(lt, rt)) // non-objects
            return;
-
       ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
     }
 }
@@ -171,6 +172,17 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
+void ArrayAccess::CheckStatements() {
+  this->base->CheckStatements();
+  if (strstr(this->base->GetTypeName(), "[]") == NULL)
+    ReportError::BracketsOnNonArray(this->base);
+  this->subscript->CheckStatements();
+  if (strcmp(this->subscript->GetTypeName(), "int"))
+    ReportError::SubscriptNotInteger(this->subscript);
+}
+
+
+
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
   : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
     Assert(f != NULL); // b can be be NULL (just means no explicit base)
@@ -181,30 +193,34 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 void FieldAccess::CheckStatements() {
   Decl *decl; // to keep the result from looking up the symbol table
-  if (base && typeid(*base) == typeid(FieldAccess))
+  if (this->base && typeid(*this->base) == typeid(FieldAccess))
     {
-      Identifier *id = dynamic_cast<FieldAccess*>(base)->GetField();
-      Decl *id_decl = id->CheckIdDecl(LookingForClass);
+      Identifier *id = dynamic_cast<FieldAccess*>(this->base)->GetField();
+      Decl *id_decl = id->CheckIdDecl();
       // check whether the field is a data member of base
       if (id_decl != NULL)
           {
             // class name
-            char *name = dynamic_cast<VarDecl*>(id_decl)->GetType()->GetTypeName();
+            const char *name = id_decl->GetTypeName();
             if ((decl = Program::sym_table->Lookup(name)) != NULL) // fetch base symbol table
               {
                 if ((decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName())) == NULL)
                   ReportError::FieldNotFoundInBase(this->field, new Type(id_decl->GetTypeName()));
               }
           }
+      else
+        ReportError::IdentifierNotDeclared(id, LookingForClass);
     }
   else
     {
       // no base, just check whether the field is declared
-      decl = this->field->CheckIdDecl(LookingForVariable);
+      decl = this->field->CheckIdDecl();
+      if (decl == NULL)
+        ReportError::IdentifierNotDeclared(this->field, LookingForVariable);
     }
 
   if (decl != NULL)
-    this->typeName = decl->GetTypeName();
+    this->type = decl->GetType();
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
@@ -217,33 +233,37 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
 
 void Call::CheckStatements() {
   Decl *decl; // to keep the result from looking up the symbol table
-  if (base && typeid(*base) == typeid(FieldAccess))
+  if (this->base && typeid(*this->base) == typeid(FieldAccess))
     {
       // check whether base is declared
-      Identifier *id = dynamic_cast<FieldAccess*>(base)->GetField();
+      Identifier *id = dynamic_cast<FieldAccess*>(this->base)->GetField();
       // actually, it's LookingForClass or LookingForInterface
       // to be fixed
-      Decl *id_decl = id->CheckIdDecl(LookingForClass);
+      Decl *id_decl = id->CheckIdDecl();
 
       // check whether the field is a member function of base
       if (id_decl != NULL)
         {
              // class name
-            char *name = id_decl->GetTypeName();
+            const char *name = id_decl->GetTypeName();
             if ((decl = Program::sym_table->Lookup(name)) != NULL) // fetch base symbol table
               {
                 if ((decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName())) == NULL)
                   ReportError::FieldNotFoundInBase(this->field, new Type(id_decl->GetTypeName()));
               }
         }
+      else
+        ReportError::IdentifierNotDeclared(id, LookingForClass);
     }
   else
     {
       // no base, just check whether the field is declared
-      decl = this->field->CheckIdDecl(LookingForFunction);
+      decl = this->field->CheckIdDecl();
+      if (decl == NULL)
+        ReportError::IdentifierNotDeclared(this->field, LookingForFunction);
     }
   if (decl != NULL)
-    this->typeName = decl->GetTypeName(); // returnType
+    this->type = decl->GetType(); // returnType
 
   if (actuals)
     {
@@ -261,6 +281,13 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
     Assert(sz != NULL && et != NULL);
     (size=sz)->SetParent(this); 
     (elemType=et)->SetParent(this);
+}
+
+void NewArrayExpr::CheckStatements() {
+  this->size->CheckStatements();
+  if (strcmp(this->size->GetTypeName(), "int"))
+    ReportError::NewArraySizeNotInteger(this->size);
+  this->elemType->CheckStatements();
 }
 
 PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
