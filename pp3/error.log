@@ -1061,3 +1061,291 @@ samples-checkpoint/blackjack.decaf
 1d0
 < Segmentation fault
 samples-checkpoint/matrix.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,7d0
+< 
+< *** Error line 77.
+<       c = decks[d].GetCard();
+<                    ^^^^^^^
+< *** No declaration found for function 'GetCard'
+< 
+< Segmentation fault
+samples-checkpoint/blackjack.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1d0
+< Segmentation fault
+samples-checkpoint/matrix.decaf
+1d0
+< Segmentation fault
+samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,24d0
+< 
+< *** Error line 94.
+<     while (elem != null) {
+<                 ^^
+< *** Incompatible operands: SparseItem != null
+< 
+< 
+< *** Error line 100.
+<     return null;
+<     ^^^^^^
+< *** Incompatible return: null given, SparseItem expected
+< 
+< 
+< *** Error line 106.
+<     if (elem != null) {
+<              ^^
+< *** Incompatible operands: SparseItem != null
+< 
+< 
+< *** Error line 118.
+<     if (elem != null) {
+<              ^^
+< *** Incompatible operands: SparseItem != null
+< 
+samples-checkpoint/matrix.decaf
+1,6d0
+< 
+< *** Error line 13.
+<    Streamable GetStream() { return this; }
+<                             ^^^^^^
+< *** Incompatible return: Ruler given, Streamable expected
+< 
+samples-checkpoint/t6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,60d0
+< 
+< *** Error line 69.
+<     this.next = next;
+<               ^
+< *** Incompatible operands: SparseItem = SparseItem
+< 
+< 
+< *** Error line 93.
+<     elem = m[x];
+<          ^
+< *** Incompatible operands: SparseItem = SparseItem
+< 
+< 
+< *** Error line 94.
+<     while (elem != null) {
+<                 ^^
+< *** Incompatible operands: SparseItem != null
+< 
+< 
+< *** Error line 98.
+<       elem = elem.GetNext();
+<            ^
+< *** Incompatible operands: SparseItem = SparseItem
+< 
+< 
+< *** Error line 100.
+<     return null;
+<     ^^^^^^
+< *** Incompatible return: null given, SparseItem expected
+< 
+< 
+< *** Error line 105.
+<     elem = Find(x,y);
+<          ^
+< *** Incompatible operands: SparseItem = SparseItem
+< 
+< 
+< *** Error line 106.
+<     if (elem != null) {
+<              ^^
+< *** Incompatible operands: SparseItem != null
+< 
+< 
+< *** Error line 111.
+<       m[x] = elem;
+<            ^
+< *** Incompatible operands: SparseItem = SparseItem
+< 
+< 
+< *** Error line 117.
+<     elem = Find(x,y);
+<          ^
+< *** Incompatible operands: SparseItem = SparseItem
+< 
+< 
+< *** Error line 118.
+<     if (elem != null) {
+<              ^^
+< *** Incompatible operands: SparseItem != null
+< 
+samples-checkpoint/matrix.decaf
+1,6d0
+< 
+< *** Error line 10.
+<     mother = mom;
+<            ^
+< *** Incompatible operands: Animal = Animal
+< 
+samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,24d0
+< 
+< *** Error line 94.
+<     while (elem != null) {
+<                 ^^
+< *** Incompatible operands: SparseItem != null
+< 
+< 
+< *** Error line 100.
+<     return null;
+<     ^^^^^^
+< *** Incompatible return: null given, SparseItem expected
+< 
+< 
+< *** Error line 106.
+<     if (elem != null) {
+<              ^^
+< *** Incompatible operands: SparseItem != null
+< 
+< 
+< *** Error line 118.
+<     if (elem != null) {
+<              ^^
+< *** Incompatible operands: SparseItem != null
+< 
+samples-checkpoint/matrix.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,6d0
+< 
+< *** Error line 13.
+<    Streamable GetStream() { return this; }
+<                             ^^^^^^
+< *** Incompatible return: Ruler given, Streamable expected
+< 
+samples-checkpoint/t6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf

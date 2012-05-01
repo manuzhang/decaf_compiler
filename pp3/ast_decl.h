@@ -57,8 +57,10 @@ class ClassDecl : public Decl
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     NamedType *GetExtends() { return extends; }
+    List<NamedType*> *GetImplements() { return implements; }
     void CheckStatements();
     void CheckDeclError();
+    bool IsCompatibleWith(Decl *decl);
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
     Hashtable<Decl*> *sym_table;
 };

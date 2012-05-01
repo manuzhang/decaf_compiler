@@ -50,13 +50,14 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 
 void ClassDecl::CheckStatements() {
   if (this->members)
-     {
-       for (int i = 0; i < this->members->NumElements(); i++)
-         this->members->Nth(i)->CheckStatements();
-     }
+    {
+      for (int i = 0; i < this->members->NumElements(); i++)
+	this->members->Nth(i)->CheckStatements();
+    }
 }
 
 void ClassDecl::CheckDeclError() {
+  sym_table->Enter(this->GetID()->GetName(), this);
   if (this->members)
     {
       for (int i = 0; i < this->members->NumElements(); i++)
@@ -159,11 +160,43 @@ void ClassDecl::CheckDeclError() {
 
   // look into local scopes
   if (this->members)
-      {
-        for (int i = 0; i < this->members->NumElements(); i++)
-          this->members->Nth(i)->CheckDeclError();
-      }
+    {
+      for (int i = 0; i < this->members->NumElements(); i++)
+	this->members->Nth(i)->CheckDeclError();
+    }
 }
+
+bool ClassDecl::IsCompatibleWith(Decl *decl)
+{
+  if (typeid(*decl) == typeid(ClassDecl))
+    {
+      ClassDecl *cldecl = dynamic_cast<ClassDecl*>(decl);
+      NamedType *extends = this->GetExtends();
+      if (extends && !strcmp(cldecl->GetID()->GetName(), extends->GetTypeName()))
+	return true;
+      else
+	return false;
+    }
+  else if (typeid(*decl) == typeid(InterfaceDecl))
+    {
+      InterfaceDecl *itfdecl = dynamic_cast<InterfaceDecl*>(decl);
+      List<NamedType*> *implements = this->GetImplements();
+      if (implements)
+	{
+	  for (int i = 0; i < implements->NumElements(); i++)
+	    {
+	      NamedType *implement = implements->Nth(i);
+	      if (implement && !strcmp(itfdecl->GetID()->GetName(), implement->GetTypeName()))
+		return true;
+		  
+	    }
+	}
+      return false;
+    }
+  else
+    return false;
+}
+
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
   Assert(n != NULL && m != NULL);
@@ -172,7 +205,7 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 void InterfaceDecl::CheckStatements() {
- // do nothing here
+  // do nothing here
 }
 
 void InterfaceDecl::CheckDeclError() {

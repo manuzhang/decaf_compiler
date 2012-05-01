@@ -153,9 +153,13 @@ class LValue : public Expr
 
 class This : public Expr
 {
+  protected:
+    const char *typeName;
+
   public:
     This(yyltype loc) : Expr(loc) {}
     void CheckStatements();
+    const char *GetTypeName() { return typeName; }
 };
 
 class ArrayAccess : public LValue
@@ -187,7 +191,7 @@ class FieldAccess : public LValue
     void CheckStatements(); // its type is decided here
     Identifier *GetField() { return field; }
     Type *GetType() { return type; }
-    const char *GetTypeName() { return type->GetTypeName(); }
+    const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -206,7 +210,7 @@ class Call : public Expr
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
     void CheckStatements(); // its type is decided here
     Type *GetType() { return type; }
-    const char *GetTypeName() { return type->GetTypeName(); }
+    const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
 };
 
 class NewExpr : public Expr

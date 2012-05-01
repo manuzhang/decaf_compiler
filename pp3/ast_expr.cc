@@ -13,46 +13,46 @@
 #include "errors.h"
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
-    value = val;
+  value = val;
 }
 
 DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc) {
-    value = val;
+  value = val;
 }
 
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
-    value = val;
+  value = val;
 }
 
 StringConstant::StringConstant(yyltype loc, const char *val) : Expr(loc) {
-    Assert(val != NULL);
-    value = strdup(val);
+  Assert(val != NULL);
+  value = strdup(val);
 }
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
-    Assert(tok != NULL);
-    strncpy(tokenString, tok, sizeof(tokenString));
+  Assert(tok != NULL);
+  strncpy(tokenString, tok, sizeof(tokenString));
 }
 
 
 CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r) 
   : Expr(Join(l->GetLocation(), r->GetLocation())) {
-    Assert(l != NULL && o != NULL && r != NULL);
-    (op=o)->SetParent(this);
-    (left=l)->SetParent(this); 
-    (right=r)->SetParent(this);
+  Assert(l != NULL && o != NULL && r != NULL);
+  (op=o)->SetParent(this);
+  (left=l)->SetParent(this); 
+  (right=r)->SetParent(this);
 }
 
 CompoundExpr::CompoundExpr(Operator *o, Expr *r) 
   : Expr(Join(o->GetLocation(), r->GetLocation())) {
-    Assert(o != NULL && r != NULL);
-    left = NULL; 
-    (op=o)->SetParent(this);
-    (right=r)->SetParent(this);
+  Assert(o != NULL && r != NULL);
+  left = NULL; 
+  (op=o)->SetParent(this);
+  (right=r)->SetParent(this);
 }
   
 void ArithmeticExpr::CheckStatements() {
-  const char *lt, *rt;
+  const char *lt = NULL, *rt = NULL;
   if (this->left) // binary
     {
       this->left->CheckStatements();
@@ -76,18 +76,18 @@ void ArithmeticExpr::CheckStatements() {
 }
 
 void RelationalExpr::CheckStatements() {
-   this->left->CheckStatements();
-   const char *lt = this->left->GetTypeName();
+  this->left->CheckStatements();
+  const char *lt = this->left->GetTypeName();
 
-   this->right->CheckStatements();
-   const char *rt = this->right->GetTypeName();
-   if (lt && rt) // binary
-     {
-       if ((strcmp(lt, "int") && strcmp(lt, "double")) ||
-           (strcmp(rt, "int") && strcmp(rt, "double")) ||
-           (strcmp(lt, rt)))
-         ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
-     }
+  this->right->CheckStatements();
+  const char *rt = this->right->GetTypeName();
+  if (lt && rt) // binary
+    {
+      if ((strcmp(lt, "int") && strcmp(lt, "double")) ||
+	  (strcmp(rt, "int") && strcmp(rt, "double")) ||
+	  (strcmp(lt, rt)))
+	ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
+    }
 }
 
 void EqualityExpr::CheckStatements() {
@@ -96,14 +96,37 @@ void EqualityExpr::CheckStatements() {
   const char *lt = this->left->GetTypeName();
   const char *rt = this->right->GetTypeName();
   if (lt && rt)
-    if (strcmp(lt, rt))
-      ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
-  // to be implemented:
-  // two objects or an object and null
+    {
+      Decl *ldecl = Program::sym_table->Lookup(lt);
+      Decl *rdecl = Program::sym_table->Lookup(rt);
+
+      if (ldecl && rdecl) // objects
+       {
+         if (!strcmp(lt, rt))
+           return;
+         else if (typeid(*ldecl) == typeid(ClassDecl))
+           {
+             ClassDecl *lcldecl = dynamic_cast<ClassDecl*>(ldecl);
+             if (lcldecl->IsCompatibleWith(rdecl))
+               return;
+           }
+         else if (typeid(*rdecl) == typeid(ClassDecl))
+           {
+             ClassDecl *rcldecl = dynamic_cast<ClassDecl*>(rdecl);
+             if (rcldecl->IsCompatibleWith(ldecl))
+               return;
+           }
+       }
+      else if (ldecl && !strcmp(rt, "null")) // object = null
+         return;
+      else if (!strcmp(lt, rt)) // non-objects
+         return;
+    }
+    ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
 }
 
 void LogicalExpr::CheckStatements() {
-  const char *lt, *rt;
+  const char *lt = NULL, *rt = NULL;
   if (this->left)
     {
       this->left->CheckStatements();
@@ -139,19 +162,17 @@ void AssignExpr::CheckStatements() {
         {
           if (!strcmp(lt, rt))
             return;
-          else if (typeid(*ldecl) == typeid(ClassDecl) && typeid(*rdecl) == typeid(ClassDecl))
-            {
-              ClassDecl *lcldecl = dynamic_cast<ClassDecl*>(ldecl);
-              ClassDecl *rcldecl = dynamic_cast<ClassDecl*>(rdecl);
-              NamedType *extends = rcldecl->GetExtends();
-              if (extends && !strcmp(lcldecl->GetID()->GetName(), extends->GetTypeName()))
-                return;
-            }
+          else if (typeid(*rdecl) == typeid(ClassDecl))
+             {
+                ClassDecl *rcldecl = dynamic_cast<ClassDecl*>(rdecl);
+                if (rcldecl->IsCompatibleWith(ldecl))
+                  return;
+             }
         }
-       else if (ldecl && !strcmp(rt, "null")) // object = null
-           return;
-       else if (!strcmp(lt, rt)) // non-objects
-           return;
+      else if (ldecl && !strcmp(rt, "null")) // object = null
+	return;
+      else if (!strcmp(lt, rt)) // non-objects
+	return;
       ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
     }
 }
@@ -161,15 +182,18 @@ void This::CheckStatements() {
   while (parent)
     {
       if (typeid(*parent) == typeid(ClassDecl))
-        return;
+        {
+          this->typeName = dynamic_cast<ClassDecl*>(parent)->GetID()->GetName();
+          return;
+        }
       parent = parent->GetParent();
     }
   ReportError::ThisOutsideClassScope(this);
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
-    (base=b)->SetParent(this); 
-    (subscript=s)->SetParent(this);
+  (base=b)->SetParent(this); 
+  (subscript=s)->SetParent(this);
 }
 
 void ArrayAccess::CheckStatements() {
@@ -181,35 +205,48 @@ void ArrayAccess::CheckStatements() {
     ReportError::SubscriptNotInteger(this->subscript);
 }
 
-
-
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
   : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
-    Assert(f != NULL); // b can be be NULL (just means no explicit base)
-    base = b; 
-    if (base) base->SetParent(this); 
-    (field=f)->SetParent(this);
+  Assert(f != NULL); // b can be be NULL (just means no explicit base)
+  base = b; 
+  if (base) base->SetParent(this); 
+  (field=f)->SetParent(this);
 }
 
 void FieldAccess::CheckStatements() {
-  Decl *decl; // to keep the result from looking up the symbol table
-  if (this->base && typeid(*this->base) == typeid(FieldAccess))
+  Decl *decl = NULL; // to keep the result from looking up the symbol table
+  if (this->base)
     {
-      Identifier *id = dynamic_cast<FieldAccess*>(this->base)->GetField();
-      Decl *id_decl = id->CheckIdDecl();
-      // check whether the field is a data member of base
-      if (id_decl != NULL)
-          {
-            // class name
-            const char *name = id_decl->GetTypeName();
-            if ((decl = Program::sym_table->Lookup(name)) != NULL) // fetch base symbol table
-              {
-                if ((decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName())) == NULL)
-                  ReportError::FieldNotFoundInBase(this->field, new Type(id_decl->GetTypeName()));
-              }
-          }
-      else
-        ReportError::IdentifierNotDeclared(id, LookingForClass);
+      this->base->CheckStatements();
+      const char *name = this->base->GetTypeName();
+
+      if (name)
+	{
+	  Node *parent = this->GetParent();
+	  Decl *cldecl = NULL; // look for ClassDecl 
+	  while (parent)
+	    {
+	      Hashtable<Decl*> *sym_table = parent->GetSymTable();
+	      if (sym_table)
+		if ((cldecl = sym_table->Lookup(name)) != NULL)
+		  {
+                    if ((decl = this->field->CheckIdDecl(cldecl->GetSymTable(), this->field->GetName())) == NULL)
+       	              ReportError::FieldNotFoundInBase(this->field, new Type(name));
+
+		  }
+	      parent = parent->GetParent();
+	    }
+	  if (cldecl == NULL)
+	    {
+	      if ((cldecl = Program::sym_table->Lookup(name)) != NULL)
+	        {
+	          if ((decl = this->field->CheckIdDecl(cldecl->GetSymTable(), this->field->GetName())) != NULL)
+	            ReportError::InaccessibleField(this->field, new Type(name));
+	        }
+	      else // for those with no symbol table, e.g. int[]
+	          ReportError::FieldNotFoundInBase(this->field, new Type(name));
+	    }
+	}
     }
   else
     {
@@ -218,42 +255,36 @@ void FieldAccess::CheckStatements() {
       if (decl == NULL)
         ReportError::IdentifierNotDeclared(this->field, LookingForVariable);
     }
-
   if (decl != NULL)
-    this->type = decl->GetType();
+    this->type = decl->GetType(); 
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
-    Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
-    base = b;
-    if (base) base->SetParent(this);
-    (field=f)->SetParent(this);
-    (actuals=a)->SetParentAll(this);
+  Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
+  base = b;
+  if (base) base->SetParent(this);
+  (field=f)->SetParent(this);
+  (actuals=a)->SetParentAll(this);
 }
 
 void Call::CheckStatements() {
-  Decl *decl; // to keep the result from looking up the symbol table
-  if (this->base && typeid(*this->base) == typeid(FieldAccess))
+  if (actuals)
     {
-      // check whether base is declared
-      Identifier *id = dynamic_cast<FieldAccess*>(this->base)->GetField();
-      // actually, it's LookingForClass or LookingForInterface
-      // to be fixed
-      Decl *id_decl = id->CheckIdDecl();
+      for (int i = 0; i < actuals->NumElements(); i++)
+        actuals->Nth(i)->CheckStatements();
+    }
 
-      // check whether the field is a member function of base
-      if (id_decl != NULL)
-        {
-             // class name
-            const char *name = id_decl->GetTypeName();
-            if ((decl = Program::sym_table->Lookup(name)) != NULL) // fetch base symbol table
-              {
-                if ((decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName())) == NULL)
-                  ReportError::FieldNotFoundInBase(this->field, new Type(id_decl->GetTypeName()));
-              }
-        }
-      else
-        ReportError::IdentifierNotDeclared(id, LookingForClass);
+  Decl *decl = NULL;
+
+  if (this->base)
+    {
+      this->base->CheckStatements();
+      const char *name = this->base->GetTypeName();
+      if (name && (decl = Program::sym_table->Lookup(name)) != NULL)
+	{
+	  if ((decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName())) == NULL)
+	    ReportError::FieldNotFoundInBase(this->field, new Type(name));
+	}
     }
   else
     {
@@ -265,11 +296,7 @@ void Call::CheckStatements() {
   if (decl != NULL)
     this->type = decl->GetType(); // returnType
 
-  if (actuals)
-    {
-      for (int i = 0; i < actuals->NumElements(); i++)
-        actuals->Nth(i)->CheckStatements();
-    }
+
 }
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
@@ -278,9 +305,9 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
 }
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
-    Assert(sz != NULL && et != NULL);
-    (size=sz)->SetParent(this); 
-    (elemType=et)->SetParent(this);
+  Assert(sz != NULL && et != NULL);
+  (size=sz)->SetParent(this); 
+  (elemType=et)->SetParent(this);
 }
 
 void NewArrayExpr::CheckStatements() {
@@ -291,8 +318,8 @@ void NewArrayExpr::CheckStatements() {
 }
 
 PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
-: Expr(loc) {
-    Assert(lv != NULL && op != NULL);
-    (lvalue=lv)->SetParent(this);
-    (optr=op)->SetParent(this);
+  : Expr(loc) {
+  Assert(lv != NULL && op != NULL);
+  (lvalue=lv)->SetParent(this);
+  (optr=op)->SetParent(this);
 }

@@ -45,9 +45,9 @@ class NamedType : public Type
   public:
     NamedType(Identifier *i);
     Identifier *GetID() { return id; }
-    bool HasSameType(Type *nt);
     Type *GetElemType() { return this; }
     const char *GetTypeName() { return id->GetName(); }
+    bool HasSameType(Type *nt);
     void CheckTypeError();
 };
 
@@ -59,10 +59,10 @@ class ArrayType : public Type
   public:
     ArrayType(yyltype loc, Type *elemType);
     Type *GetElemType() { return elemType; }
-    bool HasSameType(Type *at);
     const char *GetTypeName() { string delim = "[]";
                                 string str = elemType->GetTypeName() + delim;
                                 return str.c_str(); }
+    bool HasSameType(Type *at);
     void CheckTypeError();
 };
 

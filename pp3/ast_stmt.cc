@@ -2,6 +2,9 @@
  * -----------------
  * Implementation of statement node classes.
  */
+
+#include <typeinfo>
+
 #include "ast_stmt.h"
 #include "ast_type.h"
 #include "ast_decl.h"
@@ -96,13 +99,15 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 }
 
 void ConditionalStmt::CheckStatements() {
-  if (body)
-    body->CheckStatements();
+  this->test->CheckStatements();
+  if (strcmp(this->test->GetTypeName(), "bool"))
+    ReportError::TestNotBoolean(this->test);
+
+  this->body->CheckStatements();
 }
 
 void ConditionalStmt::CheckDeclError() {
-  if (body)
-    body->CheckDeclError();
+  this->body->CheckDeclError();
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
@@ -130,11 +135,77 @@ void IfStmt::CheckStatements() {
     elseBody->CheckStatements();
 }
 
+void BreakStmt::CheckStatements() {
+  Node *parent = this->GetParent();
+  while (parent)
+    {
+      if (typeid(*parent) == typeid(LoopStmt))
+        return;
+      parent = parent->GetParent();
+    }
+  ReportError::BreakOutsideLoop(this);
+}
+
+
+void ForStmt::CheckStatements() {
+  if (init)
+    init->CheckStatements();
+  if (step)
+    step->CheckStatements();
+  ConditionalStmt::CheckStatements();
+}
+
+void WhileStmt::CheckStatements() {
+  ConditionalStmt::CheckStatements();
+}
+
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
     Assert(e != NULL);
     (expr=e)->SetParent(this);
 }
 
+void ReturnStmt::CheckStatements() {
+
+  const char *expected;
+  Node *parent = this->GetParent();
+  while (parent)
+    {
+      if (typeid(*parent) == typeid(FnDecl))
+        expected = dynamic_cast<FnDecl*>(parent)->GetTypeName();
+      parent = parent->GetParent();
+    }
+  if (expr)
+    {
+      expr->CheckStatements();
+      const char *given = expr->GetTypeName();
+
+      if (given && expected)
+        {
+          Decl *gdecl = Program::sym_table->Lookup(given);
+          Decl *edecl = Program::sym_table->Lookup(expected);
+
+          if (gdecl && edecl) // objects
+            {
+              if (!strcmp(given, expected))
+                return;
+              else if (typeid(*gdecl) == typeid(ClassDecl))
+                {
+                  ClassDecl *gcldecl = dynamic_cast<ClassDecl*>(gdecl);
+                  if (gcldecl->IsCompatibleWith(edecl))
+                    return;
+                }
+            }
+          else if (expected && !strcmp(given, "null"))
+            return;
+          else if (!strcmp(given, expected))
+            return;
+
+          ReportError::ReturnMismatch(this, new Type(given), new Type(expected));
+        }
+    }
+  else if (strcmp("void", expected))
+    ReportError::ReturnMismatch(this, new Type("void"), new Type(expected));
+}
   
 PrintStmt::PrintStmt(List<Expr*> *a) {    
     Assert(a != NULL);

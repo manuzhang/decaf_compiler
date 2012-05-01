@@ -83,12 +83,14 @@ class ForStmt : public LoopStmt
   
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
+    void CheckStatements();
 };
 
 class WhileStmt : public LoopStmt 
 {
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
+    void CheckStatements();
  };
 
 class IfStmt : public ConditionalStmt 
@@ -106,6 +108,7 @@ class BreakStmt : public Stmt
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
+    void CheckStatements();
 };
 
 class ReturnStmt : public Stmt  
@@ -115,6 +118,7 @@ class ReturnStmt : public Stmt
   
   public:
     ReturnStmt(yyltype loc, Expr *expr);
+    void CheckStatements();
 };
 
 class PrintStmt : public Stmt
