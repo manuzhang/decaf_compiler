@@ -1,0 +1,7 @@
+Design issues are put down here
+
+# We keep a global symbol table which is declared static and could be accessed everywhere. Each Class, Interface, Function has its own symbol table which may be accessed via GetSymTable call. There is also a symbol table for every Stmtblock, that is, every local scope. Thus, there is no concern for shadowing and no need for removal when leaving the scope.
+
+# Inheritance is handled with recursively adding decls of base class into the symbol table of derived class. The bass class keeps its own symbol table, too.
+
+# If we encounter a second declaration that conflicts with the first, we report the error and discard the second (just do not add it to the symbol table).
