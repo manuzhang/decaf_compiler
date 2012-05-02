@@ -1349,3 +1349,2623 @@ samples-checkpoint/t6.decaf
 >         ^^^^^^^
 > *** Method 'Method2' must match inherited type signature
 samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,6d0
+< 
+< *** Error line 39.
+<   betsy.InitCow(5, null, true);
+<                    ^^^^
+< *** Incompatible argument 1: null given, Animal expected
+< 
+samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+14,17c14,17
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** Error line 5.
+>    var = new Missing;
+>              ^^^^^^^
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+17a24,47
+> 
+> 
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+> *** Error line 15.
+>   new A;
+>       ^
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+7c7,18
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>   blue.color = 10;
+>        ^^^^^
+> *** Crayon field 'color' only accessible within class scope
+> 
+> 
+> *** Error line 12.
+>   pens.color = 5;
+>        ^^^^^
+> *** int[] has no such field 'color'
+> 
+samples/bad4.decaf
+28c28
+<   ^^^^^^
+---
+>          ^
+samples/bad6.decaf
+5c5
+< *** Incompatible argument 2: int given, bool expected
+---
+> *** Incompatible argument 3: int given, bool expected
+11c11
+< *** Function 'Binky' expects 1 argument but 3 given
+---
+> *** Function 'Binky' expects 3 arguments but 1 given
+samples/bad7.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+22,29c22,23
+<           ^
+< *** Incompatible operands: int + void
+< 
+< 
+< *** Error line 8.
+<    a = 10 + main;
+<      ^
+< *** Incompatible operands: int = void
+---
+>             ^^^^
+> *** No declaration found for variable 'main'
+samples/bad9.decaf
+5c5
+< *** Incompatible argument 0: double given, int expected
+---
+> *** Incompatible argument 1: double given, int expected
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+19c19,54
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>    if (ReadInteger()) 1;
+>        ^^^^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 12.
+>    if (ReadLine()) 1;
+>        ^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 13.
+>    if (new Cow) 1;
+>        ^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 14.
+>    if (a[3+5]) 1;
+>        ^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 15.
+>    a[true && false];
+>      ^^^^^^^^^^^^^
+> *** Array subscript must be an integer
+> 
+> 
+> *** Error line 16.
+>    a[test(4)];
+>      ^^^^^^^
+> *** Array subscript must be an integer
+> 
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+14,17c14,17
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** Error line 5.
+>    var = new Missing;
+>              ^^^^^^^
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+17a24,47
+> 
+> 
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+> *** Error line 15.
+>   new A;
+>       ^
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+28c28
+<   ^^^^^^
+---
+>          ^
+samples/bad6.decaf
+5c5
+< *** Incompatible argument 2: int given, bool expected
+---
+> *** Incompatible argument 3: int given, bool expected
+11c11
+< *** Function 'Binky' expects 1 argument but 3 given
+---
+> *** Function 'Binky' expects 3 arguments but 1 given
+samples/bad7.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+22,29c22,23
+<           ^
+< *** Incompatible operands: int + void
+< 
+< 
+< *** Error line 8.
+<    a = 10 + main;
+<      ^
+< *** Incompatible operands: int = void
+---
+>             ^^^^
+> *** No declaration found for variable 'main'
+samples/bad9.decaf
+5c5
+< *** Incompatible argument 0: double given, int expected
+---
+> *** Incompatible argument 1: double given, int expected
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+19c19,54
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>    if (ReadInteger()) 1;
+>        ^^^^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 12.
+>    if (ReadLine()) 1;
+>        ^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 13.
+>    if (new Cow) 1;
+>        ^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 14.
+>    if (a[3+5]) 1;
+>        ^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 15.
+>    a[true && false];
+>      ^^^^^^^^^^^^^
+> *** Array subscript must be an integer
+> 
+> 
+> *** Error line 16.
+>    a[test(4)];
+>      ^^^^^^^
+> *** Array subscript must be an integer
+> 
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+14,17c14,17
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** Error line 5.
+>    var = new Missing;
+>              ^^^^^^^
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+17a24,47
+> 
+> 
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+> *** Error line 15.
+>   new A;
+>       ^
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+5c5
+< *** Incompatible argument 2: int given, bool expected
+---
+> *** Incompatible argument 3: int given, bool expected
+11c11
+< *** Function 'Binky' expects 1 argument but 3 given
+---
+> *** Function 'Binky' expects 3 arguments but 1 given
+samples/bad7.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+22,29c22,23
+<           ^
+< *** Incompatible operands: int + void
+< 
+< 
+< *** Error line 8.
+<    a = 10 + main;
+<      ^
+< *** Incompatible operands: int = void
+---
+>             ^^^^
+> *** No declaration found for variable 'main'
+samples/bad9.decaf
+5c5
+< *** Incompatible argument 0: double given, int expected
+---
+> *** Incompatible argument 1: double given, int expected
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+19c19,54
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>    if (ReadInteger()) 1;
+>        ^^^^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 12.
+>    if (ReadLine()) 1;
+>        ^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 13.
+>    if (new Cow) 1;
+>        ^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 14.
+>    if (a[3+5]) 1;
+>        ^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 15.
+>    a[true && false];
+>      ^^^^^^^^^^^^^
+> *** Array subscript must be an integer
+> 
+> 
+> *** Error line 16.
+>    a[test(4)];
+>      ^^^^^^^
+> *** Array subscript must be an integer
+> 
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+14,17c14,17
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** Error line 5.
+>    var = new Missing;
+>              ^^^^^^^
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+17a24,47
+> 
+> 
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+> *** Error line 15.
+>   new A;
+>       ^
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+22,29c22,23
+<           ^
+< *** Incompatible operands: int + void
+< 
+< 
+< *** Error line 8.
+<    a = 10 + main;
+<      ^
+< *** Incompatible operands: int = void
+---
+>             ^^^^
+> *** No declaration found for variable 'main'
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+19c19,54
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>    if (ReadInteger()) 1;
+>        ^^^^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 12.
+>    if (ReadLine()) 1;
+>        ^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 13.
+>    if (new Cow) 1;
+>        ^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 14.
+>    if (a[3+5]) 1;
+>        ^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 15.
+>    a[true && false];
+>      ^^^^^^^^^^^^^
+> *** Array subscript must be an integer
+> 
+> 
+> *** Error line 16.
+>    a[test(4)];
+>      ^^^^^^^
+> *** Array subscript must be an integer
+> 
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+17,23c17
+< *** No declaration found for type 'Missing'
+< 
+< 
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23c35,47
+< *** No declaration found for type 'A'
+---
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+19c19,54
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>    if (ReadInteger()) 1;
+>        ^^^^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 12.
+>    if (ReadLine()) 1;
+>        ^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 13.
+>    if (new Cow) 1;
+>        ^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 14.
+>    if (a[3+5]) 1;
+>        ^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 15.
+>    a[true && false];
+>      ^^^^^^^^^^^^^
+> *** Array subscript must be an integer
+> 
+> 
+> *** Error line 16.
+>    a[test(4)];
+>      ^^^^^^^
+> *** Array subscript must be an integer
+> 
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,84d0
+< 
+< *** Error line 16.
+<     return (GenRandom() % max);
+<             ^^^^^^^^^
+< *** No declaration found for function 'GenRandom'
+< 
+< 
+< *** Error line 132.
+<     if (GetYesOrNo("Would you like to double down?")) {
+<         ^^^^^^^^^^
+< *** No declaration found for function 'GetYesOrNo'
+< 
+< 
+< *** Error line 134.
+<       Hit(deck);
+<       ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 148.
+<     Hit(deck);
+<     ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 149.
+<     Hit(deck);
+<     ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 150.
+<     if (!DoubleDown(deck)) {
+<          ^^^^^^^^^^
+< *** No declaration found for function 'DoubleDown'
+< 
+< 
+< *** Error line 154.
+<         stillGoing = GetYesOrNo("Would you like a hit?");
+<                      ^^^^^^^^^^
+< *** No declaration found for function 'GetYesOrNo'
+< 
+< 
+< *** Error line 155.
+<         if (stillGoing) Hit(deck);
+<                         ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 170.
+<     PrintMoney();
+<     ^^^^^^^^^^
+< *** No declaration found for function 'PrintMoney'
+< 
+< 
+< *** Error line 208.
+<       Hit(deck);
+<       ^^^
+< *** No declaration found for function 'Hit'
+< 
+< 
+< *** Error line 280.
+<     TakeAllBets();
+<     ^^^^^^^^^^^
+< *** No declaration found for function 'TakeAllBets'
+< 
+< 
+< *** Error line 284.
+<     TakeAllTurns();
+<     ^^^^^^^^^^^^
+< *** No declaration found for function 'TakeAllTurns'
+< 
+< 
+< *** Error line 286.
+<     ResolveAllPlayers();
+<     ^^^^^^^^^^^^^^^^^
+< *** No declaration found for function 'ResolveAllPlayers'
+< 
+< 
+< *** Error line 308.
+<     keepPlaying = GetYesOrNo("\nDo you want to play another hand?");
+<                   ^^^^^^^^^^
+< *** No declaration found for function 'GetYesOrNo'
+< 
+samples-checkpoint/blackjack.decaf
+1,60d0
+< 
+< *** Error line 16.
+< 	   Print(Get(i,j), "\t");
+<                  ^^^
+< *** No declaration found for function 'Get'
+< 
+< 
+< *** Error line 25.
+< 	   Set(i,j, i+j);
+<            ^^^
+< *** No declaration found for function 'Set'
+< 
+< 
+< *** Error line 26.
+<     Set(2,3,4);
+<     ^^^
+< *** No declaration found for function 'Set'
+< 
+< 
+< *** Error line 27.
+<     Set(4,6,2);
+<     ^^^
+< *** No declaration found for function 'Set'
+< 
+< 
+< *** Error line 28.
+<     Set(2,3,5);
+<     ^^^
+< *** No declaration found for function 'Set'
+< 
+< 
+< *** Error line 29.
+<     Set(0,0,1);
+<     ^^^
+< *** No declaration found for function 'Set'
+< 
+< 
+< *** Error line 30.
+<     Set(1,6,3);
+<     ^^^
+< *** No declaration found for function 'Set'
+< 
+< 
+< *** Error line 31.
+<     Set(7,7,7);
+<     ^^^
+< *** No declaration found for function 'Set'
+< 
+< 
+< *** Error line 105.
+<     elem = Find(x,y);
+<            ^^^^
+< *** No declaration found for function 'Find'
+< 
+< 
+< *** Error line 117.
+<     elem = Find(x,y);
+<            ^^^^
+< *** No declaration found for function 'Find'
+< 
+samples-checkpoint/matrix.decaf
+1,6d0
+< 
+< *** Error line 26.
+<     InitAnimal(h,m);
+<     ^^^^^^^^^^
+< *** No declaration found for function 'InitAnimal'
+< 
+samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+17,23c17
+< *** No declaration found for type 'Missing'
+< 
+< 
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23c35,47
+< *** No declaration found for type 'A'
+---
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+19c19,54
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>    if (ReadInteger()) 1;
+>        ^^^^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 12.
+>    if (ReadLine()) 1;
+>        ^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 13.
+>    if (new Cow) 1;
+>        ^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 14.
+>    if (a[3+5]) 1;
+>        ^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 15.
+>    a[true && false];
+>      ^^^^^^^^^^^^^
+> *** Array subscript must be an integer
+> 
+> 
+> *** Error line 16.
+>    a[test(4)];
+>      ^^^^^^^
+> *** Array subscript must be an integer
+> 
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,18d0
+< 
+< *** Error line 67.
+<     this.data = d;
+<          ^^^^
+< *** SparseItem field 'data' only accessible within class scope
+< 
+< 
+< *** Error line 68.
+<     this.y = y;
+<          ^
+< *** SparseItem field 'y' only accessible within class scope
+< 
+< 
+< *** Error line 69.
+<     this.next = next;
+<          ^^^^
+< *** SparseItem field 'next' only accessible within class scope
+< 
+samples-checkpoint/matrix.decaf
+1,12d0
+< 
+< *** Error line 9.
+<     this.height = h;
+<          ^^^^^^
+< *** Animal field 'height' only accessible within class scope
+< 
+< 
+< *** Error line 18.
+<     return this.mother;
+<                 ^^^^^^
+< *** Animal field 'mother' only accessible within class scope
+< 
+samples-checkpoint/t9.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+17,23c17
+< *** No declaration found for type 'Missing'
+< 
+< 
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23c35,47
+< *** No declaration found for type 'A'
+---
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+19c19,54
+< Segmentation fault
+---
+> 
+> *** Error line 11.
+>    if (ReadInteger()) 1;
+>        ^^^^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 12.
+>    if (ReadLine()) 1;
+>        ^^^^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 13.
+>    if (new Cow) 1;
+>        ^^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 14.
+>    if (a[3+5]) 1;
+>        ^^^^^^
+> *** Test expression must have boolean type
+> 
+> 
+> *** Error line 15.
+>    a[true && false];
+>      ^^^^^^^^^^^^^
+> *** Array subscript must be an integer
+> 
+> 
+> *** Error line 16.
+>    a[test(4)];
+>      ^^^^^^^
+> *** Array subscript must be an integer
+> 
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+1,126d0
+< 
+< *** Error line 34.
+<       cards[current] = (current + 1) % 13;
+<       ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 41.
+<       temp = cards[current];
+<              ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 42.
+<       cards[current] = cards[r];
+<       ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 42.
+<       cards[current] = cards[r];
+<                        ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 43.
+<       cards[r] = temp;
+<       ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 50.
+<     result = cards[current];
+<              ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 65.
+<       decks[i] = new Deck;
+<       ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 66.
+<       decks[i].Init();
+<       ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 77.
+<       c = decks[d].GetCard();
+<           ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 90.
+<       decks[i].Shuffle();
+<       ^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 113.
+<     name = ReadLine();
+<          ^
+< *** Incompatible operands: string = void
+< 
+< 
+< *** Error line 243.
+<       players[i] = new Player;
+<       ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 244.
+<       players[i].Init(i+1);
+<       ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 252.
+<       if (players[i].HasMoney()) players[i].PlaceBet();
+<           ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 252.
+<       if (players[i].HasMoney()) players[i].PlaceBet();
+<                                  ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 258.
+<       if (players[i].HasMoney()) players[i].TakeTurn(deck);
+<           ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 258.
+<       if (players[i].HasMoney()) players[i].TakeTurn(deck);
+<                                  ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 266.
+<       if (players[i].HasMoney())
+<           ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 267.
+<         players[i].Resolve(dealer.GetTotal());
+<         ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 274.
+<       players[i].PrintMoney();
+<       ^^^^^^^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 295.
+<    answer = ReadLine();
+<           ^
+< *** Incompatible operands: string = void
+< 
+samples-checkpoint/blackjack.decaf
+1,66d0
+< 
+< *** Error line 46.
+<       m[i] = NewArray(10, int);
+<       ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 51.
+< 		m[i][j] = 0;
+<                 ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 51.
+< 		m[i][j] = 0;
+<                 ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 54.
+<     m[x][y] = value;
+<     ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 54.
+<     m[x][y] = value;
+<     ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 57.
+<     return m[x][y];
+<            ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 57.
+<     return m[x][y];
+<            ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 87.
+<       m[i] = null;
+<       ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 93.
+<     elem = m[x];
+<            ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 110.
+<       elem.Init(value, y, m[x]);
+<                           ^
+< *** [] can only be applied to arrays
+< 
+< 
+< *** Error line 111.
+<       m[x] = elem;
+<       ^
+< *** [] can only be applied to arrays
+< 
+samples-checkpoint/matrix.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+17,23c17
+< *** No declaration found for type 'Missing'
+< 
+< 
+< *** Error line 6.
+<    g.GetColor(10);
+<      ^^^^^^^^
+< *** Unknown has no such field 'GetColor'
+---
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23c35,47
+< *** No declaration found for type 'A'
+---
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+17c17
+< *** No declaration found for type 'Missing'
+---
+> *** No declaration found for class 'Missing'
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23c35,47
+< *** No declaration found for type 'A'
+---
+> *** No declaration found for class 'A'
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+16c16
+<          ^^^
+---
+>              ^^^^^^^
+samples/bad10.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+22c34
+<   ^^^
+---
+>       ^
+23a36,47
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+8,11c8,11
+< *** Error line 7.
+<     void ToString(string s) {}
+<          ^^^^^^^^
+< *** Method 'ToString' must match inherited type signature
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+> *** Class 'Number' does not implement entire interface 'Printable'
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23a36,47
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+8,10c8,10
+< *** Error line 1.
+< interface Printable {
+<           ^^^^^^^^^
+---
+> *** Error line 6.
+> class Number implements Printable {
+>                         ^^^^^^^^^
+samples/bad11.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23a36,47
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+9a10,15
+>                        ^^^^^
+> *** No declaration found for interface 'Trick'
+> 
+> 
+> *** Error line 4.
+> class Wacky implements Trick, Treat, Halloween {
+19a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+23a36,47
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+25a26,31
+> *** Error line 13.
+>   Trick c;
+>   ^^^^^
+> *** No declaration found for type 'Trick'
+> 
+> 
+29a36,47
+> 
+> 
+> *** Error line 16.
+>   new Treat;
+>       ^^^^^
+> *** No declaration found for class 'Treat'
+> 
+> 
+> *** Error line 17.
+>   NewArray(10, Trick);
+>                ^^^^^
+> *** No declaration found for type 'Trick'
+samples/bad12.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+14,17c14,17
+< *** Error line 13.
+<      Printable p;
+<      ^^^^^^^^^
+< *** No declaration found for type 'Printable'
+---
+> *** Error line 14.
+>      n = p;
+>        ^
+> *** Incompatible operands: Number = Printable
+samples/bad11.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 30.
+<   Colorable s;
+<   ^^^^^^^^^
+< *** No declaration found for type 'Colorable'
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+1,6d0
+< 
+< *** Error line 18.
+<         break;
+<         ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t4.decaf
+1,18d0
+< 
+< *** Error line 16.
+<   while (true) break;
+<                ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 23.
+<       break;
+<       ^^^^^
+< *** break is only allowed inside a loop
+< 
+< 
+< *** Error line 33.
+<              break;
+<              ^^^^^
+< *** break is only allowed inside a loop
+< 
+samples/t7.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+1,6d0
+< 
+< *** Error line 35.
+<   s = new Rectangle;
+<     ^
+< *** Incompatible operands: Colorable = Rectangle
+< 
+samples/t13.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf

@@ -70,6 +70,7 @@ class ReportError {
   // Errors used by semantic analyzer for identifiers
   static void IdentifierNotDeclared(Identifier *ident, reasonT whyNeeded);
 
+  static void NoMainFunction();
   
   // Errors used by semantic analyzer for expressions
   static void IncompatibleOperand(Operator *op, Type *rhs); // unary

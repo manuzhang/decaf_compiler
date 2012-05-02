@@ -4,4 +4,15 @@ Design issues are put down here
 
 # Inheritance is handled with recursively adding decls of base class into the symbol table of derived class. The bass class keeps its own symbol table, too.
 
+# We firstly deal with declaration errors and then turn to statement analysis.
+
+# At the Program level, we do a breadth-first decls check because all the classes may be NamedType in the local scope. 
+
+# Statements are checked in a in-order tree walk style
+
+# "this" statement is handled as follows
+   firstly we have to make sure it is in the class scope and also determine is real type
+   we have to make sure the fieldaccess is through "this" 
+   all the implicit "this" expression is handled with looking for declaration from local scope to outer scope
+
 # If we encounter a second declaration that conflicts with the first, we report the error and discard the second (just do not add it to the symbol table).

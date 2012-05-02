@@ -14,77 +14,84 @@
 Hashtable<Decl*> *Program::sym_table  = new Hashtable<Decl*>;
 
 Program::Program(List<Decl*> *d) {
-    Assert(d != NULL);
-    (decls=d)->SetParentAll(this);
+  Assert(d != NULL);
+  (this->decls=d)->SetParentAll(this);
 }
 
 void Program::CheckStatements() {
   for (int i = 0; i < this->decls->NumElements(); i++)
-     this->decls->Nth(i)->CheckStatements();
+    this->decls->Nth(i)->CheckStatements();
 }
 
 void Program::CheckDeclError() {
   if (this->decls)
-     {
-       // check if identifiers in the global scope are unique
-       for (int i = 0; i < this->decls->NumElements(); i++)
-         {
+    {
+      // check if identifiers in the global scope are unique
+      for (int i = 0; i < this->decls->NumElements(); i++)
+	{
           Decl *cur = decls->Nth(i);
           Decl *prev;
           const char *name = cur->GetID()->GetName();
-          if ((prev = sym_table->Lookup(name)) != NULL)
-            ReportError::DeclConflict(cur, prev);
-          else
-            sym_table->Enter(name, cur);
-
-         }
-       for (int i = 0; i < this->decls->NumElements(); i++)
-          this->decls->Nth(i)->CheckDeclError();
-       // all the declarations should be added to hashtables of their scopes
-     }
+	  if (name)
+	    {
+	      if ((prev = Program::sym_table->Lookup(name)) != NULL)
+		ReportError::DeclConflict(cur, prev);
+	      else
+		sym_table->Enter(name, cur);
+	    }
+	}
+      if (Program::sym_table->Lookup("main") == NULL)
+	ReportError::NoMainFunction();
+      for (int i = 0; i < this->decls->NumElements(); i++)
+	this->decls->Nth(i)->CheckDeclError();
+      // all the declarations should be added to hashtables of their scopes
+    }
 
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
-    Assert(d != NULL && s != NULL);
-    (decls=d)->SetParentAll(this);
-    (stmts=s)->SetParentAll(this);
-    sym_table  = new Hashtable<Decl*>;
+  Assert(d != NULL && s != NULL);
+  (this->decls=d)->SetParentAll(this);
+  (this->stmts=s)->SetParentAll(this);
+  this->sym_table  = new Hashtable<Decl*>;
 }
 
 void StmtBlock::CheckStatements() {
-  if (stmts)
+  if (this->stmts)
     {
-      for (int i = 0; i < stmts->NumElements(); i++)
+      for (int i = 0; i < this->stmts->NumElements(); i++)
         {
-          Stmt *stmt = stmts->Nth(i);
+          Stmt *stmt = this->stmts->Nth(i);
           stmt->CheckStatements();
         }
     }
 }
 
 void StmtBlock::CheckDeclError() {
-  if (decls)
+  if (this->decls)
     {
-      for (int i = 0; i < decls->NumElements(); i++)
+      for (int i = 0; i < this->decls->NumElements(); i++)
         {
-         VarDecl *cur = decls->Nth(i);
-         Decl *prev;
-         const char *name = cur->GetID()->GetName();
-         if ((prev = sym_table->Lookup(name)) != NULL)
-           {
-             ReportError::DeclConflict(cur, prev);
-           }
-         else
-           {
-             sym_table->Enter(name, cur);
-             cur->CheckDeclError();
-           }
+	  VarDecl *cur = this->decls->Nth(i);
+	  Decl *prev;
+	  const char *name = cur->GetID()->GetName();
+	  if (name)
+	    {
+	      if ((prev = this->sym_table->Lookup(name)) != NULL)
+		{
+		  ReportError::DeclConflict(cur, prev);
+		}
+	      else
+		{
+		  sym_table->Enter(name, cur);
+		  cur->CheckDeclError();
+		}
+	    }
         }
     }
-  if (stmts)
+  if (this->stmts)
     {
-      for (int i = 0; i < stmts->NumElements(); i++)
+      for (int i = 0; i < this->stmts->NumElements(); i++)
         {
           Stmt *stmt = stmts->Nth(i);
           stmt->CheckDeclError();
@@ -93,9 +100,9 @@ void StmtBlock::CheckDeclError() {
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
-    Assert(t != NULL && b != NULL);
-    (test=t)->SetParent(this); 
-    (body=b)->SetParent(this);
+  Assert(t != NULL && b != NULL);
+  (this->test=t)->SetParent(this); 
+  (this->body=b)->SetParent(this);
 }
 
 void ConditionalStmt::CheckStatements() {
@@ -111,47 +118,16 @@ void ConditionalStmt::CheckDeclError() {
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
-    Assert(i != NULL && t != NULL && s != NULL && b != NULL);
-    (init=i)->SetParent(this);
-    (step=s)->SetParent(this);
+  Assert(i != NULL && t != NULL && s != NULL && b != NULL);
+  (this->init=i)->SetParent(this);
+  (this->step=s)->SetParent(this);
 }
-
-
-IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
-    Assert(t != NULL && tb != NULL); // else can be NULL
-    elseBody = eb;
-    if (elseBody) elseBody->SetParent(this);
-}
-
-void IfStmt::CheckDeclError() {
-  ConditionalStmt::CheckDeclError();
-  if (elseBody)
-    elseBody->CheckDeclError();
-}
-
-void IfStmt::CheckStatements() {
-  ConditionalStmt::CheckStatements();
-  if (elseBody)
-    elseBody->CheckStatements();
-}
-
-void BreakStmt::CheckStatements() {
-  Node *parent = this->GetParent();
-  while (parent)
-    {
-      if (typeid(*parent) == typeid(LoopStmt))
-        return;
-      parent = parent->GetParent();
-    }
-  ReportError::BreakOutsideLoop(this);
-}
-
 
 void ForStmt::CheckStatements() {
-  if (init)
-    init->CheckStatements();
-  if (step)
-    step->CheckStatements();
+  if (this->init)
+    this->init->CheckStatements();
+  if (this->step)
+    this->step->CheckStatements();
   ConditionalStmt::CheckStatements();
 }
 
@@ -159,9 +135,40 @@ void WhileStmt::CheckStatements() {
   ConditionalStmt::CheckStatements();
 }
 
+IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
+  Assert(t != NULL && tb != NULL); // else can be NULL
+  this->elseBody = eb;
+  if (this->elseBody) elseBody->SetParent(this);
+}
+
+void IfStmt::CheckDeclError() {
+  ConditionalStmt::CheckDeclError();
+  if (this->elseBody)
+    this->elseBody->CheckDeclError();
+}
+
+void IfStmt::CheckStatements() {
+  ConditionalStmt::CheckStatements();
+  if (this->elseBody)
+    this->elseBody->CheckStatements();
+}
+
+void BreakStmt::CheckStatements() {
+  Node *parent = this->GetParent();
+  while (parent)
+    {
+      if ((typeid(*parent) == typeid(WhileStmt)) ||
+          (typeid(*parent) == typeid(LoopStmt)) ||
+          (typeid(*parent) == typeid(SwitchStmt)))
+        return;
+      parent = parent->GetParent();
+    }
+  ReportError::BreakOutsideLoop(this);
+}
+
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
-    Assert(e != NULL);
-    (expr=e)->SetParent(this);
+  Assert(e != NULL);
+  (expr=e)->SetParent(this);
 }
 
 void ReturnStmt::CheckStatements() {
@@ -174,9 +181,9 @@ void ReturnStmt::CheckStatements() {
         expected = dynamic_cast<FnDecl*>(parent)->GetTypeName();
       parent = parent->GetParent();
     }
-  if (expr)
+  if (this->expr)
     {
-      expr->CheckStatements();
+      this->expr->CheckStatements();
       const char *given = expr->GetTypeName();
 
       if (given && expected)
@@ -195,7 +202,7 @@ void ReturnStmt::CheckStatements() {
                     return;
                 }
             }
-          else if (expected && !strcmp(given, "null"))
+          else if (edecl && !strcmp(given, "null"))
             return;
           else if (!strcmp(given, expected))
             return;
@@ -208,75 +215,87 @@ void ReturnStmt::CheckStatements() {
 }
   
 PrintStmt::PrintStmt(List<Expr*> *a) {    
-    Assert(a != NULL);
-    (args=a)->SetParentAll(this);
+  Assert(a != NULL);
+  (args=a)->SetParentAll(this);
+}
+
+void PrintStmt::CheckStatements() {
+  for (int i = 0; i < this->args->NumElements(); i++)
+    {
+      Expr *expr = this->args->Nth(i);
+      expr->CheckStatements();
+      const char *typeName = expr->GetTypeName();
+      if (typeName && strcmp(typeName, "string") && strcmp(typeName, "int") && strcmp(typeName, "bool"))
+        ReportError::PrintArgMismatch(expr, (i+1), new Type(typeName));
+    }
 }
 
 CaseStmt::CaseStmt(IntConstant *ic, List<Stmt*> *sts)
-: DefaultStmt(sts) {
-    (intconst=ic)->SetParent(this);
+  : DefaultStmt(sts) {
+  (this->intconst=ic)->SetParent(this);
 }
 
 DefaultStmt::DefaultStmt(List<Stmt*> *sts) {
-    if (sts) (stmts=sts)->SetParentAll(this);
+  if (sts) (this->stmts=sts)->SetParentAll(this);
 }
 
 void DefaultStmt::CheckStatements() {
-  if (stmts)
+  if (this->stmts)
     {
-      for (int i = 0; i < stmts->NumElements(); i++)
+      for (int i = 0; i < this->stmts->NumElements(); i++)
         {
-          Stmt *stmt = stmts->Nth(i);
+          Stmt *stmt = this->stmts->Nth(i);
           stmt->CheckStatements();
         }
     }
 }
 
 void DefaultStmt::CheckDeclError() {
-  if (stmts)
+  if (this->stmts)
     {
-      for (int i = 0; i < stmts->NumElements(); i++)
+      for (int i = 0; i < this->stmts->NumElements(); i++)
         {
-          Stmt *stmt = stmts->Nth(i);
+          Stmt *stmt = this->stmts->Nth(i);
           stmt->CheckDeclError();
         }
     }
 }
 
 SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
-    Assert(e != NULL && cs != NULL);
-    (expr=e)->SetParent(this);
-    (cases=cs)->SetParentAll(this);
-    if (ds) (defaults=ds)->SetParent(this);
+  Assert(e != NULL && cs != NULL);
+  (this->expr=e)->SetParent(this);
+  (this->cases=cs)->SetParentAll(this);
+  this->defaults = ds;
+  if (this->defaults) (this->defaults)->SetParent(this);
 }
 
 void SwitchStmt::CheckStatements() {
-  if (expr)
-    expr->CheckStatements();
+  if (this->expr)
+    this->expr->CheckStatements();
 
-  if (cases)
+  if (this->cases)
     {
-      for (int i = 0; i < cases->NumElements(); i++)
+      for (int i = 0; i < this->cases->NumElements(); i++)
         {
-          CaseStmt *stmt = cases->Nth(i);
+          CaseStmt *stmt = this->cases->Nth(i);
           stmt->CheckStatements();
         }
     }
 
-  if (defaults)
-    defaults->CheckStatements();
+  if (this->defaults)
+    this->defaults->CheckStatements();
 }
 
 void SwitchStmt::CheckDeclError() {
-  if (cases)
+  if (this->cases)
     {
-      for (int i = 0; i < cases->NumElements(); i++)
+      for (int i = 0; i < this->cases->NumElements(); i++)
         {
-          CaseStmt *stmt = cases->Nth(i);
+          CaseStmt *stmt = this->cases->Nth(i);
           stmt->CheckDeclError();
         }
     }
 
-  if (defaults)
-    defaults->CheckDeclError();
+  if (this->defaults)
+    this->defaults->CheckDeclError();
 }

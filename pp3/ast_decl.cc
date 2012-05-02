@@ -16,36 +16,40 @@
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
   Assert(n != NULL);
-  (id=n)->SetParent(this); 
+  (this->id=n)->SetParent(this); 
 }
 
 
 VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
   Assert(n != NULL && t != NULL);
-  (type=t)->SetParent(this);
+  (this->type=t)->SetParent(this);
 }
 
 bool VarDecl::HasSameTypeSig(VarDecl *vd) {
-  return this->type->HasSameType(vd->GetType());
+  if (this->type)
+    return this->type->HasSameType(vd->GetType());
+  else 
+    return false;
 }
 
 void VarDecl::CheckStatements() {
   // do nothing here
 }
-
+ 
 // check NamedType errors
 void VarDecl::CheckDeclError() {
-  this->type->CheckTypeError();
+  if (this->type)
+    this->type->CheckTypeError();
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
   // extends can be NULL, impl & mem may be empty lists but cannot be NULL
   Assert(n != NULL && imp != NULL && m != NULL);     
-  extends = ex;
-  if (extends) extends->SetParent(this);
-  (implements=imp)->SetParentAll(this);
-  (members=m)->SetParentAll(this);
-  sym_table = new Hashtable<Decl*>;
+  this->extends = ex;
+  if (this->extends) this->extends->SetParent(this);
+  (this->implements=imp)->SetParentAll(this);
+  (this->members=m)->SetParentAll(this);
+  this->sym_table = new Hashtable<Decl*>;
 }
 
 void ClassDecl::CheckStatements() {
@@ -57,7 +61,10 @@ void ClassDecl::CheckStatements() {
 }
 
 void ClassDecl::CheckDeclError() {
-  sym_table->Enter(this->GetID()->GetName(), this);
+  // add itself to the symbol table
+  this->sym_table->Enter(this->GetID()->GetName(), this);
+
+  // check decl conflicts of its members and add the decl to symbol table if no errors
   if (this->members)
     {
       for (int i = 0; i < this->members->NumElements(); i++)
@@ -65,100 +72,114 @@ void ClassDecl::CheckDeclError() {
 	  Decl *cur = this->members->Nth(i);
 	  Decl *prev;
 	  const char *name = cur->GetID()->GetName();
-	  if ((prev = sym_table->Lookup(name)) != NULL)
-	    ReportError::DeclConflict(cur, prev);
-	  else
-            sym_table->Enter(name, cur);
+	  if (name)
+	    {
+	      if ((prev = this->sym_table->Lookup(name)) != NULL)
+		ReportError::DeclConflict(cur, prev);
+	      else
+		this->sym_table->Enter(name, cur);
+	    }
         }
     }
 
-
+  // turn to extends first in case methods to override those in interface may be inherited from it
+  // we do not purposely check decl error of extends here
+  // but leave it to the sequential work in Program::CheckDeclError
   NamedType *ex = this->extends;
   while (ex)
     {
       const char *name = ex->GetID()->GetName();
-      Node *node = Program::sym_table->Lookup(name);
-      if (node == NULL)
-        {
-          ReportError::IdentifierNotDeclared(ex->GetID(), LookingForClass);
-          break;
-        }
-      else
-        {
-          ClassDecl *base = dynamic_cast<ClassDecl*>(node);
-          List<Decl*> *base_members = base->members;
-          List<Decl*> *inherited = new List<Decl*>;
-          // check the declaration of base class against derived class symbol table
-          if (base_members)
-            {
-              for (int i = 0; i < base_members->NumElements(); i++)
-                {
-                  Decl *cur = base_members->Nth(i);
-                  Decl *prev;
-                  const char *name = cur->GetID()->GetName();
-                  if ((prev = this->sym_table->Lookup(name)) != NULL)
-                    {
-                      if (typeid(*cur) == typeid(VarDecl) || typeid(*cur) != typeid(*prev))
-                        ReportError::DeclConflict(prev, cur);
-                      else if (typeid(*cur) == typeid(FnDecl) && typeid(*cur) == typeid(*prev))
-                        {
-                          FnDecl *fdcur = dynamic_cast<FnDecl*>(cur);
-                          FnDecl *fdprev = dynamic_cast<FnDecl*>(prev);
-                          if (!fdcur->HasSameTypeSig(fdprev))
-                            ReportError::OverrideMismatch(fdprev);
-                        }
-                    }
-                  else // methods that override implemented methods may come from base class
-                       // but we cannot add it to symbol table here
-                       // otherwise we may have an undesirable overridemismatch error
-                    {
-                      inherited->Append(cur);
-                    }
-                }
-              for (int i = 0; i < inherited->NumElements(); i++)
+      if (name)
+	{
+	  Node *node = Program::sym_table->Lookup(name);
+	  if (node == NULL)
+	    {
+	      ReportError::IdentifierNotDeclared(ex->GetID(), LookingForClass);
+	      break;
+	    }
+	  else if (typeid(*node) == typeid(ClassDecl))
+	    {
+	      ClassDecl *base = dynamic_cast<ClassDecl*>(node);
+	      List<Decl*> *base_members = base->members;
+	      List<Decl*> *inherited = new List<Decl*>;
+	      // check the declaration of base class against derived class symbol table
+	      if (base_members)
 		{
-                  Decl *decl = inherited->Nth(i);
-                  this->sym_table->Enter(decl->GetID()->GetName(), decl);
+		  for (int i = 0; i < base_members->NumElements(); i++)
+		    {
+		      Decl *cur = base_members->Nth(i);
+		      Decl *prev;
+		      const char *name = cur->GetID()->GetName();
+		      if ((prev = this->sym_table->Lookup(name)) != NULL)
+			{
+			  if (typeid(*cur) == typeid(VarDecl) || typeid(*cur) != typeid(*prev)) // data members
+			    ReportError::DeclConflict(prev, cur);
+			  else if (typeid(*cur) == typeid(FnDecl) && typeid(*cur) == typeid(*prev)) // member functions
+			    {
+			      FnDecl *fdcur = dynamic_cast<FnDecl*>(cur);
+			      FnDecl *fdprev = dynamic_cast<FnDecl*>(prev);
+			      if (!fdcur->HasSameTypeSig(fdprev))
+				ReportError::OverrideMismatch(fdprev);
+			    }
+			}
+		      else // methods that override implemented methods may come from base class
+			// but we cannot add it to symbol table here
+			// otherwise we may have an undesirable overridemismatch error
+			{
+			  inherited->Append(cur);
+			}
+		    }
+		  for (int i = 0; i < inherited->NumElements(); i++)
+		    {
+		      Decl *decl = inherited->Nth(i);
+		      this->sym_table->Enter(decl->GetID()->GetName(), decl);
+		    }
 		}
-            }
-          ex = base->GetExtends();
-        }
+	      ex = base->GetExtends();
+	    }
+	}
     }
 
   if (this->implements)
     {
       for (int i = 0; i < this->implements->NumElements(); i++)
 	{
-	  Identifier *id = this->implements->Nth(i)->GetID();
-	  Node *node = Program::sym_table->Lookup(id->GetName());
-	  if (node == NULL)
+          NamedType *implement = this->implements->Nth(i);
+	  Identifier *id = implement->GetID();
+	  if (id)
 	    {
-	      ReportError::IdentifierNotDeclared(id, LookingForInterface);
-	    }
-	  else
-	    {
-	      InterfaceDecl *ifd = dynamic_cast<InterfaceDecl*>(node);
-	      List<Decl*> *members = ifd->GetMembers();
-	      for (int j = 0; j < members->NumElements(); j++)
+	      Node *node = Program::sym_table->Lookup(id->GetName());
+	      if (node == NULL || (typeid(*node) != typeid(InterfaceDecl)))
 		{
-		  FnDecl *cur = dynamic_cast<FnDecl*>(members->Nth(i));
-		  Decl *prev;
-		  const char *name = cur->GetID()->GetName();
-		  if ((prev = sym_table->Lookup(name)) != NULL)
+		  ReportError::IdentifierNotDeclared(id, LookingForInterface);
+		}
+	      else if (typeid(*node) == typeid(InterfaceDecl))
+		{
+		  InterfaceDecl *ifd = dynamic_cast<InterfaceDecl*>(node);
+		  List<Decl*> *members = ifd->GetMembers();
+		  for (int j = 0; j < members->NumElements(); j++)
 		    {
-		      if (typeid(*prev) != typeid(FnDecl))
-			ReportError::DeclConflict(cur, prev);
-		      else if (!cur->HasSameTypeSig(dynamic_cast<FnDecl*>(prev)))
-			ReportError::OverrideMismatch(prev);
+		      FnDecl *cur = dynamic_cast<FnDecl*>(members->Nth(j));
+		      Decl *prev;
+		      const char *name = cur->GetID()->GetName();
+		;
+		      if ((prev = this->sym_table->Lookup(name)) != NULL)
+			{
+			  if (typeid(*prev) != typeid(FnDecl))
+			    ReportError::DeclConflict(cur, prev);
+			  else if (!cur->HasSameTypeSig(dynamic_cast<FnDecl*>(prev)))
+			    ReportError::OverrideMismatch(prev);
+			}
+		      else
+			ReportError::InterfaceNotImplemented(this, implement);
 		    }
-		  else
-		    ReportError::InterfaceNotImplemented(this, new NamedType(ifd->GetID()));
 		}
 	    }
 	}
     }
 
   // look into local scopes
+  // again we do not go into the scope of extended classes or implemented interfaces
   if (this->members)
     {
       for (int i = 0; i < this->members->NumElements(); i++)
@@ -166,21 +187,39 @@ void ClassDecl::CheckDeclError() {
     }
 }
 
+// A and B are not of the same class type
+// A->IsCompatible(B)
+// A is compatible with B if A is a B
 bool ClassDecl::IsCompatibleWith(Decl *decl)
 {
+  NamedType *extends = this->GetExtends();
+  List<NamedType*> *implements = this->GetImplements();
+
   if (typeid(*decl) == typeid(ClassDecl))
     {
       ClassDecl *cldecl = dynamic_cast<ClassDecl*>(decl);
-      NamedType *extends = this->GetExtends();
-      if (extends && !strcmp(cldecl->GetID()->GetName(), extends->GetTypeName()))
-	return true;
-      else
-	return false;
+      // is B a base class of A
+      if (extends)
+        {
+          const char *name = extends->GetTypeName();
+          if (!strcmp(cldecl->GetID()->GetName(), name))
+	    return true;
+          else
+           {
+             if (name)
+               {
+                 Decl *exdecl = Program::sym_table->Lookup(name);
+                 if (exdecl && typeid(*exdecl) == typeid(ClassDecl))
+                   return dynamic_cast<ClassDecl*>(exdecl)->IsCompatibleWith(decl);
+               }
+           }
+        }
     }
+  // is B an interface of A
   else if (typeid(*decl) == typeid(InterfaceDecl))
     {
       InterfaceDecl *itfdecl = dynamic_cast<InterfaceDecl*>(decl);
-      List<NamedType*> *implements = this->GetImplements();
+
       if (implements)
 	{
 	  for (int i = 0; i < implements->NumElements(); i++)
@@ -191,17 +230,26 @@ bool ClassDecl::IsCompatibleWith(Decl *decl)
 		  
 	    }
 	}
-      return false;
+      if (extends)
+        {
+          const char *name = extends->GetTypeName();
+          if (name)
+            {
+              Decl *exdecl = Program::sym_table->Lookup(name);
+              if (exdecl && typeid(*exdecl) == typeid(ClassDecl))
+                return dynamic_cast<ClassDecl*>(exdecl)->IsCompatibleWith(decl);
+            }
+        }
     }
-  else
-    return false;
+
+  return false;
 }
 
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
   Assert(n != NULL && m != NULL);
-  (members=m)->SetParentAll(this);
-  sym_table  = new Hashtable<Decl*>;
+  (this->members=m)->SetParentAll(this);
+  this->sym_table  = new Hashtable<Decl*>;
 }
 
 void InterfaceDecl::CheckStatements() {
@@ -209,20 +257,23 @@ void InterfaceDecl::CheckStatements() {
 }
 
 void InterfaceDecl::CheckDeclError() {
-  if (members)
+  if (this->members)
     {
-      for (int i = 0; i < members->NumElements(); i++)
+      for (int i = 0; i < this->members->NumElements(); i++)
 	{
 	  Decl *cur = members->Nth(i);
 	  Decl *prev;
 	  const char *name = cur->GetID()->GetName();
-	  if ((prev = sym_table->Lookup(name)) != NULL)
+	  if (name)
 	    {
-	      ReportError::DeclConflict(cur, prev);
-	    }
-	  else
-	    {
-	      sym_table->Enter(name, cur);
+	      if ((prev = this->sym_table->Lookup(name)) != NULL)
+		{
+		  ReportError::DeclConflict(cur, prev);
+		}
+	      else
+		{
+		  sym_table->Enter(name, cur);
+		}
 	    }
 	}
     }
@@ -231,15 +282,17 @@ void InterfaceDecl::CheckDeclError() {
 
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
   Assert(n != NULL && r!= NULL && d != NULL);
-  (returnType=r)->SetParent(this);
-  (formals=d)->SetParentAll(this);
-  body = NULL;
-  sym_table  = new Hashtable<Decl*>;
+  (this->returnType=r)->SetParent(this);
+  (this->formals=d)->SetParentAll(this);
+  this->body = NULL;
+  this->sym_table  = new Hashtable<Decl*>;
 }
 
+// return type, number of formals need be matched
+// all the formals must be matched in order
 bool FnDecl::HasSameTypeSig(FnDecl *fd) {
-  if (!strcmp(id->GetName(), fd->GetID()->GetName()))
-    if (returnType->HasSameType(fd->GetType()))
+  if (!strcmp(this->id->GetName(), fd->GetID()->GetName()))
+    if (this->returnType->HasSameType(fd->GetType()))
       {
 	List<VarDecl*> *f1 = formals;
 	List<VarDecl*> *f2 = fd->GetFormals();
@@ -263,33 +316,36 @@ bool FnDecl::HasSameTypeSig(FnDecl *fd) {
 }
 
 void FnDecl::CheckStatements() {
-  if (body)
-    body->CheckStatements();
+  if (this->body)
+    this->body->CheckStatements();
 }
 
 void FnDecl::CheckDeclError() {
-  if (formals)
+  if (this->formals)
     {
-      for (int i = 0; i < formals->NumElements(); i++)
+      for (int i = 0; i < this->formals->NumElements(); i++)
 	{
-	  VarDecl *cur = formals->Nth(i);
+	  VarDecl *cur = this->formals->Nth(i);
 	  Decl *prev;
 	  const char *name = cur->GetID()->GetName();
-	  if ((prev = sym_table->Lookup(name)) != NULL)
+	  if (name)
 	    {
-	      ReportError::DeclConflict(cur, prev);
-	    }
-	  else
-	    {
-	      sym_table->Enter(name, cur);
-	      cur->CheckDeclError();
+	      if ((prev = this->sym_table->Lookup(name)) != NULL)
+		{
+		  ReportError::DeclConflict(cur, prev);
+		}
+	      else
+		{
+		  sym_table->Enter(name, cur);
+		  cur->CheckDeclError();
+		}
 	    }
 	}
     }
-  if (body)
-    body->CheckDeclError();
+  if (this->body)
+    this->body->CheckDeclError();
 }
 
 void FnDecl::SetFunctionBody(StmtBlock *b) {
-  (body=b)->SetParent(this);
+  (this->body=b)->SetParent(this);
 }

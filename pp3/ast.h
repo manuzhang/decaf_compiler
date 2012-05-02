@@ -42,36 +42,36 @@
 class Decl;
 
 class Node  {
-  protected:
-    yyltype *location;
-    Node *parent;
+ protected:
+  yyltype *location;
+  Node *parent;
 
-  public:
-    Node(yyltype loc);
-    Node();
-    virtual ~Node() {}
+ public:
+  Node(yyltype loc);
+  Node();
+  virtual ~Node() {}
     
-    yyltype *GetLocation()   { return location; }
-    void SetParent(Node *p)  { parent = p; }
-    Node *GetParent()        { return parent; }
+  yyltype *GetLocation()   { return location; }
+  void SetParent(Node *p)  { parent = p; }
+  Node *GetParent()        { return parent; }
 
-    virtual void CheckDeclError() {}
-    virtual void CheckStatements() {}
-    virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
+  virtual void CheckDeclError() {}
+  virtual void CheckStatements() {}
+  virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
 };
    
 
 class Identifier : public Node 
 {
-  protected:
-    char *name;
+ protected:
+  char *name;
     
-  public:
-    Identifier(yyltype loc, const char *name);
-    const char *GetName() { return name; }
-    Decl *CheckIdDecl();
-    Decl *CheckIdDecl(Hashtable<Decl*> *sym_table, const char *name);
-    friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
+ public:
+  Identifier(yyltype loc, const char *name);
+  const char *GetName() { return name; }
+  Decl *CheckIdDecl();
+  Decl *CheckIdDecl(Hashtable<Decl*> *sym_table, const char *name);
+  friend ostream& operator<<(ostream& out, Identifier *id) { if (id) return out << id->name; else return out;}
 };
 
 
@@ -82,8 +82,8 @@ class Identifier : public Node
 // when your parser can continue after an error.
 class Error : public Node
 {
-  public:
-    Error() : Node() {}
+ public:
+ Error() : Node() {}
 };
 
 #endif

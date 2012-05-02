@@ -29,45 +29,58 @@ Type *Type::stringType = new Type("string");
 Type *Type::errorType  = new Type("error"); 
 
 Type::Type(const char *n) {
-    Assert(n);
-    typeName = strdup(n);
+  Assert(n);
+  this->typeName = strdup(n);
 }
 
 bool Type::HasSameType(Type *t) {
   const char *typeName2 = t->GetTypeName();
-  if (typeName && typeName2)
-    return !strcmp(typeName, typeName2);
+  if (this->typeName && typeName2)
+    return !strcmp(this->typeName, typeName2);
   else
     return false;
 }
 
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
-    Assert(i != NULL);
-    (id=i)->SetParent(this);
+  Assert(i != NULL);
+  (this->id=i)->SetParent(this);
 } 
 
 bool NamedType::HasSameType(Type *nt) {
   if (typeid(*nt) == typeid(NamedType))
-    return !strcmp(id->GetName(), dynamic_cast<NamedType*>(nt)->GetID()->GetName());
+    return !strcmp(this->GetTypeName(), nt->GetTypeName());
   else
     return false;
 }
 
 void NamedType::CheckTypeError() {
-  const char *name = id->GetName();
-  if (Program::sym_table->Lookup(name) == NULL)
-    ReportError::IdentifierNotDeclared(id, LookingForType);
-
+  const char *name = this->id->GetName();
+  Decl *decl = Program::sym_table->Lookup(name);
+  if ((decl == NULL) || (((typeid(*decl) != typeid(ClassDecl))) && ((typeid(*decl) != typeid(InterfaceDecl)))))
+    {
+      ReportError::IdentifierNotDeclared(id, LookingForType);
+      this->id = NULL;
+    }
 }
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
-    Assert(et != NULL);
-    (elemType=et)->SetParent(this);
+  Assert(et != NULL);
+  (this->elemType=et)->SetParent(this);
 }
 
-bool ArrayType::HasSameType(Type *at) {
-  return elemType->HasSameType(at->GetElemType());
+const char *ArrayType::GetTypeName() { 
+  if (this->elemType) 
+    {
+      string delim = "[]";
+      string str = this->elemType->GetTypeName() + delim;
+      return str.c_str(); }
+  else 
+    return NULL;
+}
 
+
+bool ArrayType::HasSameType(Type *at) {
+  return this->elemType->HasSameType(at->GetElemType());
 }
 
 void ArrayType::CheckTypeError() {
