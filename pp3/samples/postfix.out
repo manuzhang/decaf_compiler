@@ -1,0 +1,6 @@
+
+*** Error line 12.
+  b++;
+   ^^
+*** Incompatible operand: ++ bool
+

@@ -73,7 +73,8 @@ const char *ArrayType::GetTypeName() {
     {
       string delim = "[]";
       string str = this->elemType->GetTypeName() + delim;
-      return str.c_str(); }
+      return str.c_str();
+    }
   else 
     return NULL;
 }

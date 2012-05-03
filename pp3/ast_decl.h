@@ -73,7 +73,6 @@ class InterfaceDecl : public Decl
 
  public:
   InterfaceDecl(Identifier *name, List<Decl*> *members);
-  void CheckStatements();
   void CheckDeclError();
   List<Decl*> *GetMembers() { return members; }
   Hashtable<Decl*> *GetSymTable() { return sym_table; }

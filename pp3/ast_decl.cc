@@ -230,7 +230,7 @@ bool ClassDecl::IsCompatibleWith(Decl *decl)
 		  
 	    }
 	}
-      if (extends)
+       if (extends)
         {
           const char *name = extends->GetTypeName();
           if (name)
@@ -252,9 +252,6 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
   this->sym_table  = new Hashtable<Decl*>;
 }
 
-void InterfaceDecl::CheckStatements() {
-  // do nothing here
-}
 
 void InterfaceDecl::CheckDeclError() {
   if (this->members)

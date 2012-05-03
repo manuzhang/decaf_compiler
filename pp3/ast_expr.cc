@@ -457,3 +457,13 @@ PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
   (this->lvalue=lv)->SetParent(this);
   (this->optr=op)->SetParent(this);
 }
+
+void PostfixExpr::CheckStatements() {
+  if (this->lvalue)
+    {
+      this->lvalue->CheckStatements();
+      const char *name = this->lvalue->GetTypeName();
+      if (strcmp(name, "int") && strcmp(name, "double"))
+	ReportError::IncompatibleOperand(this->optr, this->lvalue->GetType());
+    }
+}
