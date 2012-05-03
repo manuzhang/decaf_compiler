@@ -1,0 +1,14 @@
+int main()
+{
+  int i;
+  double d;
+  bool b;
+
+  i = 0;
+  i++;
+  d = 1.0;
+  d++;
+  b = true;
+  b++;
+  return 0;
+}

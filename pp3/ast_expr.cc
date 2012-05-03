@@ -431,10 +431,6 @@ const char *NewArrayExpr::GetTypeName() {
 }
 
 void NewArrayExpr::CheckStatements() {
-  // to be implemented:
-  // size must be strictly positive; a runtime error
-  // is raised on an attempt to allocate a negative
-  // or zero-length array
   this->size->CheckStatements();
   if (strcmp(this->size->GetTypeName(), "int"))
     ReportError::NewArraySizeNotInteger(this->size);

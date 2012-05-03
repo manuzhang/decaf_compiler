@@ -1,14 +1,15 @@
 int main()
 {
   int i;
-  double d;
-  bool b;
+  int j;
+  int[] arr;
 
-  i = 0;
+  i = 1;
+  j = 2;
+  arr = NewArray(10, int);
   i++;
-  d = 1.0;
-  d++;
-  b = true;
-  b++;
+  if (i == arr[j]--)
+    j++;
+
   return 0;
 }
