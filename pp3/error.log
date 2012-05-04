@@ -3969,3 +3969,98 @@ samples/bad9.decaf
 ---
 >      ^^^^^^^
 samples/new.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf
+16c16
+<                  ^^
+---
+>                  ^^^^^^
+samples/bad9.decaf
+16c16
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^^^^^^^
+22c22
+<        ^^^^^^^^^^^
+---
+>        ^^^^^^^^^^^^^
+28c28
+<        ^^^^^^^^
+---
+>        ^^^^^^^^^^
+34c34
+<        ^^^
+---
+>        ^^^^^^^
+40c40
+<        ^
+---
+>        ^^^^^^
+52c52
+<      ^^^^
+---
+>      ^^^^^^^
+samples/new.decaf
+28c28
+<   ^^^^^^^^^
+---
+>          ^
+samples/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf

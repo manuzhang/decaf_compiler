@@ -399,11 +399,11 @@ Expr       :  AssignExpr
            |  RelationalExpr
            |  LogicalExpr
            |  PostfixExpr
-    	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(@1); }
-           |  T_ReadLine '(' ')'     { $$ = new ReadLineExpr(@1); }
-           |  T_New T_Identifier     { $$ = new NewExpr(@1, new NamedType(new Identifier(@2, $2))); }
+    	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(Join(@1, @3)); }
+           |  T_ReadLine '(' ')'     { $$ = new ReadLineExpr(Join(@1, @3)); }
+           |  T_New T_Identifier     { $$ = new NewExpr(Join(@1, @2), new NamedType(new Identifier(@2, $2))); }
            |  T_NewArray '(' Expr ',' Type ')'
-                                     { $$ = new NewArrayExpr(@1, $3, $5); }
+                                     { $$ = new NewArrayExpr(Join(@1, @6), $3, $5); }
            ;
 
 AssignExpr     : LValue '=' Expr     
@@ -419,8 +419,8 @@ ArithmeticExpr : Expr '+' Expr       { $$ = new ArithmeticExpr($1, new Operator(
                                      { $$ = new ArithmeticExpr(new Operator(@1, "-"), $2); }
                ;
 
-PostfixExpr    : LValue T_Increment  { $$ = new PostfixExpr(@1, $1, new Operator(@2, "++")); }
-               | LValue T_Decrement  { $$ = new PostfixExpr(@1, $1, new Operator(@2, "--")); }
+PostfixExpr    : LValue T_Increment  { $$ = new PostfixExpr(Join(@1, @2), $1, new Operator(@2, "++")); }
+               | LValue T_Decrement  { $$ = new PostfixExpr(Join(@1, @2), $1, new Operator(@2, "--")); }
                ;
                
 EqualityExpr   : Expr T_Equal Expr   
@@ -466,12 +466,12 @@ FieldAccess : T_Identifier           { $$ = new FieldAccess(NULL, new Identifier
             ;
 
 Call       : T_Identifier '(' Actuals ')' 
-                                     { $$ = new Call(@1, NULL, new Identifier(@1, $1), $3); }  
+                                     { $$ = new Call(Join(@1, @4), NULL, new Identifier(@1, $1), $3); }  
            | Expr '.' T_Identifier '(' Actuals ')'
-                                     { $$ = new Call(@1, $1, new Identifier(@3, $3), $5); }
+                                     { $$ = new Call(Join(@1, @6), $1, new Identifier(@3, $3), $5); }
            ;
 
-ArrayAccess : Expr '[' Expr ']'      { $$ = new ArrayAccess(@1, $1, $3); }
+ArrayAccess : Expr '[' Expr ']'      { $$ = new ArrayAccess(Join(@1, @4), $1, $3); }
             ;
            
 Actuals    : Exprs 
