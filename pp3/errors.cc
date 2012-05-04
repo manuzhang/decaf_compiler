@@ -102,11 +102,6 @@ void ReportError::IdentifierNotDeclared(Identifier *ident, reasonT whyNeeded) {
   OutputError(ident->GetLocation(), s.str());
 }
 
-void ReportError::NoMainFunction() {
-  ostringstream s;
-  s << "No main function found";
-  OutputError(NULL, s.str());
-}
 
 void ReportError::IncompatibleOperands(Operator *op, Type *lhs, Type *rhs) {
   ostringstream s;
