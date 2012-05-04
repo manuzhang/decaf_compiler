@@ -1,0 +1,13 @@
+SPIM Version 6.3a of January 14, 2001
+Copyright 1990-2000 by James R. Larus (larus@cs.wisc.edu).
+All Rights Reserved.
+See the file README for a full copyright notice.
+Loaded: /usr/class/cs143/lib/trap.handler
+20000
+19000
+18000
+17000
+Can't expand stack segment by 24 bytes to 524288 bytes
+Use -lstack # with # > 524288
+ 
+ 

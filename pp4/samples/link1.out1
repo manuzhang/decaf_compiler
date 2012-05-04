@@ -1,0 +1,11 @@
+SPIM Version 6.3a of January 14, 2001
+Copyright 1990-2000 by James R. Larus (larus@cs.wisc.edu).
+All Rights Reserved.
+See the file README for a full copyright notice.
+Loaded: /usr/class/cs143/lib/trap.handler
+spim: (parser) Unknown character on line 1 of file tmp.asm
+	  	*** Linker: function 'main' not defined
+	   ^
+Warning: local symbol main was not defined
+Instruction references undefined symbol at 0x00400014
+[0x00400014]	0x0c000000  jal 0x00000000 [main]           ; 109: jal main 	li $v0 10
