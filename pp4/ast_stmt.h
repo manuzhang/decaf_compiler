@@ -5,8 +5,8 @@
  * language (for, if, return, etc.) there is a corresponding
  * node class for that construct. 
  *
- * pp2: You will need to add new expression and statement node c
- * classes for the additional grammar elements (Switch/Postfix)
+ * pp4: You will need to extend the Stmt classes to implement
+ * code generation for statements.
  */
 
 
@@ -23,6 +23,8 @@ class VarDecl;
 class Expr;
 class IntConstant;
 
+class CodeGenerator;
+
 class Program : public Node
 {
   protected:
@@ -32,7 +34,12 @@ class Program : public Node
      Program(List<Decl*> *declList);
      void CheckStatements();
      void CheckDeclError();
+     void Emit();
      static Hashtable<Decl*> *sym_table; // global symbol table
+
+     // just put it here
+     // yet have any idea where to place it exactly
+     static CodeGenerator *cg;
 };
 
 class Stmt : public Node
@@ -54,6 +61,7 @@ class StmtBlock : public Stmt
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     void CheckStatements();
     void CheckDeclError();
+    void Emit();
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
 };
 
@@ -130,6 +138,7 @@ class PrintStmt : public Stmt
   public:
     PrintStmt(List<Expr*> *arguments);
     void CheckStatements();
+    void Emit();
 };
 
 

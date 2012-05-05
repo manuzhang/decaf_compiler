@@ -4,6 +4,9 @@
 * expressions in the parse tree. For each expression in the
 * language (add, call, New, etc.) there is a corresponding
 * node class for that construct.
+*
+* pp4: You will need to extend the Expr classes to implement
+* code generation for expressions.
 */
 
 
@@ -18,6 +21,8 @@
 #include "list.h"
 
 class FnDecl;
+
+class Location;
 
 class Expr : public Stmt
 {
@@ -42,9 +47,11 @@ class IntConstant : public Expr
 {
   protected:
     int value;
-
+    Location *memLoc;
   public:
     IntConstant(yyltype loc, int val);
+    void Emit();
+    Location *GetMemLoc() { return memLoc; }
 };
 
 class DoubleConstant : public Expr

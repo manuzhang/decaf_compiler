@@ -20,10 +20,10 @@
  * set up links in both directions. The parent link is typically not used 
  * during parsing, but is more important in later phases.
  *
- * Semantic analysis: For pp3 you are adding "Check" behavior to the ast
- * node classes. Your semantic analyzer should do an inorder walk on the
- * parse tree, and when visiting each node, verify the particular
- * semantic rules that apply to that construct.
+ * Code generation: For pp4 you are adding "Emit" behavior to the ast
+ * node classes. Your code generator should do an postorder walk on the
+ * parse tree, and when visiting each node, emitting the necessary
+ * instructions for that construct.
 
  */
 
@@ -41,6 +41,8 @@
 
 class Decl;
 
+class Location;
+
 class Node  {
  protected:
   yyltype *location;
@@ -57,6 +59,8 @@ class Node  {
 
   virtual void CheckDeclError() {}
   virtual void CheckStatements() {}
+  virtual void Emit() {}
+  virtual Location *GetMemLoc() { return NULL; }
   virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
 };
    

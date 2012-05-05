@@ -229,6 +229,7 @@ Program   :    DeclList              {
                                         {
                                           $$->CheckDeclError();
                                           $$->CheckStatements();
+                                          $$->Emit();
                                         }
                                      }
           ;

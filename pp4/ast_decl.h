@@ -1,9 +1,12 @@
-/* File: ast_decl.h
+	/* File: ast_decl.h
  * ----------------
  * In our parse tree, Decl nodes are used to represent and
  * manage declarations. There are 4 subclasses of the base class,
  * specialized for declarations of variables, functions, classes,
  * and interfaces.
+ *
+ * pp4: You will need to extend the Decl classes to implement
+ * code generation for declarations.
  */
 
 #ifndef _H_ast_decl
@@ -17,6 +20,7 @@
 class Identifier;
 class StmtBlock;
 
+class BeginFunc;
 
 class Decl : public Node 
 {
@@ -86,7 +90,9 @@ class FnDecl : public Decl
   Type *returnType;
   StmtBlock *body;
   Hashtable<Decl*> *sym_table;
-    
+  BeginFunc *beginFunc;
+  int frameSize;
+
  public:
   FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
   void SetFunctionBody(StmtBlock *b);
@@ -98,6 +104,10 @@ class FnDecl : public Decl
   bool HasSameTypeSig(FnDecl *fd);
   Hashtable<Decl*> *GetSymTable() { return sym_table; }
 
+  BeginFunc *GetBeginFunc() { return beginFunc; }
+  int GetFrameSize() { return frameSize; }
+  void SetFrameSize(int addition) { frameSize = frameSize + addition; }
+  void Emit();
 };
 
 

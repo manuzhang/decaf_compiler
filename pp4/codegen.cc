@@ -26,14 +26,15 @@ char *CodeGenerator::NewLabel()
 
 Location *CodeGenerator::GenTempVar()
 {
-  static int nextTempNum;
+  static int nextTempNum = 0;
   char temp[10];
-  Location *result = NULL;
   sprintf(temp, "_tmp%d", nextTempNum++);
   /* pp4: need to create variable in proper location
      in stack frame for use as temporary. Until you
      do that, the assert below will always fail to remind
      you this needs to be implemented  */
+  int offset = CodeGenerator::OffsetToFirstLocal - CodeGenerator::VarSize * (nextTempNum - 1);
+  Location *result = new Location(fpRelative, offset, temp);
   Assert(result != NULL);
   return result;
 }

@@ -9,9 +9,11 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 #include "ast_expr.h"
+#include "codegen.h"
 #include "errors.h"
 
-Hashtable<Decl*> *Program::sym_table  = new Hashtable<Decl*>;
+Hashtable<Decl*> *Program::sym_table  = new Hashtable<Decl*>();
+CodeGenerator *Program::cg = new CodeGenerator();
 
 Program::Program(List<Decl*> *d) {
   Assert(d != NULL);
@@ -40,13 +42,18 @@ void Program::CheckDeclError() {
 		sym_table->Enter(name, cur);
 	    }
 	}
-      if (Program::sym_table->Lookup("main") == NULL)
-	ReportError::NoMainFunction();
       for (int i = 0; i < this->decls->NumElements(); i++)
 	this->decls->Nth(i)->CheckDeclError();
       // all the declarations should be added to hashtables of their scopes
     }
 
+}
+
+void Program::Emit() {
+  for (int i = 0; i < this->decls->NumElements(); i++)
+     this->decls->Nth(i)->Emit();
+
+  Program::cg->DoFinalCodeGen();
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
@@ -96,6 +103,14 @@ void StmtBlock::CheckDeclError() {
           Stmt *stmt = stmts->Nth(i);
           stmt->CheckDeclError();
         }
+    }
+}
+
+void StmtBlock::Emit() {
+  if (this->stmts)
+    {
+      for (int i = 0; i < this->stmts->NumElements(); i++)
+        this->stmts->Nth(i)->Emit();
     }
 }
 
@@ -220,13 +235,49 @@ PrintStmt::PrintStmt(List<Expr*> *a) {
 }
 
 void PrintStmt::CheckStatements() {
-  for (int i = 0; i < this->args->NumElements(); i++)
+  if (this->args)
     {
-      Expr *expr = this->args->Nth(i);
-      expr->CheckStatements();
-      const char *typeName = expr->GetTypeName();
-      if (typeName && strcmp(typeName, "string") && strcmp(typeName, "int") && strcmp(typeName, "bool"))
-        ReportError::PrintArgMismatch(expr, (i+1), new Type(typeName));
+      for (int i = 0; i < this->args->NumElements(); i++)
+        {
+          Expr *expr = this->args->Nth(i);
+          expr->CheckStatements();
+          const char *typeName = expr->GetTypeName();
+          if (typeName && strcmp(typeName, "string") && strcmp(typeName, "int") && strcmp(typeName, "bool"))
+            ReportError::PrintArgMismatch(expr, (i+1), new Type(typeName));
+        }
+    }
+}
+
+void PrintStmt::Emit() {
+  if (this->args)
+    {
+      Node *parent = this->GetParent();
+      FnDecl *fndecl;
+      while (parent)
+       {
+          if (typeid(*parent) == typeid(FnDecl))
+            fndecl = dynamic_cast<FnDecl*>(parent);
+          parent = parent->GetParent();
+       }
+
+      for (int i = 0; i < this->args->NumElements(); i++)
+        {
+          Expr *expr = this->args->Nth(i);
+          expr->Emit();
+
+          if (fndecl)
+            fndecl->SetFrameSize(CodeGenerator::VarSize);
+          Location *memLoc = expr->GetMemLoc();
+          const char *typeName = expr->GetTypeName();
+          if (!strcmp(typeName, "int"))
+            Program::cg->GenBuiltInCall(PrintInt, memLoc);
+          else if (!strcmp(typeName, "string"))
+            Program::cg->GenBuiltInCall(PrintString, memLoc);
+          else if (!strcmp(typeName, "bool"))
+            Program::cg->GenBuiltInCall(PrintBool, memLoc);
+        }
+      if (fndecl)
+        fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
     }
 }
 

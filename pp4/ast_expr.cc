@@ -10,12 +10,18 @@
 #include "ast_expr.h"
 #include "ast_type.h"
 #include "ast_decl.h"
+#include "codegen.h"
 #include "errors.h"
+#include "tac.h"
 
 IntConstant::IntConstant(yyltype loc, int val)
   : Expr(loc) {
   this->value = val;
   Expr::type = Type::intType;
+}
+
+void IntConstant::Emit() {
+  this->memLoc = Program::cg->GenLoadConstant(this->value);
 }
 
 DoubleConstant::DoubleConstant(yyltype loc, double val)

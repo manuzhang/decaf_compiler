@@ -11,6 +11,7 @@
 #include "ast_decl.h"
 #include "ast_type.h"
 #include "ast_stmt.h"
+#include "codegen.h"
 #include "errors.h"
 
 
@@ -283,6 +284,9 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
   (this->formals=d)->SetParentAll(this);
   this->body = NULL;
   this->sym_table  = new Hashtable<Decl*>;
+
+  this->beginFunc = NULL;
+  this->frameSize = 0;
 }
 
 // return type, number of formals need be matched
@@ -341,6 +345,16 @@ void FnDecl::CheckDeclError() {
     }
   if (this->body)
     this->body->CheckDeclError();
+}
+
+void FnDecl::Emit() {
+  Program::cg->GenLabel(this->GetID()->GetName());
+  this->beginFunc = Program::cg->GenBeginFunc();
+
+  if (this->body)
+    this->body->Emit();
+
+  Program::cg->GenEndFunc();
 }
 
 void FnDecl::SetFunctionBody(StmtBlock *b) {
