@@ -61,6 +61,11 @@ Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
   strncpy(this->tokenString, tok, sizeof(this->tokenString));
 }
 
+void Operator::SetToken(const char *tok) {
+  Assert(tok != NULL);
+  strncpy(this->tokenString, tok, sizeof(this->tokenString));
+}
+
 CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r) 
   : Expr(Join(l->GetLocation(), r->GetLocation())) {
   Assert(l != NULL && o != NULL && r != NULL);
@@ -77,6 +82,13 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
   (this->right=r)->SetParent(this);
 }
   
+void CompoundExpr::SwapOperands() {
+  Expr *tmp;
+  tmp = this->right;
+  this->right = this->left;
+  this->left = tmp;
+}
+
 void ArithmeticExpr::CheckStatements() {
   const char *lt = NULL, *rt = NULL;
   if (this->left) // binary
@@ -101,7 +113,6 @@ void ArithmeticExpr::CheckStatements() {
     }
 }
 
-
 Location *ArithmeticExpr::Emit() {
   if (this->left && this->right)
     {
@@ -124,6 +135,20 @@ void RelationalExpr::CheckStatements() {
 	  (strcmp(lt, rt)))
 	ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
     }
+}
+
+Location *RelationalExpr::Emit() {
+  if (this->left && this->right)
+    {
+      if (!strcmp(this->GetOp()->GetToken(), ">"))
+       {
+         SwapOperands();
+         this->GetOp()->SetToken("<");
+       }
+      return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+    }
+
+  return NULL;
 }
 
 void EqualityExpr::CheckStatements() {
@@ -161,6 +186,8 @@ void EqualityExpr::CheckStatements() {
   ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
 }
 
+
+
 void LogicalExpr::CheckStatements() {
   const char *lt = NULL, *rt = NULL;
   if (this->left)
@@ -181,6 +208,39 @@ void LogicalExpr::CheckStatements() {
         ReportError::IncompatibleOperand(this->op, new Type(rt));
     }
 
+}
+
+
+Location *EqualityExpr::Emit() {
+  if (this->left && this->right)
+    {
+       if (!strcmp(this->GetOp()->GetToken(), "!="))
+         {
+           Expr *prevLeft = this->left;
+           Expr *prevRight = this->right;
+           // the location is not correct, but semantic check has been done upto this step
+           this->left = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), "<"), prevRight);
+           this->left->SetParent(this);
+           this->right = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), ">"), prevRight);
+           this->right->SetParent(this);
+           this->op->SetToken("||");
+           this->op->SetParent(this);
+         }
+
+       return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+    }
+
+  return NULL;
+
+}
+
+Location *LogicalExpr::Emit() {
+  if (this->left && this->right)
+     {
+       return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+     }
+
+   return NULL;
 }
 
 void AssignExpr::CheckStatements() {
@@ -338,7 +398,7 @@ Location *FieldAccess::Emit() {
   else
     {
       Decl *decl = this->field->CheckIdDecl();
-      if (typeid(*decl) == typeid(VarDecl))
+      if (decl && typeid(*decl) == typeid(VarDecl))
         {
           return dynamic_cast<VarDecl*>(decl)->GetMemLoc();
         }

@@ -97,6 +97,7 @@ class Operator : public Node
     Operator(yyltype loc, const char *tok);
     friend ostream &operator<<(ostream &out, Operator *op) { if (op) return out << op->tokenString; else return out; }
     const char *GetToken() { return tokenString; }
+    void SetToken(const char *tok);
  };
  
 class CompoundExpr : public Expr
@@ -108,6 +109,9 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs); // for unary
+
+    Operator *GetOp() { return op; }
+    void SwapOperands(); // to simulate ">" with "<"
 };
 
 class ArithmeticExpr : public CompoundExpr
@@ -116,12 +120,10 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     void CheckStatements();
-    Operator *GetOp() { return op; }
     Type *GetType() { return right->GetType(); }
     const char *GetTypeName() { return right->GetTypeName(); }
 
     Location *Emit();
-
 };
 
 class RelationalExpr : public CompoundExpr
@@ -131,6 +133,8 @@ class RelationalExpr : public CompoundExpr
     void CheckStatements();
     Type *GetType() { return Type::boolType; }
     const char *GetTypeName() { return "bool"; }
+
+    Location *Emit();
 };
 
 class EqualityExpr : public CompoundExpr
@@ -140,6 +144,8 @@ class EqualityExpr : public CompoundExpr
     void CheckStatements();
     Type *GetType() { return Type::boolType; }
     const char *GetTypeName() { return "bool"; }
+
+    Location *Emit();
 };
 
 class LogicalExpr : public CompoundExpr
@@ -150,6 +156,8 @@ class LogicalExpr : public CompoundExpr
     void CheckStatements();
     Type *GetType() { return Type::boolType; }
     const char *GetTypeName() { return "bool"; }
+
+    Location *Emit();
 };
 
 class AssignExpr : public CompoundExpr
