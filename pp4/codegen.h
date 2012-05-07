@@ -52,7 +52,7 @@ class CodeGenerator {
     
          // Creates and returns a Location for a new uniquely named
          // temp variable. Does not generate any Tac instructions
-    Location *GenTempVar();
+    Location *GenVar(Segment segment = fpRelative, int offset = 0, const char *name = NULL);
 
          // Generates Tac instructions to load a constant value. Creates
          // a new temp var to hold the result. The constant 

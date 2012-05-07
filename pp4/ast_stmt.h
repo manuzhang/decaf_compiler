@@ -112,6 +112,8 @@ class IfStmt : public ConditionalStmt
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
     void CheckStatements();
     void CheckDeclError();
+
+    Location *Emit();
 };
 
 class BreakStmt : public Stmt 

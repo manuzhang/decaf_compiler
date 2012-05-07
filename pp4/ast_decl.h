@@ -96,7 +96,7 @@ class FnDecl : public Decl
   Hashtable<Decl*> *sym_table;
   BeginFunc *beginFunc;
   int frameSize;
-  int localOffset;
+//  int localOffset;
 
  public:
   FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
@@ -112,8 +112,8 @@ class FnDecl : public Decl
   BeginFunc *GetBeginFunc() { return beginFunc; }
   int GetFrameSize() { return frameSize; }
   void AddFrameSize(int addition) { frameSize = frameSize + addition; }
-  int GetLocalOffset() { return localOffset; }
-  void AddLocalOffset(int offset) { localOffset -= offset; }
+/*  int GetLocalOffset() { return localOffset; }
+  void AddLocalOffset(int offset) { localOffset -= offset; }*/
   Location *Emit();
 };
 

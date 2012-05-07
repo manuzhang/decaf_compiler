@@ -21,7 +21,14 @@ IntConstant::IntConstant(yyltype loc, int val)
 }
 
 Location *IntConstant::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+    {
+      fndecl->AddFrameSize(CodeGenerator::VarSize);
+      fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+     }
   return Program::cg->GenLoadConstant(this->value);
+
 }
 
 DoubleConstant::DoubleConstant(yyltype loc, double val)
@@ -37,7 +44,14 @@ BoolConstant::BoolConstant(yyltype loc, bool val)
 }
 
 Location *BoolConstant::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+    {
+      fndecl->AddFrameSize(CodeGenerator::VarSize);
+      fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+    }
   return Program::cg->GenLoadConstant(static_cast<int>(this->value));
+
 }
 
 StringConstant::StringConstant(yyltype loc, const char *val)
@@ -48,7 +62,15 @@ StringConstant::StringConstant(yyltype loc, const char *val)
 }
 
 Location *StringConstant::Emit() {
-  return Program::cg->GenLoadConstant(this->value);
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+   if (fndecl)
+     {
+       fndecl->AddFrameSize(CodeGenerator::VarSize);
+       fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+     }
+
+   return Program::cg->GenLoadConstant(this->value);
+
 }
 
 NullConstant::NullConstant(yyltype loc)
@@ -116,6 +138,12 @@ void ArithmeticExpr::CheckStatements() {
 Location *ArithmeticExpr::Emit() {
   if (this->left && this->right)
     {
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl) // local variable
+        {
+          fndecl->AddFrameSize(CodeGenerator::VarSize);
+          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+        }
       return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
     }
 
@@ -140,6 +168,13 @@ void RelationalExpr::CheckStatements() {
 Location *RelationalExpr::Emit() {
   if (this->left && this->right)
     {
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl) // local variable
+        {
+          fndecl->AddFrameSize(CodeGenerator::VarSize);
+          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+        }
+
       if (!strcmp(this->GetOp()->GetToken(), ">"))
        {
          SwapOperands();
@@ -187,6 +222,35 @@ void EqualityExpr::CheckStatements() {
 }
 
 
+Location *EqualityExpr::Emit() {
+  if (this->left && this->right)
+    {
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl) // local variable
+        {
+          fndecl->AddFrameSize(CodeGenerator::VarSize);
+          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+        }
+
+       if (!strcmp(this->GetOp()->GetToken(), "!="))
+         {
+           Expr *prevLeft = this->left;
+           Expr *prevRight = this->right;
+           // the location is not correct, but semantic check has been done upto this step
+           this->left = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), "<"), prevRight);
+           this->left->SetParent(this);
+           this->right = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), ">"), prevRight);
+           this->right->SetParent(this);
+           this->op->SetToken("||");
+           this->op->SetParent(this);
+         }
+
+       return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+    }
+
+  return NULL;
+
+}
 
 void LogicalExpr::CheckStatements() {
   const char *lt = NULL, *rt = NULL;
@@ -211,32 +275,16 @@ void LogicalExpr::CheckStatements() {
 }
 
 
-Location *EqualityExpr::Emit() {
-  if (this->left && this->right)
-    {
-       if (!strcmp(this->GetOp()->GetToken(), "!="))
-         {
-           Expr *prevLeft = this->left;
-           Expr *prevRight = this->right;
-           // the location is not correct, but semantic check has been done upto this step
-           this->left = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), "<"), prevRight);
-           this->left->SetParent(this);
-           this->right = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), ">"), prevRight);
-           this->right->SetParent(this);
-           this->op->SetToken("||");
-           this->op->SetParent(this);
-         }
-
-       return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
-    }
-
-  return NULL;
-
-}
 
 Location *LogicalExpr::Emit() {
   if (this->left && this->right)
      {
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl) // local variable
+        {
+          fndecl->AddFrameSize(CodeGenerator::VarSize);
+          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+        }
        return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
      }
 

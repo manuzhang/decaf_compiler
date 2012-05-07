@@ -180,6 +180,27 @@ void IfStmt::CheckStatements() {
     this->elseBody->CheckStatements();
 }
 
+Location *IfStmt::Emit() {
+  if (this->test)
+    {
+      char *label_0 = Program::cg->NewLabel();
+      char *label_1 = Program::cg->NewLabel();
+      Program::cg->GenIfZ(this->test->Emit(), label_0);
+      if (this->body)
+        this->body->Emit();
+
+      Program::cg->GenGoto(label_1);
+      Program::cg->GenLabel(label_0);
+
+      if (this->elseBody)
+        this->elseBody->Emit();
+
+      Program::cg->GenLabel(label_1);
+    }
+
+  return NULL;
+}
+
 void BreakStmt::CheckStatements() {
   Node *parent = this->GetParent();
   while (parent)
@@ -263,14 +284,10 @@ void PrintStmt::CheckStatements() {
 Location *PrintStmt::Emit() {
   if (this->args)
     {
-      FnDecl *fndecl = this->GetEnclosFunc(this);
-
       for (int i = 0; i < this->args->NumElements(); i++)
         {
           Expr *expr = this->args->Nth(i);
 
-          if (fndecl)
-            fndecl->AddFrameSize(CodeGenerator::VarSize);
           const char *typeName = expr->GetTypeName();
           if (!strcmp(typeName, "int"))
             Program::cg->GenBuiltInCall(PrintInt, expr->Emit());
@@ -279,8 +296,6 @@ Location *PrintStmt::Emit() {
           else if (!strcmp(typeName, "bool"))
             Program::cg->GenBuiltInCall(PrintBool, expr->Emit());
         }
-      if (fndecl)
-        fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
     }
 
   return NULL;

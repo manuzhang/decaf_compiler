@@ -47,13 +47,12 @@ Location *VarDecl::Emit() {
     {
       fndecl->AddFrameSize(CodeGenerator::VarSize);
       fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
-      int offset = fndecl->GetLocalOffset();
-      this->memLoc = new Location(fpRelative, offset, this->GetID()->GetName());
-      fndecl->AddLocalOffset(offset);
+      // offset of locals is calculated by GenVar itself
+      this->memLoc = Program::cg->GenVar(fpRelative, 0, this->GetID()->GetName());
     }
   else // global variable
     {
-      this->memLoc = new Location(gpRelative, Program::offset, this->GetID()->GetName());
+      this->memLoc = Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName());
       Program::offset = Program::offset + CodeGenerator::VarSize;
     }
 
@@ -304,7 +303,7 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
 
   this->beginFunc = NULL;
   this->frameSize = 0;
-  this->localOffset = CodeGenerator::OffsetToFirstLocal;
+  //this->localOffset = CodeGenerator::OffsetToFirstLocal;
 }
 
 // return type, number of formals need be matched
