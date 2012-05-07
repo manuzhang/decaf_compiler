@@ -101,6 +101,8 @@ class WhileStmt : public LoopStmt
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
     void CheckStatements();
+
+    Location *Emit();
  };
 
 class IfStmt : public ConditionalStmt 

@@ -162,6 +162,29 @@ void WhileStmt::CheckStatements() {
   ConditionalStmt::CheckStatements();
 }
 
+Location *WhileStmt::Emit() {
+  if (this->test)
+    {
+      char *label_0 = Program::cg->NewLabel();
+      char *label_1 = Program::cg->NewLabel();
+
+      Program::cg->GenLabel(label_0);
+
+      Program::cg->GenIfZ(this->test->Emit(), label_1);
+
+      if (this->body)
+        {
+          this->body->Emit();
+        }
+
+      Program::cg->GenGoto(label_0);
+
+      Program::cg->GenLabel(label_1);
+    }
+
+  return NULL;
+}
+
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
   Assert(t != NULL && tb != NULL); // else can be NULL
   this->elseBody = eb;
