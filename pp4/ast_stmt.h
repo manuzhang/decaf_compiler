@@ -20,6 +20,7 @@
 
 class Decl;
 class VarDecl;
+class FnDecl;
 class Expr;
 class IntConstant;
 
@@ -34,12 +35,11 @@ class Program : public Node
      Program(List<Decl*> *declList);
      void CheckStatements();
      void CheckDeclError();
-     void Emit();
+     Location *Emit();
      static Hashtable<Decl*> *sym_table; // global symbol table
 
-     // just put it here
-     // yet have any idea where to place it exactly
-     static CodeGenerator *cg;
+     static CodeGenerator *cg; // code generator for the whole program
+     static int offset; // global variable offset
 };
 
 class Stmt : public Node
@@ -47,6 +47,7 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
+
 };
 
 class StmtBlock : public Stmt 
@@ -61,7 +62,7 @@ class StmtBlock : public Stmt
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     void CheckStatements();
     void CheckDeclError();
-    void Emit();
+    Location *Emit();
     Hashtable<Decl*> *GetSymTable() { return sym_table; }
 };
 
@@ -138,7 +139,7 @@ class PrintStmt : public Stmt
   public:
     PrintStmt(List<Expr*> *arguments);
     void CheckStatements();
-    void Emit();
+    Location *Emit();
 };
 
 

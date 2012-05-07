@@ -47,11 +47,10 @@ class IntConstant : public Expr
 {
   protected:
     int value;
-    Location *memLoc;
+
   public:
     IntConstant(yyltype loc, int val);
-    void Emit();
-    Location *GetMemLoc() { return memLoc; }
+    Location *Emit();
 };
 
 class DoubleConstant : public Expr
@@ -70,6 +69,7 @@ class BoolConstant : public Expr
     
   public:
     BoolConstant(yyltype loc, bool val);
+    Location *Emit();
 };
 
 class StringConstant : public Expr
@@ -79,6 +79,7 @@ class StringConstant : public Expr
     
   public:
     StringConstant(yyltype loc, const char *val);
+    Location *Emit();
 };
 
 class NullConstant: public Expr
@@ -95,6 +96,7 @@ class Operator : public Node
   public:
     Operator(yyltype loc, const char *tok);
     friend ostream &operator<<(ostream &out, Operator *op) { if (op) return out << op->tokenString; else return out; }
+    const char *GetToken() { return tokenString; }
  };
  
 class CompoundExpr : public Expr
@@ -114,8 +116,12 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     void CheckStatements();
+    Operator *GetOp() { return op; }
     Type *GetType() { return right->GetType(); }
-    const char *GetTypeName() { return right->GetTypeName();}
+    const char *GetTypeName() { return right->GetTypeName(); }
+
+    Location *Emit();
+
 };
 
 class RelationalExpr : public CompoundExpr
@@ -153,6 +159,8 @@ class AssignExpr : public CompoundExpr
     void CheckStatements();
     Type *GetType() { return left->GetType(); }
     const char *GetTypeName() { return left->GetTypeName(); }
+
+    Location *Emit();
 
 };
 
@@ -199,6 +207,8 @@ class FieldAccess : public LValue
     Identifier *GetField() { return field; }
     Type *GetType() { return type; }
     const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
+
+    Location *Emit();
 };
 
 /* Like field access, call is used both for qualified base.field()

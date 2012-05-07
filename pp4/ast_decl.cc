@@ -13,6 +13,8 @@
 #include "ast_stmt.h"
 #include "codegen.h"
 #include "errors.h"
+#include "tac.h"
+
 
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
@@ -33,14 +35,29 @@ bool VarDecl::HasSameTypeSig(VarDecl *vd) {
     return false;
 }
 
-void VarDecl::CheckStatements() {
-  // do nothing here
-}
- 
 // check NamedType errors
 void VarDecl::CheckDeclError() {
   if (this->type)
     this->type->CheckTypeError();
+}
+
+Location *VarDecl::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl) // local variable
+    {
+      fndecl->AddFrameSize(CodeGenerator::VarSize);
+      fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+      int offset = fndecl->GetLocalOffset();
+      this->memLoc = new Location(fpRelative, offset, this->GetID()->GetName());
+      fndecl->AddLocalOffset(offset);
+    }
+  else // global variable
+    {
+      this->memLoc = new Location(gpRelative, Program::offset, this->GetID()->GetName());
+      Program::offset = Program::offset + CodeGenerator::VarSize;
+    }
+
+  return this->memLoc;
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
@@ -287,6 +304,7 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
 
   this->beginFunc = NULL;
   this->frameSize = 0;
+  this->localOffset = CodeGenerator::OffsetToFirstLocal;
 }
 
 // return type, number of formals need be matched
@@ -347,14 +365,17 @@ void FnDecl::CheckDeclError() {
     this->body->CheckDeclError();
 }
 
-void FnDecl::Emit() {
+Location *FnDecl::Emit() {
   Program::cg->GenLabel(this->GetID()->GetName());
+
   this->beginFunc = Program::cg->GenBeginFunc();
 
   if (this->body)
     this->body->Emit();
 
   Program::cg->GenEndFunc();
+
+  return NULL;
 }
 
 void FnDecl::SetFunctionBody(StmtBlock *b) {

@@ -5,6 +5,8 @@
 #include <stdio.h>  // printf
 #include <string.h> // strdup
 
+#include <typeinfo>
+
 #include "ast.h"
 #include "ast_decl.h"
 #include "ast_stmt.h"
@@ -19,6 +21,21 @@ Node::Node(yyltype loc) {
 Node::Node() {
   this->location = NULL;
   this->parent = NULL;
+}
+
+FnDecl *Node::GetEnclosFunc(Node *node) {
+  Node *parent = node->GetParent();
+  FnDecl *fndecl = NULL;
+  while (parent)
+    {
+      if (typeid(*parent) == typeid(FnDecl))
+        {
+          fndecl = dynamic_cast<FnDecl*>(parent);
+          break;
+        }
+      parent = parent->GetParent();
+    }
+  return fndecl;
 }
 	 
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {

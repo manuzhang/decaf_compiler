@@ -163,10 +163,10 @@ void EndFunc::EmitSpecific(Mips *mips) {
 Return::Return(Location *v) : val(v) {
   sprintf(printed, "Return %s", val? val->GetName() : "");
 }
+
 void Return::EmitSpecific(Mips *mips) {	  
   mips->EmitReturn(val);
 }
-
 
 PushParam::PushParam(Location *p)
   :  param(p) {

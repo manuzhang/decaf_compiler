@@ -40,7 +40,7 @@
 #include "location.h"
 
 class Decl;
-
+class FnDecl;
 class Location;
 
 class Node  {
@@ -59,9 +59,12 @@ class Node  {
 
   virtual void CheckDeclError() {}
   virtual void CheckStatements() {}
-  virtual void Emit() {}
-  virtual Location *GetMemLoc() { return NULL; }
+  virtual Location *Emit() { return NULL; }
+  //virtual Location *GetMemLoc() { return NULL; }
   virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
+
+  // get enclosing function to backpatch the frame size
+  FnDecl *GetEnclosFunc(Node *node);
 };
    
 

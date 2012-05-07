@@ -14,6 +14,7 @@
 
 Hashtable<Decl*> *Program::sym_table  = new Hashtable<Decl*>();
 CodeGenerator *Program::cg = new CodeGenerator();
+int Program::offset = CodeGenerator::OffsetToFirstGlobal;
 
 Program::Program(List<Decl*> *d) {
   Assert(d != NULL);
@@ -49,12 +50,16 @@ void Program::CheckDeclError() {
 
 }
 
-void Program::Emit() {
+Location *Program::Emit() {
   for (int i = 0; i < this->decls->NumElements(); i++)
      this->decls->Nth(i)->Emit();
 
   Program::cg->DoFinalCodeGen();
+
+  return NULL;
 }
+
+
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
   Assert(d != NULL && s != NULL);
@@ -106,12 +111,19 @@ void StmtBlock::CheckDeclError() {
     }
 }
 
-void StmtBlock::Emit() {
+Location *StmtBlock::Emit() {
+  if (this->decls)
+    {
+      for (int i = 0; i < this->decls->NumElements(); i++)
+        this->decls->Nth(i)->Emit();
+    }
   if (this->stmts)
     {
       for (int i = 0; i < this->stmts->NumElements(); i++)
         this->stmts->Nth(i)->Emit();
     }
+
+  return NULL;
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
@@ -248,37 +260,30 @@ void PrintStmt::CheckStatements() {
     }
 }
 
-void PrintStmt::Emit() {
+Location *PrintStmt::Emit() {
   if (this->args)
     {
-      Node *parent = this->GetParent();
-      FnDecl *fndecl;
-      while (parent)
-       {
-          if (typeid(*parent) == typeid(FnDecl))
-            fndecl = dynamic_cast<FnDecl*>(parent);
-          parent = parent->GetParent();
-       }
+      FnDecl *fndecl = this->GetEnclosFunc(this);
 
       for (int i = 0; i < this->args->NumElements(); i++)
         {
           Expr *expr = this->args->Nth(i);
-          expr->Emit();
 
           if (fndecl)
-            fndecl->SetFrameSize(CodeGenerator::VarSize);
-          Location *memLoc = expr->GetMemLoc();
+            fndecl->AddFrameSize(CodeGenerator::VarSize);
           const char *typeName = expr->GetTypeName();
           if (!strcmp(typeName, "int"))
-            Program::cg->GenBuiltInCall(PrintInt, memLoc);
+            Program::cg->GenBuiltInCall(PrintInt, expr->Emit());
           else if (!strcmp(typeName, "string"))
-            Program::cg->GenBuiltInCall(PrintString, memLoc);
+            Program::cg->GenBuiltInCall(PrintString, expr->Emit());
           else if (!strcmp(typeName, "bool"))
-            Program::cg->GenBuiltInCall(PrintBool, memLoc);
+            Program::cg->GenBuiltInCall(PrintBool, expr->Emit());
         }
       if (fndecl)
         fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
     }
+
+  return NULL;
 }
 
 CaseStmt::CaseStmt(IntConstant *ic, List<Stmt*> *sts)

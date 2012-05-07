@@ -21,6 +21,7 @@ class Identifier;
 class StmtBlock;
 
 class BeginFunc;
+class Location;
 
 class Decl : public Node 
 {
@@ -39,14 +40,17 @@ class VarDecl : public Decl
 {
  protected:
   Type *type;
-    
+  Location *memLoc; // for later FieldAccess
+
  public:
   VarDecl(Identifier *name, Type *type);
   Type *GetType() { return type; }
   const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
   bool HasSameTypeSig(VarDecl *vd);
-  void CheckStatements();
   void CheckDeclError();
+
+  Location *Emit();
+  Location *GetMemLoc() { return memLoc; }
 };
 
 
@@ -92,6 +96,7 @@ class FnDecl : public Decl
   Hashtable<Decl*> *sym_table;
   BeginFunc *beginFunc;
   int frameSize;
+  int localOffset;
 
  public:
   FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
@@ -106,8 +111,10 @@ class FnDecl : public Decl
 
   BeginFunc *GetBeginFunc() { return beginFunc; }
   int GetFrameSize() { return frameSize; }
-  void SetFrameSize(int addition) { frameSize = frameSize + addition; }
-  void Emit();
+  void AddFrameSize(int addition) { frameSize = frameSize + addition; }
+  int GetLocalOffset() { return localOffset; }
+  void AddLocalOffset(int offset) { localOffset -= offset; }
+  Location *Emit();
 };
 
 

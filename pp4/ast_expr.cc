@@ -20,8 +20,8 @@ IntConstant::IntConstant(yyltype loc, int val)
   Expr::type = Type::intType;
 }
 
-void IntConstant::Emit() {
-  this->memLoc = Program::cg->GenLoadConstant(this->value);
+Location *IntConstant::Emit() {
+  return Program::cg->GenLoadConstant(this->value);
 }
 
 DoubleConstant::DoubleConstant(yyltype loc, double val)
@@ -36,11 +36,19 @@ BoolConstant::BoolConstant(yyltype loc, bool val)
   Expr::type = Type::boolType;
 }
 
+Location *BoolConstant::Emit() {
+  return Program::cg->GenLoadConstant(static_cast<int>(this->value));
+}
+
 StringConstant::StringConstant(yyltype loc, const char *val)
   : Expr(loc) {
   Assert(val != NULL);
   this->value = strdup(val);
   Expr::type = Type::stringType;
+}
+
+Location *StringConstant::Emit() {
+  return Program::cg->GenLoadConstant(this->value);
 }
 
 NullConstant::NullConstant(yyltype loc)
@@ -91,6 +99,16 @@ void ArithmeticExpr::CheckStatements() {
       if (strcmp(rt, "int") && strcmp(rt, "double"))
         ReportError::IncompatibleOperand(this->op, new Type(rt));
     }
+}
+
+
+Location *ArithmeticExpr::Emit() {
+  if (this->left && this->right)
+    {
+      return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+    }
+
+  return NULL;
 }
 
 void RelationalExpr::CheckStatements() {
@@ -193,6 +211,15 @@ void AssignExpr::CheckStatements() {
 	return;
       ReportError::IncompatibleOperands(this->op, new Type(lt), new Type(rt));
     }
+}
+
+Location *AssignExpr::Emit() {
+  if (this->left && this->right)
+    {
+      Program::cg->GenAssign(this->left->Emit(), this->right->Emit());
+    }
+
+  return NULL;
 }
 
 void This::CheckStatements() {
@@ -300,6 +327,24 @@ void FieldAccess::CheckStatements() {
     }
   if (decl != NULL)
     this->type = decl->GetType(); 
+}
+
+Location *FieldAccess::Emit() {
+  if (this->base)
+    {
+      // to be implemented
+      return NULL;
+    }
+  else
+    {
+      Decl *decl = this->field->CheckIdDecl();
+      if (typeid(*decl) == typeid(VarDecl))
+        {
+          return dynamic_cast<VarDecl*>(decl)->GetMemLoc();
+        }
+      else
+        return NULL;
+    }
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
