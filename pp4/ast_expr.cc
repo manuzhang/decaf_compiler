@@ -696,6 +696,20 @@ ReadIntegerExpr::ReadIntegerExpr(yyltype loc)
   Expr::type = Type::intType;
 }
 
+Location *ReadIntegerExpr::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+     {
+       fndecl->AddFrameSize(CodeGenerator::VarSize);
+
+       int offset = fndecl->GetLocalOffset();
+       fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+       return Program::cg->GenBuiltInCall(ReadInteger, NULL, NULL, offset);
+     }
+  return NULL;
+}
+
 PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
   : Expr(loc) {
   Assert(lv != NULL && op != NULL);
@@ -711,6 +725,19 @@ void PostfixExpr::CheckStatements() {
       if (strcmp(name, "int") && strcmp(name, "double"))
 	ReportError::IncompatibleOperand(this->optr, this->lvalue->GetType());
     }
+}
+
+Location *PostfixExpr::Emit() {
+  if (this->lvalue)
+    {
+      Expr *expr = new AssignExpr(this->lvalue, new Operator(*this->GetLocation(), "="),
+                                  new ArithmeticExpr(this->lvalue, new Operator(*this->GetLocation(), "+"), new IntConstant(*this->GetLocation(), 1)));
+
+      expr->SetParent(this);
+      return expr->Emit();
+    }
+
+  return NULL;
 }
 
 

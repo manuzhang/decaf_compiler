@@ -268,6 +268,8 @@ class ReadIntegerExpr : public Expr
 {
   public:
     ReadIntegerExpr(yyltype loc);
+
+    Location *Emit();
 };
 
 class ReadLineExpr : public Expr
@@ -290,6 +292,8 @@ class PostfixExpr : public Expr
     void CheckStatements();
     Type *GetType() { if (lvalue) return lvalue->GetType(); else return NULL; }
     const char *GetTypeName() { if (lvalue) return lvalue->GetTypeName(); else return NULL; }
+    Operator *GetOp() { return optr; }
+    Location *Emit();
 };
     
 #endif
