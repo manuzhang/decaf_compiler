@@ -40,8 +40,6 @@ void Program::CheckDeclError() {
 		sym_table->Enter(name, cur);
 	    }
 	}
-      if (Program::sym_table->Lookup("main") == NULL)
-	ReportError::NoMainFunction();
       for (int i = 0; i < this->decls->NumElements(); i++)
 	this->decls->Nth(i)->CheckDeclError();
       // all the declarations should be added to hashtables of their scopes
@@ -158,7 +156,7 @@ void BreakStmt::CheckStatements() {
   while (parent)
     {
       if ((typeid(*parent) == typeid(WhileStmt)) ||
-          (typeid(*parent) == typeid(LoopStmt)) ||
+          (typeid(*parent) == typeid(ForStmt)) ||
           (typeid(*parent) == typeid(SwitchStmt)))
         return;
       parent = parent->GetParent();
@@ -220,13 +218,16 @@ PrintStmt::PrintStmt(List<Expr*> *a) {
 }
 
 void PrintStmt::CheckStatements() {
-  for (int i = 0; i < this->args->NumElements(); i++)
+  if (this->args)
     {
-      Expr *expr = this->args->Nth(i);
-      expr->CheckStatements();
-      const char *typeName = expr->GetTypeName();
-      if (typeName && strcmp(typeName, "string") && strcmp(typeName, "int") && strcmp(typeName, "bool"))
-        ReportError::PrintArgMismatch(expr, (i+1), new Type(typeName));
+      for (int i = 0; i < this->args->NumElements(); i++)
+        {
+          Expr *expr = this->args->Nth(i);
+          expr->CheckStatements();
+          const char *typeName = expr->GetTypeName();
+          if (typeName && strcmp(typeName, "string") && strcmp(typeName, "int") && strcmp(typeName, "bool"))
+            ReportError::PrintArgMismatch(expr, (i+1), new Type(typeName));
+        }
     }
 }
 
