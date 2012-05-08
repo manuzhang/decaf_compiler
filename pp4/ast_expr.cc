@@ -25,10 +25,14 @@ Location *IntConstant::Emit() {
   if (fndecl)
     {
       fndecl->AddFrameSize(CodeGenerator::VarSize);
-      fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
-     }
-  return Program::cg->GenLoadConstant(this->value);
 
+      int offset = fndecl->GetLocalOffset();
+      fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+      return Program::cg->GenLoadConstant(offset, this->value);
+    }
+
+  return NULL;
 }
 
 DoubleConstant::DoubleConstant(yyltype loc, double val)
@@ -48,9 +52,14 @@ Location *BoolConstant::Emit() {
   if (fndecl)
     {
       fndecl->AddFrameSize(CodeGenerator::VarSize);
-      fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+
+      int offset = fndecl->GetLocalOffset();
+      fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+      return Program::cg->GenLoadConstant(offset, static_cast<int>(this->value));
     }
-  return Program::cg->GenLoadConstant(static_cast<int>(this->value));
+
+  return NULL;
 
 }
 
@@ -66,10 +75,14 @@ Location *StringConstant::Emit() {
    if (fndecl)
      {
        fndecl->AddFrameSize(CodeGenerator::VarSize);
-       fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+
+       int offset = fndecl->GetLocalOffset();
+       fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+       return Program::cg->GenLoadConstant(offset, this->value);
      }
 
-   return Program::cg->GenLoadConstant(this->value);
+   return NULL;
 
 }
 
@@ -142,9 +155,12 @@ Location *ArithmeticExpr::Emit() {
       if (fndecl) // local variable
         {
           fndecl->AddFrameSize(CodeGenerator::VarSize);
-          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+
+          int offset = fndecl->GetLocalOffset();
+          fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+          return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
         }
-      return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
     }
 
   return NULL;
@@ -172,15 +188,17 @@ Location *RelationalExpr::Emit() {
       if (fndecl) // local variable
         {
           fndecl->AddFrameSize(CodeGenerator::VarSize);
-          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
-        }
 
-      if (!strcmp(this->GetOp()->GetToken(), ">"))
-       {
-         SwapOperands();
-         this->GetOp()->SetToken("<");
-       }
-      return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+          int offset = fndecl->GetLocalOffset();
+          fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+          if (!strcmp(this->GetOp()->GetToken(), ">"))
+            {
+             SwapOperands();
+             this->GetOp()->SetToken("<");
+             }
+          return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+        }
     }
 
   return NULL;
@@ -229,9 +247,9 @@ Location *EqualityExpr::Emit() {
       if (fndecl) // local variable
         {
           fndecl->AddFrameSize(CodeGenerator::VarSize);
-          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
-        }
 
+          int offset = fndecl->GetLocalOffset();
+          fndecl->AddLocalOffset(CodeGenerator::VarSize);
        if (!strcmp(this->GetOp()->GetToken(), "!="))
         {
            Expr *prevLeft = this->left;
@@ -246,12 +264,13 @@ Location *EqualityExpr::Emit() {
          }
        if (this->left->GetType() == Type::stringType && this->right->GetType() == Type::stringType)
          {
-           return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit());
+           return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), offset);
          }
        else
          {
-           return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+           return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
          }
+        }
     }
 
   return NULL;
@@ -289,9 +308,12 @@ Location *LogicalExpr::Emit() {
       if (fndecl) // local variable
         {
           fndecl->AddFrameSize(CodeGenerator::VarSize);
-          fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
+
+          int offset = fndecl->GetLocalOffset();
+          fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+          return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
         }
-       return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
      }
 
    return NULL;
@@ -560,6 +582,54 @@ void Call::CheckStatements() {
     this->type = decl->GetType(); // returnType
 }
 
+Location *Call::Emit() {
+  if (this->base)
+    {
+      // to be implemented
+    }
+  else
+    {
+      Decl *decl = this->field->CheckIdDecl();
+      if (decl && typeid(*decl) == typeid(FnDecl))
+        {
+          int args_num = 0;
+          if (this->actuals)
+            {
+              args_num = this->actuals->NumElements();
+              for (int i = 0; i < args_num; i++)
+                 {
+                   Expr *arg = this->actuals->Nth(i);
+                   Program::cg->GenPushParam(arg->Emit());
+                 }
+            }
+
+          FnDecl *fndecl = dynamic_cast<FnDecl*>(decl);
+          Location *rtvalue = NULL;
+          if (decl->GetType() == Type::voidType)
+            {
+              Program::cg->GenLCall(fndecl->GetLabel(), false);
+            }
+          else
+            {
+              FnDecl *enclos = this->GetEnclosFunc(this);
+              enclos->AddFrameSize(CodeGenerator::VarSize);
+              int offset = enclos->GetLocalOffset();
+              enclos->AddLocalOffset(CodeGenerator::VarSize);
+              rtvalue = Program::cg->GenLCall(fndecl->GetLabel(), true, offset);
+            }
+
+
+          Program::cg->GenPopParams(args_num * CodeGenerator::VarSize);
+
+          return rtvalue;
+        }
+
+
+    }
+
+  return NULL;
+}
+
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
   Assert(c != NULL);
   (this->cType=c)->SetParent(this);
@@ -608,7 +678,17 @@ ReadLineExpr::ReadLineExpr(yyltype loc)
 }
 
 Location *ReadLineExpr::Emit() {
-  return Program::cg->GenBuiltInCall(ReadLine);
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+     {
+       fndecl->AddFrameSize(CodeGenerator::VarSize);
+
+       int offset = fndecl->GetLocalOffset();
+       fndecl->AddLocalOffset(CodeGenerator::VarSize);
+
+       return Program::cg->GenBuiltInCall(ReadLine, NULL, NULL, offset);
+     }
+  return NULL;
 }
 
 ReadIntegerExpr::ReadIntegerExpr(yyltype loc)

@@ -236,6 +236,8 @@ class Call : public Expr
     void CheckStatements(); // its type is decided here
     Type *GetType() { return type; }
     const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
+
+    Location *Emit();
 };
 
 class NewExpr : public Expr

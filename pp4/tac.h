@@ -219,7 +219,7 @@ class LCall: public Instruction {
     const char *label;
     Location *dst;
   public:
-    LCall(const char *labe, Location *result);
+    LCall(const char *label, Location *result);
     void EmitSpecific(Mips *mips);
 };
 

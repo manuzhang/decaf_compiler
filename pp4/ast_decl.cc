@@ -16,7 +16,6 @@
 #include "tac.h"
 
 
-
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
   Assert(n != NULL);
   (this->id=n)->SetParent(this); 
@@ -46,9 +45,9 @@ Location *VarDecl::Emit() {
   if (fndecl) // local variable
     {
       fndecl->AddFrameSize(CodeGenerator::VarSize);
-      fndecl->GetBeginFunc()->SetFrameSize(fndecl->GetFrameSize());
-      // offset of locals is calculated by GenVar itself
-      this->memLoc = Program::cg->GenVar(fpRelative, 0, this->GetID()->GetName());
+
+      this->memLoc = Program::cg->GenVar(fpRelative, fndecl->GetLocalOffset(), this->GetID()->GetName());
+      fndecl->AddLocalOffset(CodeGenerator::VarSize);
     }
   else // global variable
     {
@@ -303,7 +302,8 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
 
   this->beginFunc = NULL;
   this->frameSize = 0;
-  //this->localOffset = CodeGenerator::OffsetToFirstLocal;
+  this->localOffset = CodeGenerator::OffsetToFirstLocal;
+  this->paramOffset = CodeGenerator::OffsetToFirstParam;
 }
 
 // return type, number of formals need be matched
@@ -365,12 +365,34 @@ void FnDecl::CheckDeclError() {
 }
 
 Location *FnDecl::Emit() {
-  Program::cg->GenLabel(this->GetID()->GetName());
+  const char *name = this->GetID()->GetName();
+  if (!strcmp(name, "main"))
+    Program::cg->GenLabel("main");
+  else
+    {
+      string prefix = "____";
+      string label = prefix + name;
+      this->label = label;
+      Program::cg->GenLabel(label.c_str());
+    }
 
   this->beginFunc = Program::cg->GenBeginFunc();
 
+  // assign locations for params
+  if (this->formals)
+    {
+       for (int i = 0; i < this->formals->NumElements(); i++)
+         {
+           VarDecl *vardecl = this->formals->Nth(i);
+           vardecl->SetMemLoc(Program::cg->GenVar(fpRelative, this->paramOffset, vardecl->GetID()->GetName()));
+           this->paramOffset += CodeGenerator::VarSize;
+         }
+    }
+
   if (this->body)
     this->body->Emit();
+
+  this->beginFunc->SetFrameSize(this->GetFrameSize());
 
   Program::cg->GenEndFunc();
 

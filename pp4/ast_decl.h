@@ -12,10 +12,14 @@
 #ifndef _H_ast_decl
 #define _H_ast_decl
 
+#include <string>
+
 #include "ast.h"
 #include "ast_type.h"
 #include "hashtable.h"
 #include "list.h"
+
+using std::string;
 
 class Identifier;
 class StmtBlock;
@@ -51,6 +55,7 @@ class VarDecl : public Decl
 
   Location *Emit();
   Location *GetMemLoc() { return memLoc; }
+  void SetMemLoc(Location *loc) { memLoc = loc; }
 };
 
 
@@ -94,9 +99,12 @@ class FnDecl : public Decl
   Type *returnType;
   StmtBlock *body;
   Hashtable<Decl*> *sym_table;
+
   BeginFunc *beginFunc;
   int frameSize;
-//  int localOffset;
+  int localOffset;
+  int paramOffset;
+  string label;
 
  public:
   FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
@@ -112,9 +120,10 @@ class FnDecl : public Decl
   BeginFunc *GetBeginFunc() { return beginFunc; }
   int GetFrameSize() { return frameSize; }
   void AddFrameSize(int addition) { frameSize = frameSize + addition; }
-/*  int GetLocalOffset() { return localOffset; }
-  void AddLocalOffset(int offset) { localOffset -= offset; }*/
+  int GetLocalOffset() { return localOffset; }
+  void AddLocalOffset(int offset) { localOffset -= offset; }
   Location *Emit();
+  const char *GetLabel() { return label.c_str(); }
 };
 
 
