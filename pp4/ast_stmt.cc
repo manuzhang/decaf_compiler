@@ -168,6 +168,8 @@ Location *WhileStmt::Emit() {
       char *label_0 = Program::cg->NewLabel();
       char *label_1 = Program::cg->NewLabel();
 
+      this->next = label_1;
+
       Program::cg->GenLabel(label_0);
 
       Program::cg->GenIfZ(this->test->Emit(), label_1);
@@ -180,6 +182,8 @@ Location *WhileStmt::Emit() {
       Program::cg->GenGoto(label_0);
 
       Program::cg->GenLabel(label_1);
+
+
     }
 
   return NULL;
@@ -231,10 +235,18 @@ void BreakStmt::CheckStatements() {
       if ((typeid(*parent) == typeid(WhileStmt)) ||
           (typeid(*parent) == typeid(LoopStmt)) ||
           (typeid(*parent) == typeid(SwitchStmt)))
-        return;
+        {
+          this->enclos = dynamic_cast<Stmt*>(parent);
+          return;
+        }
       parent = parent->GetParent();
     }
   ReportError::BreakOutsideLoop(this);
+}
+
+Location *BreakStmt::Emit() {
+  Program::cg->GenGoto(this->enclos->next);
+  return NULL;
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 

@@ -47,7 +47,7 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
-
+     char *next; // label to goto after while/for/switch
 };
 
 class StmtBlock : public Stmt 
@@ -120,9 +120,14 @@ class IfStmt : public ConditionalStmt
 
 class BreakStmt : public Stmt 
 {
+  protected:
+    Stmt *enclos; // enclosing while/for/switch
+
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
     void CheckStatements();
+
+    Location *Emit();
 };
 
 class ReturnStmt : public Stmt  
