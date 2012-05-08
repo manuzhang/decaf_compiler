@@ -272,6 +272,8 @@ class ReadLineExpr : public Expr
 {
   public:
     ReadLineExpr(yyltype loc);
+
+    Location *Emit();
 };
 
 

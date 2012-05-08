@@ -233,7 +233,7 @@ Location *EqualityExpr::Emit() {
         }
 
        if (!strcmp(this->GetOp()->GetToken(), "!="))
-         {
+        {
            Expr *prevLeft = this->left;
            Expr *prevRight = this->right;
            // the location is not correct, but semantic check has been done upto this step
@@ -244,8 +244,14 @@ Location *EqualityExpr::Emit() {
            this->op->SetToken("||");
            this->op->SetParent(this);
          }
-
-       return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+       if (this->left->GetType() == Type::stringType && this->right->GetType() == Type::stringType)
+         {
+           return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit());
+         }
+       else
+         {
+           return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+         }
     }
 
   return NULL;
@@ -601,6 +607,10 @@ ReadLineExpr::ReadLineExpr(yyltype loc)
   Expr::type = Type::stringType;
 }
 
+Location *ReadLineExpr::Emit() {
+  return Program::cg->GenBuiltInCall(ReadLine);
+}
+
 ReadIntegerExpr::ReadIntegerExpr(yyltype loc)
   : Expr(loc) {
   Expr::type = Type::intType;
@@ -622,3 +632,5 @@ void PostfixExpr::CheckStatements() {
 	ReportError::IncompatibleOperand(this->optr, this->lvalue->GetType());
     }
 }
+
+

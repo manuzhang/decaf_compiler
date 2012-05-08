@@ -4064,3 +4064,18 @@ samples/bad6.decaf
 >         ^^^^^^^
 > *** Method 'Method2' must match inherited type signature
 samples-checkpoint/bad6.decaf
+2,7d1
+< *** Error line 4.
+<     int Method2(int[] a, Base c, double d) {}
+<         ^^^^^^^
+< *** Method 'Method2' must match inherited type signature
+< 
+< 
+11a6,11
+> 
+> 
+> *** Error line 4.
+>     int Method2(int[] a, Base c, double d) {}
+>         ^^^^^^^
+> *** Method 'Method2' must match inherited type signature
+samples-checkpoint/bad6.decaf

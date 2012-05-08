@@ -163,7 +163,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <casestmts>     Cases
 %type <casestmt>      Case
 %type <defaultstmt>   Default
-%type <pntstmt>	      PrintStmt
+%type <pntstmt>	  PrintStmt
 %type <expr>          Expr
 %type <expr>          OptExpr
 %type <exprs>         Exprs
@@ -226,7 +226,11 @@ Program   :    DeclList              {
                                       $$ = new Program($1);
                                       // if no errors, advance to next phase
                                       if (ReportError::NumErrors() == 0)
-                                        $$->Print(0);
+                                        {
+                                          $$->CheckDeclError();
+                                          $$->CheckStatements();
+                                          $$->Emit();
+                                        }
                                      }
           ;
 
@@ -243,10 +247,10 @@ Decl      :    VarDecl
 VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1); }     
           ;
         
-Type      :    T_Int                 { $$ = new Type("int"); }
-          |    T_Double              { $$ = new Type("double"); }
-          |    T_Bool                { $$ = new Type("bool"); }
-          |    T_String              { $$ = new Type("string"); }
+Type      :    T_Int                 { $$ = Type::intType; }
+          |    T_Double              { $$ = Type::doubleType; }
+          |    T_Bool                { $$ = Type::boolType; }
+          |    T_String              { $$ = Type::stringType; }
           |    NamedType
           |    ArrayType
           ;
@@ -332,7 +336,6 @@ Stmts      : Stmts Stmt              { ($$ = $1)->Append($2); }
            ;
            
 Stmt       : OptExpr ';'  
-       //    | error ';'               // introduce a segmentation fault
            | IfStmt
            | WhileStmt
            | ForStmt
@@ -359,7 +362,7 @@ ForStmt    : T_For '(' OptExpr ';' Expr ';' OptExpr ')' Stmt
                                      { $$ = new ForStmt($3, $5, $7, $9); }
            ;
            
-ReturnStmt : T_Return OptExpr ';'    { $$ = new ReturnStmt(@1, $2); }
+ReturnStmt : T_Return OptExpr ';'    { $$ = new ReturnStmt(@2, $2); }
            ;
         
 BreakStmt  : T_Break ';'             { $$ = new BreakStmt(@1); }                            
@@ -397,11 +400,11 @@ Expr       :  AssignExpr
            |  RelationalExpr
            |  LogicalExpr
            |  PostfixExpr
-    	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(@1); }
-           |  T_ReadLine '(' ')'     { $$ = new ReadLineExpr(@1); }
-           |  T_New T_Identifier     { $$ = new NewExpr(@1, new NamedType(new Identifier(@2, $2))); }
+    	   |  T_ReadInteger '(' ')'  { $$ = new ReadIntegerExpr(Join(@1, @3)); }
+           |  T_ReadLine '(' ')'     { $$ = new ReadLineExpr(Join(@1, @3)); }
+           |  T_New T_Identifier     { $$ = new NewExpr(Join(@1, @2), new NamedType(new Identifier(@2, $2))); }
            |  T_NewArray '(' Expr ',' Type ')'
-                                     { $$ = new NewArrayExpr(@1, $3, $5); }
+                                     { $$ = new NewArrayExpr(Join(@1, @6), $3, $5); }
            ;
 
 AssignExpr     : LValue '=' Expr     
@@ -417,8 +420,8 @@ ArithmeticExpr : Expr '+' Expr       { $$ = new ArithmeticExpr($1, new Operator(
                                      { $$ = new ArithmeticExpr(new Operator(@1, "-"), $2); }
                ;
 
-PostfixExpr    : LValue T_Increment  { $$ = new PostfixExpr(@1, $1, new Operator(@2, "++")); }
-               | LValue T_Decrement  { $$ = new PostfixExpr(@1, $1, new Operator(@2, "--")); }
+PostfixExpr    : LValue T_Increment  { $$ = new PostfixExpr(Join(@1, @2), $1, new Operator(@2, "++")); }
+               | LValue T_Decrement  { $$ = new PostfixExpr(Join(@1, @2), $1, new Operator(@2, "--")); }
                ;
                
 EqualityExpr   : Expr T_Equal Expr   
@@ -464,12 +467,12 @@ FieldAccess : T_Identifier           { $$ = new FieldAccess(NULL, new Identifier
             ;
 
 Call       : T_Identifier '(' Actuals ')' 
-                                     { $$ = new Call(@1, NULL, new Identifier(@1, $1), $3); }  
+                                     { $$ = new Call(Join(@1, @4), NULL, new Identifier(@1, $1), $3); }  
            | Expr '.' T_Identifier '(' Actuals ')'
-                                     { $$ = new Call(@1, $1, new Identifier(@3, $3), $5); }
+                                     { $$ = new Call(Join(@1, @6), $1, new Identifier(@3, $3), $5); }
            ;
 
-ArrayAccess : Expr '[' Expr ']'      { $$ = new ArrayAccess(@1, $1, $3); }
+ArrayAccess : Expr '[' Expr ']'      { $$ = new ArrayAccess(Join(@1, @4), $1, $3); }
             ;
            
 Actuals    : Exprs 

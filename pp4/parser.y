@@ -247,10 +247,10 @@ Decl      :    VarDecl
 VarDecl   :    Type T_Identifier ';' { $$ = new VarDecl(new Identifier(@2, $2), $1); }     
           ;
         
-Type      :    T_Int                 { $$ = new Type("int"); }
-          |    T_Double              { $$ = new Type("double"); }
-          |    T_Bool                { $$ = new Type("bool"); }
-          |    T_String              { $$ = new Type("string"); }
+Type      :    T_Int                 { $$ = Type::intType; }
+          |    T_Double              { $$ = Type::doubleType; }
+          |    T_Bool                { $$ = Type::boolType; }
+          |    T_String              { $$ = Type::stringType; }
           |    NamedType
           |    ArrayType
           ;

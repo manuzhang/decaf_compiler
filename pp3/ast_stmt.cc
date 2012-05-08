@@ -266,8 +266,8 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
   Assert(e != NULL && cs != NULL);
   (this->expr=e)->SetParent(this);
   (this->cases=cs)->SetParentAll(this);
-  this->defaults = ds;
-  if (this->defaults) (this->defaults)->SetParent(this);
+  if (ds)
+   (this->defaults=ds)->SetParent(this);
 }
 
 void SwitchStmt::CheckStatements() {
