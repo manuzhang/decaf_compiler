@@ -163,7 +163,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <casestmts>     Cases
 %type <casestmt>      Case
 %type <defaultstmt>   Default
-%type <pntstmt>	      PrintStmt
+%type <pntstmt>	  PrintStmt
 %type <expr>          Expr
 %type <expr>          OptExpr
 %type <exprs>         Exprs

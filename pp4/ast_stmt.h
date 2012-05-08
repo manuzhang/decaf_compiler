@@ -166,6 +166,8 @@ class DefaultStmt : public Stmt
     DefaultStmt(List<Stmt*> *sts);
     void CheckStatements();
     void CheckDeclError();
+
+    Location *Emit();
 };
 
 
@@ -176,6 +178,7 @@ class CaseStmt : public DefaultStmt
 
   public:
     CaseStmt(IntConstant *ic, List<Stmt*> *sts);
+    IntConstant *GetLabel() { return intconst; }
 };
 
 class SwitchStmt : public Stmt
@@ -189,6 +192,8 @@ class SwitchStmt : public Stmt
     SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds);
     void CheckStatements();
     void CheckDeclError();
+
+    Location *Emit();
 };
 
 

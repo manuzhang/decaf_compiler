@@ -405,12 +405,21 @@ void DefaultStmt::CheckDeclError() {
     }
 }
 
+Location *DefaultStmt::Emit() {
+  if (stmts)
+    {
+      for (int i = 0; i < stmts->NumElements(); i++)
+        stmts->Nth(i)->Emit();
+    }
+  return NULL;
+}
+
 SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *cs, DefaultStmt *ds) {
   Assert(e != NULL && cs != NULL);
   (this->expr=e)->SetParent(this);
   (this->cases=cs)->SetParentAll(this);
-  this->defaults = ds;
-  if (this->defaults) (this->defaults)->SetParent(this);
+  if (ds)
+    (this->defaults=ds)->SetParent(this);
 }
 
 void SwitchStmt::CheckStatements() {
@@ -442,4 +451,54 @@ void SwitchStmt::CheckDeclError() {
 
   if (this->defaults)
     this->defaults->CheckDeclError();
+}
+
+Location *SwitchStmt::Emit() {
+  if (this->expr)
+    {
+      int num = cases->NumElements();
+      char *labels[num];
+
+      for (int i = 0; i < 2 * num + 2; i++)
+        labels[i] = Program::cg->NewLabel();
+
+      // label for break
+      this->next = labels[2 * num + 1];
+
+      // tests from case0 to case(n-1)
+      for (int i = 0; i < num; i++)
+        {
+          Expr *test = new EqualityExpr(this->expr, new Operator(*(this->expr->GetLocation()), "=="), this->cases->Nth(i)->GetLabel());
+
+          if (i > 0)
+            Program::cg->GenLabel(labels[i - 1]);
+
+          if (test)
+            {
+              test->SetParent(this);
+              Program::cg->GenIfZ(test->Emit(), labels[i]);
+              Program::cg->GenGoto(labels[num + i]);
+            }
+        }
+
+      // goto default
+      Program::cg->GenLabel(labels[num - 1]);
+      Program::cg->GenGoto(labels[num * 2]);
+
+      // bodies from case0 to case(n-1)
+      for (int i = 0; i < num; i++)
+        {
+          Program::cg->GenLabel(labels[num + i]);
+          this->cases->Nth(i)->Emit();
+        }
+
+      // body of default
+      Program::cg->GenLabel(labels[num * 2]);
+      if (this->defaults)
+        this->defaults->Emit();
+
+      Program::cg->GenLabel(labels[num * 2 + 1]);
+    }
+
+  return NULL;
 }
