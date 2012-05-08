@@ -158,6 +158,35 @@ void ForStmt::CheckStatements() {
   ConditionalStmt::CheckStatements();
 }
 
+Location *ForStmt::Emit() {
+  if (this->test)
+    {
+      if (this->init)
+        this->init->Emit();
+
+      char *label_0 = Program::cg->NewLabel();
+      char *label_1 = Program::cg->NewLabel();
+
+      this->next = label_1;
+
+      Program::cg->GenLabel(label_0);
+
+      Program::cg->GenIfZ(this->test->Emit(), label_1);
+
+      if (this->body)
+        this->body->Emit();
+
+      if (this->step)
+        this->step->Emit();
+
+      Program::cg->GenGoto(label_0);
+
+      Program::cg->GenLabel(label_1);
+    }
+
+  return NULL;
+}
+
 void WhileStmt::CheckStatements() {
   ConditionalStmt::CheckStatements();
 }
@@ -233,7 +262,7 @@ void BreakStmt::CheckStatements() {
   while (parent)
     {
       if ((typeid(*parent) == typeid(WhileStmt)) ||
-          (typeid(*parent) == typeid(LoopStmt)) ||
+          (typeid(*parent) == typeid(ForStmt)) ||
           (typeid(*parent) == typeid(SwitchStmt)))
         {
           this->enclos = dynamic_cast<Stmt*>(parent);
@@ -295,6 +324,15 @@ void ReturnStmt::CheckStatements() {
     }
   else if (strcmp("void", expected))
     ReportError::ReturnMismatch(this, new Type("void"), new Type(expected));
+}
+
+Location *ReturnStmt::Emit() {
+  if (this->expr)
+    Program::cg->GenReturn(this->expr->Emit());
+  else
+    Program::cg->GenReturn(NULL);
+
+  return NULL;
 }
   
 PrintStmt::PrintStmt(List<Expr*> *a) {    
