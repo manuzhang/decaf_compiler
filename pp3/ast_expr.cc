@@ -371,8 +371,12 @@ void Call::CheckStatements() {
 	      else
 		CheckArguments(dynamic_cast<FnDecl*>(decl));
 	    }
-	  else if ((typeid(*this->base->GetType()) != typeid(ArrayType))
-		   || strcmp(this->field->GetName(), "length")) // arr.length() is supported
+	  else if ((typeid(*this->base->GetType()) == typeid(ArrayType))
+		   && !strcmp(this->field->GetName(), "length")) // arr.length() is supported
+	    {
+	      this->type = Type::intType;
+	    }
+	  else
 	    {
 	      ReportError::FieldNotFoundInBase(this->field, new Type(name));
 	    }
