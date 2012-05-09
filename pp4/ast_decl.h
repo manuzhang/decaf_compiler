@@ -1,4 +1,4 @@
-	/* File: ast_decl.h
+/* File: ast_decl.h
  * ----------------
  * In our parse tree, Decl nodes are used to represent and
  * manage declarations. There are 4 subclasses of the base class,
@@ -119,11 +119,10 @@ class FnDecl : public Decl
 
   BeginFunc *GetBeginFunc() { return beginFunc; }
   int GetFrameSize() { return frameSize; }
-  void AddFrameSize(int addition) { frameSize = frameSize + addition; }
-  int GetLocalOffset() { return localOffset; }
-  void AddLocalOffset(int offset) { localOffset -= offset; }
   Location *Emit();
   const char *GetLabel() { return label.c_str(); }
+  int UpdateFrame(); // update frame and localOffset by Codegenrator::VarSize, return the previous localOffset
+  int UpdateFrame(int size); // given size, update by size * Codegenrator::VarSize
 };
 
 

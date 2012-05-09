@@ -40,14 +40,13 @@ void VarDecl::CheckDeclError() {
     this->type->CheckTypeError();
 }
 
-Location *VarDecl::Emit() {
+jjjjLocation *VarDecl::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   if (fndecl) // local variable
     {
-      fndecl->AddFrameSize(CodeGenerator::VarSize);
+      int localOffset = fndecl->UpdateFrame();
 
-      this->memLoc = Program::cg->GenVar(fpRelative, fndecl->GetLocalOffset(), this->GetID()->GetName());
-      fndecl->AddLocalOffset(CodeGenerator::VarSize);
+      this->memLoc = Program::cg->GenVar(fpRelative, localOffset, this->GetID()->GetName());
     }
   else // global variable
     {
@@ -401,4 +400,20 @@ Location *FnDecl::Emit() {
 
 void FnDecl::SetFunctionBody(StmtBlock *b) {
   (this->body=b)->SetParent(this);
+}
+
+int FnDecl::UpdateFrame() {
+  this->frameSize += CodeGenerator::VarSize;
+  int offset = this->localOffset;
+  this->localOffset -= CodeGenerator::VarSize;
+
+  return offset;
+}
+
+int FnDecl::UpdateFrame(int size) {
+  this->frameSize += CodeGenerator::VarSize * size;
+  int offset = this->localOffset;
+  this->localOffset -= CodeGenerator::VarSize * size;
+
+  return offset;
 }

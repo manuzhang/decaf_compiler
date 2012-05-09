@@ -195,6 +195,8 @@ class ArrayAccess : public LValue
     void CheckStatements();
     Type *GetType();
     const char *GetTypeName();
+
+    Location *Emit();
 };
 
 /* Note that field access is used both for qualified names
@@ -262,6 +264,8 @@ class NewArrayExpr : public Expr
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
     void CheckStatements();
     const char *GetTypeName();
+
+    Location *Emit();
 };
 
 class ReadIntegerExpr : public Expr

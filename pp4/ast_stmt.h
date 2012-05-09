@@ -35,9 +35,10 @@ class Program : public Node
      Program(List<Decl*> *declList);
      void CheckStatements();
      void CheckDeclError();
-     Location *Emit();
      static Hashtable<Decl*> *sym_table; // global symbol table
 
+     Location *Emit();
+     static void PrintError(const char *error_msg, Node *parent); // spim TAC for printing error messages
      static CodeGenerator *cg; // code generator for the whole program
      static int offset; // global variable offset
 };

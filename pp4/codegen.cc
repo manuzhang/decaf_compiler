@@ -24,7 +24,7 @@ char *CodeGenerator::NewLabel()
 }
 
 
-Location *CodeGenerator::GenVar(Segment segment, int offset, const char *name)
+Location *CodeGenerator::GenVar(Segment segment, int localOffset, const char *name)
 {
   static int nextTempNum = 0;
   char temp[10];
@@ -32,15 +32,15 @@ Location *CodeGenerator::GenVar(Segment segment, int offset, const char *name)
   Location *result = NULL;
 
   // no need to assign a location
-  if (offset == 0 && segment != gpRelative)
+  if (localOffset == 0 && segment != gpRelative)
     return result;
 
   if (name)
-    result = new Location(segment, offset, name);
+    result = new Location(segment, localOffset, name);
   else
     {
       sprintf(temp, "_tmp%d", nextTempNum++);
-      result = new Location(segment, offset, temp);
+      result = new Location(segment, localOffset, temp);
     }
 
  // Assert(result != NULL);
@@ -48,16 +48,16 @@ Location *CodeGenerator::GenVar(Segment segment, int offset, const char *name)
 }
 
  
-Location *CodeGenerator::GenLoadConstant(int offset, int value)
+Location *CodeGenerator::GenLoadConstant(int value, int localOffset)
 {
-  Location *result = GenVar(fpRelative, offset);
+  Location *result = GenVar(fpRelative, localOffset);
   code->Append(new LoadConstant(result, value));
   return result;
 }
 
-Location *CodeGenerator::GenLoadConstant(int offset, const char *s)
+Location *CodeGenerator::GenLoadConstant(const char *s, int localOffset)
 {
-  Location *result = GenVar(fpRelative, offset);
+  Location *result = GenVar(fpRelative, localOffset);
   code->Append(new LoadStringConstant(result, s));
   return result;
 } 
@@ -76,9 +76,9 @@ void CodeGenerator::GenAssign(Location *dst, Location *src)
 }
 
 
-Location *CodeGenerator::GenLoad(Location *ref, int offset)
+Location *CodeGenerator::GenLoad(Location *ref, int localOffset, int offset)
 {
-  Location *result = GenVar();
+  Location *result = GenVar(fpRelative, localOffset);
   code->Append(new Load(result, ref, offset));
   return result;
 }
@@ -89,10 +89,9 @@ void CodeGenerator::GenStore(Location *dst,Location *src, int offset)
 }
 
 
-Location *CodeGenerator::GenBinaryOp(int offset, const char *opName, Location *op1,
-						     Location *op2)
+Location *CodeGenerator::GenBinaryOp(const char *opName, Location *op1, Location *op2, int localOffset)
 {
-  Location *result = GenVar(fpRelative, offset);
+  Location *result = GenVar(fpRelative, localOffset);
   code->Append(new BinaryOp(BinaryOp::OpCodeForName(opName), result, op1, op2));
   return result;
 }
@@ -143,9 +142,9 @@ void CodeGenerator::GenPopParams(int numBytesOfParams)
     code->Append(new PopParams(numBytesOfParams));
 }
 
-Location *CodeGenerator::GenLCall(const char *label, bool fnHasReturnValue, int offset)
+Location *CodeGenerator::GenLCall(const char *label, bool fnHasReturnValue, int localOffset)
 {
-  Location *result = fnHasReturnValue ? GenVar(fpRelative, offset) : NULL;
+  Location *result = fnHasReturnValue ? GenVar(fpRelative, localOffset) : NULL;
   code->Append(new LCall(label, result));
   return result;
 }
@@ -172,13 +171,13 @@ static struct _builtin {
   {"_PrintBool", 1, false},
   {"_Halt", 0, false}};
 
-Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1, Location *arg2, int offset)
+Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1, Location *arg2, int localOffset)
 {
   Assert(bn >= 0 && bn < NumBuiltIns);
   struct _builtin *b = &builtins[bn];
   Location *result = NULL;
 
-  if (b->hasReturn) result = GenVar(fpRelative, offset);
+  if (b->hasReturn) result = GenVar(fpRelative, localOffset);
                 // verify appropriate number of non-NULL arguments given
   Assert((b->numArgs == 0 && !arg1 && !arg2)
 	|| (b->numArgs == 1 && arg1 && !arg2)

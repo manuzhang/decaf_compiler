@@ -24,12 +24,9 @@ Location *IntConstant::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   if (fndecl)
     {
-      fndecl->AddFrameSize(CodeGenerator::VarSize);
+      int localOffset = fndecl->UpdateFrame();
 
-      int offset = fndecl->GetLocalOffset();
-      fndecl->AddLocalOffset(CodeGenerator::VarSize);
-
-      return Program::cg->GenLoadConstant(offset, this->value);
+      return Program::cg->GenLoadConstant(this->value, localOffset);
     }
 
   return NULL;
@@ -51,12 +48,9 @@ Location *BoolConstant::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   if (fndecl)
     {
-      fndecl->AddFrameSize(CodeGenerator::VarSize);
+      int localOffset = fndecl->UpdateFrame();
 
-      int offset = fndecl->GetLocalOffset();
-      fndecl->AddLocalOffset(CodeGenerator::VarSize);
-
-      return Program::cg->GenLoadConstant(offset, static_cast<int>(this->value));
+      return Program::cg->GenLoadConstant(static_cast<int>(this->value), localOffset);
     }
 
   return NULL;
@@ -72,18 +66,14 @@ StringConstant::StringConstant(yyltype loc, const char *val)
 
 Location *StringConstant::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
-   if (fndecl)
-     {
-       fndecl->AddFrameSize(CodeGenerator::VarSize);
+  if (fndecl)
+    {
+      int localOffset = fndecl->UpdateFrame();
 
-       int offset = fndecl->GetLocalOffset();
-       fndecl->AddLocalOffset(CodeGenerator::VarSize);
+      return Program::cg->GenLoadConstant(this->value, localOffset);
+    }
 
-       return Program::cg->GenLoadConstant(offset, this->value);
-     }
-
-   return NULL;
-
+  return NULL;
 }
 
 NullConstant::NullConstant(yyltype loc)
@@ -154,12 +144,9 @@ Location *ArithmeticExpr::Emit() {
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
-          fndecl->AddFrameSize(CodeGenerator::VarSize);
-
-          int offset = fndecl->GetLocalOffset();
-          fndecl->AddLocalOffset(CodeGenerator::VarSize);
-
-          return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+          int localOffset = fndecl->UpdateFrame();
+        
+          return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
         }
     }
 
@@ -187,17 +174,14 @@ Location *RelationalExpr::Emit() {
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
-          fndecl->AddFrameSize(CodeGenerator::VarSize);
-
-          int offset = fndecl->GetLocalOffset();
-          fndecl->AddLocalOffset(CodeGenerator::VarSize);
+          int localOffset = fndecl->UpdateFrame();
 
           if (!strcmp(this->GetOp()->GetToken(), ">"))
             {
-             SwapOperands();
-             this->GetOp()->SetToken("<");
-             }
-          return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+	      SwapOperands();
+	      this->GetOp()->SetToken("<");
+	    }
+          return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
         }
     }
 
@@ -246,30 +230,28 @@ Location *EqualityExpr::Emit() {
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
-          fndecl->AddFrameSize(CodeGenerator::VarSize);
+          int localOffset = fndecl->UpdateFrame();
 
-          int offset = fndecl->GetLocalOffset();
-          fndecl->AddLocalOffset(CodeGenerator::VarSize);
-       if (!strcmp(this->GetOp()->GetToken(), "!="))
-        {
-           Expr *prevLeft = this->left;
-           Expr *prevRight = this->right;
-           // the location is not correct, but semantic check has been done upto this step
-           this->left = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), "<"), prevRight);
-           this->left->SetParent(this);
-           this->right = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), ">"), prevRight);
-           this->right->SetParent(this);
-           this->op->SetToken("||");
-           this->op->SetParent(this);
-         }
-       if (this->left->GetType() == Type::stringType && this->right->GetType() == Type::stringType)
-         {
-           return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), offset);
-         }
-       else
-         {
-           return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
-         }
+          if (!strcmp(this->GetOp()->GetToken(), "!="))
+	    {
+	      Expr *prevLeft = this->left;
+	      Expr *prevRight = this->right;
+	      // the location is not correct, but semantic check has been done upto this step
+	      this->left = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), "<"), prevRight);
+	      this->left->SetParent(this);
+	      this->right = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), ">"), prevRight);
+	      this->right->SetParent(this);
+	      this->op->SetToken("||");
+	      this->op->SetParent(this);
+	    }
+	  if (this->left->GetType() == Type::stringType && this->right->GetType() == Type::stringType)
+	    {
+	      return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), localOffset);
+	    }
+	  else
+	    {
+	      return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
+	    }
         }
     }
 
@@ -303,20 +285,17 @@ void LogicalExpr::CheckStatements() {
 
 Location *LogicalExpr::Emit() {
   if (this->left && this->right)
-     {
+    {
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
-          fndecl->AddFrameSize(CodeGenerator::VarSize);
+          int localOffset = fndecl->UpdateFrame();
 
-          int offset = fndecl->GetLocalOffset();
-          fndecl->AddLocalOffset(CodeGenerator::VarSize);
-
-          return Program::cg->GenBinaryOp(offset, this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit());
+          return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
         }
-     }
+    }
 
-   return NULL;
+  return NULL;
 }
 
 void AssignExpr::CheckStatements() {
@@ -352,7 +331,12 @@ void AssignExpr::CheckStatements() {
 Location *AssignExpr::Emit() {
   if (this->left && this->right)
     {
-      Program::cg->GenAssign(this->left->Emit(), this->right->Emit());
+      if (typeid(*this->left) == typeid(ArrayAccess))
+        {
+          Program::cg->GenStore(this->left->Emit(), this->right->Emit());
+        }
+      else
+        Program::cg->GenAssign(this->left->Emit(), this->right->Emit());
     }
 
   return NULL;
@@ -400,6 +384,58 @@ void ArrayAccess::CheckStatements() {
   this->subscript->CheckStatements();
   if (strcmp(this->subscript->GetTypeName(), "int"))
     ReportError::SubscriptNotInteger(this->subscript);
+}
+
+Location *ArrayAccess::Emit() {
+  if (this->base && this->subscript)
+    {
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl)
+        {
+          int localOffset = fndecl->UpdateFrame();
+
+          // access array size
+          Location *base_loc = this->base->Emit();
+          Location *size = Program::cg->GenLoad(base_loc, localOffset);
+
+          // whether out of bounds
+          localOffset = fndecl->UpdateFrame();
+
+          Location *subs = this->subscript->Emit();
+          Location *test_max = Program::cg->GenBinaryOp("<", subs, size, localOffset);
+
+          Expr *neg = new IntConstant(*this->GetLocation(), -1);
+          neg->SetParent(this);
+
+          localOffset = fndecl->UpdateFrame();
+
+          Location *test_min = Program::cg->GenBinaryOp("<", neg->Emit(), subs, localOffset);
+
+          char *label_0 = Program::cg->NewLabel();
+          char *label_1 = Program::cg->NewLabel();
+
+          localOffset = fndecl->UpdateFrame();
+          Location *test = Program::cg->GenBinaryOp("&&", test_min, test_max, localOffset);
+
+          Program::cg->GenIfZ(test, label_0);
+
+          localOffset = fndecl->UpdateFrame();
+
+          Location *address = Program::cg->GenBinaryOp("+", base_loc, subs, localOffset);
+
+          Program::cg->GenGoto(label_1);
+
+          Program::cg->GenLabel(label_0);
+          const char *error_msg = "Decaf runtime error: Array script out of bounds";
+          Program::PrintError(error_msg, this);
+
+          Program::cg->GenLabel(label_1);
+
+          return address;
+        }
+    }
+
+  return NULL;
 }
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
@@ -558,8 +594,12 @@ void Call::CheckStatements() {
 	      else
 		CheckArguments(dynamic_cast<FnDecl*>(decl));
 	    }
-	  else if ((typeid(*this->base->GetType()) != typeid(ArrayType))
-		   || strcmp(this->field->GetName(), "length")) // arr.length() is supported
+	  else if ((typeid(*this->base->GetType()) == typeid(ArrayType))
+		   && !strcmp(this->field->GetName(), "length")) // arr.length() is supported
+	    {
+	      this->type = Type::intType;
+	    }
+	  else
 	    {
 	      ReportError::FieldNotFoundInBase(this->field, new Type(name));
 	    }
@@ -586,6 +626,17 @@ Location *Call::Emit() {
   if (this->base)
     {
       // to be implemented
+
+      // arr.length()
+      if (!strcmp(this->field->GetName(), "length"))
+        {
+	  FnDecl *fndecl = this->GetEnclosFunc(this);
+	  if (fndecl)
+	    {
+	      int localOffset = fndecl->UpdateFrame();
+              return Program::cg->GenLoad(this->base->Emit(), localOffset);
+	    }
+        }
     }
   else
     {
@@ -597,10 +648,10 @@ Location *Call::Emit() {
             {
               args_num = this->actuals->NumElements();
               for (int i = 0; i < args_num; i++)
-                 {
-                   Expr *arg = this->actuals->Nth(i);
-                   Program::cg->GenPushParam(arg->Emit());
-                 }
+		{
+		  Expr *arg = this->actuals->Nth(i);
+		  Program::cg->GenPushParam(arg->Emit());
+		}
             }
 
           FnDecl *fndecl = dynamic_cast<FnDecl*>(decl);
@@ -612,10 +663,12 @@ Location *Call::Emit() {
           else
             {
               FnDecl *enclos = this->GetEnclosFunc(this);
-              enclos->AddFrameSize(CodeGenerator::VarSize);
-              int offset = enclos->GetLocalOffset();
-              enclos->AddLocalOffset(CodeGenerator::VarSize);
-              rtvalue = Program::cg->GenLCall(fndecl->GetLabel(), true, offset);
+              if (enclos)
+                {
+                  int localOffset = enclos->UpdateFrame();
+               
+                  rtvalue = Program::cg->GenLCall(fndecl->GetLabel(), true, localOffset);
+                }
             }
 
 
@@ -654,6 +707,53 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
   (this->elemType=et)->SetParent(this);
 }
 
+Location *NewArrayExpr::Emit() {
+  if (this->size && this->elemType)
+    {
+      Location *address = NULL;
+
+      Expr *expr = new RelationalExpr(this->size, new Operator(*this->GetLocation(), ">"), new IntConstant(*this->GetLocation(), 0));
+      expr->SetParent(this);
+
+      char *label_0 = Program::cg->NewLabel();
+      char *label_1 = Program::cg->NewLabel();
+
+      Program::cg->GenIfZ(expr->Emit(), label_0);
+
+
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl)
+        {
+          int localOffset = fndecl->UpdateFrame();
+
+          // plus one position to store the size of the array
+          expr = new ArithmeticExpr(new ArithmeticExpr(this->size, new Operator(*this->GetLocation(), "+"), new IntConstant(*this->GetLocation(), 1)),
+                                    new Operator(*this->GetLocation(), "*"),
+                                    new IntConstant(*this->GetLocation(), CodeGenerator::VarSize));
+          expr->SetParent(this);
+
+          // first position for the size of the array
+          address = Program::cg->GenBuiltInCall(Alloc, expr->Emit(), NULL, localOffset);
+          Program::cg->GenStore(address, this->size->Emit());
+
+        }
+
+      Program::cg->GenGoto(label_1);
+
+      Program::cg->GenLabel(label_0);
+
+      // if array size is negative or 0, print error messages
+      const char *error_msg = "Decaf runtime error: Array size is <= 0";
+      Program::PrintError(error_msg, this);
+
+      Program::cg->GenLabel(label_1);
+      return address;
+
+    }
+
+  return NULL;
+}
+
 const char *NewArrayExpr::GetTypeName() {
   if (this->elemType)
     {
@@ -680,14 +780,11 @@ ReadLineExpr::ReadLineExpr(yyltype loc)
 Location *ReadLineExpr::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   if (fndecl)
-     {
-       fndecl->AddFrameSize(CodeGenerator::VarSize);
+    {
+      int localOffset = fndecl->UpdateFrame();
 
-       int offset = fndecl->GetLocalOffset();
-       fndecl->AddLocalOffset(CodeGenerator::VarSize);
-
-       return Program::cg->GenBuiltInCall(ReadLine, NULL, NULL, offset);
-     }
+      return Program::cg->GenBuiltInCall(ReadLine, NULL, NULL, localOffset);
+    }
   return NULL;
 }
 
@@ -699,14 +796,11 @@ ReadIntegerExpr::ReadIntegerExpr(yyltype loc)
 Location *ReadIntegerExpr::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   if (fndecl)
-     {
-       fndecl->AddFrameSize(CodeGenerator::VarSize);
+    {
+      int localOffset = fndecl->UpdateFrame();
 
-       int offset = fndecl->GetLocalOffset();
-       fndecl->AddLocalOffset(CodeGenerator::VarSize);
-
-       return Program::cg->GenBuiltInCall(ReadInteger, NULL, NULL, offset);
-     }
+      return Program::cg->GenBuiltInCall(ReadInteger, NULL, NULL, localOffset);
+    }
   return NULL;
 }
 
@@ -730,8 +824,7 @@ void PostfixExpr::CheckStatements() {
 Location *PostfixExpr::Emit() {
   if (this->lvalue)
     {
-      Expr *expr = new AssignExpr(this->lvalue, new Operator(*this->GetLocation(), "="),
-                                  new ArithmeticExpr(this->lvalue, new Operator(*this->GetLocation(), "+"), new IntConstant(*this->GetLocation(), 1)));
+      Expr *expr = new AssignExpr(this->lvalue, new Operator(*this->GetLocation(), "="), new ArithmeticExpr(this->lvalue, new Operator(*this->GetLocation(), "+"), new IntConstant(*this->GetLocation(), 1)));
 
       expr->SetParent(this);
       return expr->Emit();

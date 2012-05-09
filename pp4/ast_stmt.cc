@@ -59,7 +59,18 @@ Location *Program::Emit() {
   return NULL;
 }
 
+void Program::PrintError(const char *error_msg, Node *parent) {
+      Expr *expr = new StringConstant(*parent->GetLocation(), error_msg);
+      List<Expr*> *args = new List<Expr*>;
+      args->Append(expr);
+      Stmt *stmt = new PrintStmt(args);
+      stmt->SetParent(parent);
 
+      if (stmt)
+        stmt->Emit();
+
+      Program::cg->GenBuiltInCall(Halt);
+}
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
   Assert(d != NULL && s != NULL);
