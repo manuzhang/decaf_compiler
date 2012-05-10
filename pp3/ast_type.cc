@@ -34,11 +34,12 @@ Type::Type(const char *n) {
 }
 
 bool Type::HasSameType(Type *t) {
-  const char *typeName2 = t->GetTypeName();
-  if (this->typeName && typeName2)
-    return !strcmp(this->typeName, typeName2);
-  else
-    return false;
+  // const char *typeName2 = t->GetTypeName();
+  // if (this->typeName && typeName2)
+  //   return !strcmp(this->typeName, typeName2);
+  // else
+  //   return false;
+  return this == t;
 }
 
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {

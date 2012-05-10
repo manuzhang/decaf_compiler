@@ -263,7 +263,7 @@ FnDecl    :    Type T_Identifier '(' Formals ')' StmtBlock
                                      { $$ = new FnDecl(new Identifier(@2, $2), $1, $4); 
                                        $$->SetFunctionBody($6); }
           |    T_Void T_Identifier '(' Formals ')' StmtBlock
-                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $4); 
+                                     { $$ = new FnDecl(new Identifier(@2, $2), Type::voidType, $4); 
                                        $$->SetFunctionBody($6); }
           ;
 
@@ -318,7 +318,7 @@ Prototypes : Prototypes Prototype    { ($$ = $1)->Append($2); }
 Prototype  : Type T_Identifier '(' Formals ')' ';'
                                      { $$ = new FnDecl(new Identifier(@2, $2), $1, $4); }
            | T_Void T_Identifier '(' Formals ')' ';'
-                                     { $$ = new FnDecl(new Identifier(@2, $2), new Type("void"), $4); }
+                                     { $$ = new FnDecl(new Identifier(@2, $2), Type::voidType, $4); }
            ;                
            
 StmtBlock  : '{' VarDecls Stmts '}'  { $$ = new StmtBlock($2, $3); }
