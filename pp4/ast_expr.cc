@@ -291,14 +291,21 @@ void LogicalExpr::CheckStatements() {
 
 
 Location *LogicalExpr::Emit() {
-  if (this->left && this->right)
+  if (this->right)
     {
       FnDecl *fndecl = this->GetEnclosFunc(this);
+
       if (fndecl) // local variable
         {
           int localOffset = fndecl->UpdateFrame();
 
-          return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
+          if (this->left) // binary
+            return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
+          else // unary Not
+            {
+              Expr *expr = new IntConstant(*this->GetLocation(), 1);
+              return Program::cg->GenBinaryOp("-", expr->Emit(), this->right->Emit(), localOffset);
+            }
         }
     }
 
