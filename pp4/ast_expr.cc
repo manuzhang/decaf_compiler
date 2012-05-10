@@ -139,16 +139,23 @@ void ArithmeticExpr::CheckStatements() {
 }
 
 Location *ArithmeticExpr::Emit() {
-  if (this->left && this->right)
+  if (this->right)
     {
+      Expr *expr;
+      if (this->left) // binary
+        expr = this->left;
+      else // unary minus
+        expr = new IntConstant(*this->GetLocation(), 0);
+
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
           int localOffset = fndecl->UpdateFrame();
         
-          return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
+          return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), expr->Emit(), this->right->Emit(), localOffset);
         }
     }
+
 
   return NULL;
 }
@@ -457,7 +464,7 @@ void FieldAccess::CheckStatements() {
 	{
 	  Node *parent = this->GetParent();
 	  Decl *cldecl = NULL; // look for ClassDecl
-	  // whether the base is this
+	  // whether the base is this of subclasses
 	  // otherwise the variable is inaccessible
 	  while (parent)
 	    {
@@ -625,7 +632,14 @@ void Call::CheckStatements() {
 Location *Call::Emit() {
   if (this->base)
     {
-      // to be implemented
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+
+      if (fndecl)
+        {
+          int localOffset = fndecl->UpdateFrame();
+          return Program::cg->GenLoad(this->base->Emit(), localOffset);
+        }
+
 
       // arr.length()
       if (!strcmp(this->field->GetName(), "length"))
@@ -699,6 +713,18 @@ void NewExpr::CheckStatements() {
             ReportError::IdentifierNotDeclared(new Identifier(*this->cType->GetLocation(), name), LookingForClass);
         }
     }
+}
+
+Location *NewExpr::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+    {
+      int localOffset = fndecl->UpdateFrame();
+
+    // to be implemented
+    }
+
+  return NULL;
 }
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
