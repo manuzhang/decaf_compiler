@@ -181,14 +181,37 @@ Location *RelationalExpr::Emit() {
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
-          int localOffset = fndecl->UpdateFrame();
-
-          if (!strcmp(this->GetOp()->GetToken(), ">"))
+          const char *token = this->GetOp()->GetToken();
+          Location *left_loc = this->left->Emit();
+          Location *right_loc = this->right->Emit();
+          if (!strcmp(token, "<"))
             {
-	      SwapOperands();
-	      this->GetOp()->SetToken("<");
+              int localOffset = fndecl->UpdateFrame();
+              return Program::cg->GenBinaryOp(token, left_loc, right_loc, localOffset);
+            }
+          else if (!strcmp(token, ">"))
+            {
+	      int localOffset = fndecl->UpdateFrame();
+	      return Program::cg->GenBinaryOp("<", right_loc, left_loc, localOffset);
 	    }
-          return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
+          else if (!strcmp(token, "<="))
+            {
+              int localOffset = fndecl->UpdateFrame();
+              Location *new_left = Program::cg->GenBinaryOp("<", left_loc, right_loc, localOffset);
+              localOffset = fndecl->UpdateFrame();
+              Location *new_right = Program::cg->GenBinaryOp("==", left_loc, right_loc, localOffset);
+              localOffset = fndecl->UpdateFrame();
+              return Program::cg->GenBinaryOp("||", new_left, new_right, localOffset);
+            }
+          else if (!strcmp(token, ">="))
+            {
+              int localOffset = fndecl->UpdateFrame();
+              Location *new_left = Program::cg->GenBinaryOp("<", right_loc, left_loc, localOffset);
+              localOffset = fndecl->UpdateFrame();
+              Location *new_right = Program::cg->GenBinaryOp("==", left_loc, right_loc, localOffset);
+              localOffset = fndecl->UpdateFrame();
+              return Program::cg->GenBinaryOp("||", new_left, new_right, localOffset);
+            }
         }
     }
 
@@ -237,27 +260,44 @@ Location *EqualityExpr::Emit() {
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
-          int localOffset = fndecl->UpdateFrame();
-
-          if (!strcmp(this->GetOp()->GetToken(), "!="))
-	    {
-	      Expr *prevLeft = this->left;
-	      Expr *prevRight = this->right;
-	      // the location is not correct, but semantic check has been done upto this step
-	      this->left = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), "<"), prevRight);
-	      this->left->SetParent(this);
-	      this->right = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), ">"), prevRight);
-	      this->right->SetParent(this);
-	      this->op->SetToken("||");
-	      this->op->SetParent(this);
-	    }
 	  if (this->left->GetType() == Type::stringType && this->right->GetType() == Type::stringType)
 	    {
+	      int localOffset = fndecl->UpdateFrame();
 	      return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), localOffset);
 	    }
 	  else
 	    {
-	      return Program::cg->GenBinaryOp(this->GetOp()->GetToken(), this->left->Emit(), this->right->Emit(), localOffset);
+	      const char *token = this->GetOp()->GetToken();
+
+              Location *left_loc = this->left->Emit();
+              Location *right_loc = this->right->Emit();
+
+	      if (!strcmp(token, "!="))
+	        {
+	              /*  Expr *prevLeft = this->left;
+	                Expr *prevRight = this->right;
+	                // the location is not correct, but semantic check has been done upto this step
+	                this->left = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), "<"), prevRight);
+	                this->left->SetParent(this);
+	                this->right = new RelationalExpr(prevLeft, new Operator(*this->GetLocation(), ">"), prevRight);
+	                this->right->SetParent(this);
+	                this->op->SetToken("||");
+	                this->op->SetParent(this);*/
+
+	          int localOffset = fndecl->UpdateFrame();
+	          Location *less = Program::cg->GenBinaryOp("<", left_loc, right_loc, localOffset);
+
+	          localOffset = fndecl->UpdateFrame();
+	          Location *greater = Program::cg->GenBinaryOp(">", left_loc, right_loc, localOffset);
+
+	          localOffset = fndecl->UpdateFrame();
+	          return Program::cg->GenBinaryOp("||", less, greater, localOffset);
+	        }
+	      else
+	        {
+	          int localOffset = fndecl->UpdateFrame();
+	          return Program::cg->GenBinaryOp(token, left_loc, right_loc, localOffset);
+	        }
 	    }
         }
     }
