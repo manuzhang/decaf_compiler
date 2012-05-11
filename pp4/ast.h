@@ -41,6 +41,7 @@
 
 class Decl;
 class FnDecl;
+class ClassDecl;
 class Location;
 
 class Node  {
@@ -57,14 +58,16 @@ class Node  {
   void SetParent(Node *p)  { parent = p; }
   Node *GetParent()        { return parent; }
 
+  virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
+
   virtual void CheckDeclError() {}
   virtual void CheckStatements() {}
   virtual Location *Emit() { return NULL; }
-  //virtual Location *GetMemLoc() { return NULL; }
-  virtual Hashtable<Decl*> *GetSymTable() { return NULL; }
 
   // get enclosing function to backpatch the frame size
   FnDecl *GetEnclosFunc(Node *node);
+  // for methods
+  ClassDecl *GetEnclosClass(Node *node);
 };
    
 

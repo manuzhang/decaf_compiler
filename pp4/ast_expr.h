@@ -34,6 +34,8 @@ class Expr : public Stmt
     Expr() : Stmt() {}
     virtual Type *GetType() { return type; }
     virtual const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL;}
+
+    virtual Expr *GetBase() { return NULL; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -111,7 +113,6 @@ class CompoundExpr : public Expr
     CompoundExpr(Operator *op, Expr *rhs); // for unary
 
     Operator *GetOp() { return op; }
-    void SwapOperands(); // to simulate ">" with "<"
 };
 
 class ArithmeticExpr : public CompoundExpr
@@ -183,6 +184,8 @@ class This : public Expr
   public:
     This(yyltype loc) : Expr(loc) {}
     void CheckStatements();
+
+    Location *Emit();
 };
 
 class ArrayAccess : public LValue
@@ -195,6 +198,7 @@ class ArrayAccess : public LValue
     void CheckStatements();
     Type *GetType();
     const char *GetTypeName();
+    Expr *GetBase() { return base; }
 
     Location *Emit();
 };
@@ -217,6 +221,7 @@ class FieldAccess : public LValue
     Identifier *GetField() { return field; }
     Type *GetType() { return type; }
     const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
+    Expr *GetBase() { return base; }
 
     Location *Emit();
 };
@@ -252,6 +257,8 @@ class NewExpr : public Expr
     void CheckStatements();
     Type *GetType() { return cType; }
     const char *GetTypeName() { if (cType) return cType->GetTypeName(); else return NULL;  }
+
+    Location *Emit();
 };
 
 class NewArrayExpr : public Expr

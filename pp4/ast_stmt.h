@@ -13,10 +13,13 @@
 #ifndef _H_ast_stmt
 #define _H_ast_stmt
 
+#include <string>
+
 #include "ast.h"
 #include "hashtable.h"
 #include "list.h"
 
+using std::string;
 
 class Decl;
 class VarDecl;
@@ -38,9 +41,12 @@ class Program : public Node
      static Hashtable<Decl*> *sym_table; // global symbol table
 
      Location *Emit();
-     static void PrintError(const char *error_msg, Node *parent); // spim TAC for printing error messages
+     static void PrintError(const char *error_msg, FnDecl *fndecl); // spim TAC for printing error messages
+     static string GetClassLabel(const char *classname, const char *name);
+     static string GetFuncLabel(const char *name);
      static CodeGenerator *cg; // code generator for the whole program
      static int offset; // global variable offset
+     static string prefix;
 };
 
 class Stmt : public Node

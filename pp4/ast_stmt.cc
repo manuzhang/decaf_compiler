@@ -15,6 +15,7 @@
 Hashtable<Decl*> *Program::sym_table  = new Hashtable<Decl*>();
 CodeGenerator *Program::cg = new CodeGenerator();
 int Program::offset = CodeGenerator::OffsetToFirstGlobal;
+string Program::prefix = "__";
 
 Program::Program(List<Decl*> *d) {
   Assert(d != NULL);
@@ -52,24 +53,33 @@ void Program::CheckDeclError() {
 
 Location *Program::Emit() {
   for (int i = 0; i < this->decls->NumElements(); i++)
-     this->decls->Nth(i)->Emit();
+    this->decls->Nth(i)->Emit();
 
   Program::cg->DoFinalCodeGen();
 
   return NULL;
 }
 
-void Program::PrintError(const char *error_msg, Node *parent) {
-      Expr *expr = new StringConstant(*parent->GetLocation(), error_msg);
-      List<Expr*> *args = new List<Expr*>;
-      args->Append(expr);
-      Stmt *stmt = new PrintStmt(args);
-      stmt->SetParent(parent);
+void Program::PrintError(const char *error_msg, FnDecl *fndecl) {
+  if (fndecl)
+    {
+      int localOffset = fndecl->UpdateFrame();
+      Location *error = Program::cg->GenLoadConstant(error_msg, localOffset);
 
-      if (stmt)
-        stmt->Emit();
+      Program::cg->GenBuiltInCall(PrintString, error);
 
       Program::cg->GenBuiltInCall(Halt);
+    }
+}
+
+string Program::GetClassLabel(const char *classname, const char *name) {
+  string label = Program::prefix + classname + "." + name;
+  return label;
+}
+
+string Program::GetFuncLabel(const char *name) {
+  string label = Program::prefix + name;
+  return label;
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
@@ -215,9 +225,8 @@ Location *WhileStmt::Emit() {
       Program::cg->GenIfZ(this->test->Emit(), label_1);
 
       if (this->body)
-        {
-          this->body->Emit();
-        }
+        this->body->Emit();
+
 
       Program::cg->GenGoto(label_0);
 
@@ -334,7 +343,7 @@ void ReturnStmt::CheckStatements() {
         }
     }
   else if (strcmp("void", expected))
-    ReportError::ReturnMismatch(this, new Type("void"), new Type(expected));
+    ReportError::ReturnMismatch(this, Type::voidType, new Type(expected));
 }
 
 Location *ReturnStmt::Emit() {
@@ -358,9 +367,10 @@ void PrintStmt::CheckStatements() {
         {
           Expr *expr = this->args->Nth(i);
           expr->CheckStatements();
-          const char *typeName = expr->GetTypeName();
-          if (typeName && strcmp(typeName, "string") && strcmp(typeName, "int") && strcmp(typeName, "bool"))
-            ReportError::PrintArgMismatch(expr, (i+1), new Type(typeName));
+
+          Type *type = expr->GetType();
+          if (type && type != Type::stringType && type != Type::intType && type != Type::boolType)
+            ReportError::PrintArgMismatch(expr, (i+1), type);
         }
     }
 }
@@ -372,12 +382,12 @@ Location *PrintStmt::Emit() {
         {
           Expr *expr = this->args->Nth(i);
 
-          const char *typeName = expr->GetTypeName();
-          if (!strcmp(typeName, "int"))
+          Type *type = expr->GetType();
+          if (type == Type::intType)
             Program::cg->GenBuiltInCall(PrintInt, expr->Emit());
-          else if (!strcmp(typeName, "string"))
+          else if (type == Type::stringType)
             Program::cg->GenBuiltInCall(PrintString, expr->Emit());
-          else if (!strcmp(typeName, "bool"))
+          else if (type == Type::boolType)
             Program::cg->GenBuiltInCall(PrintBool, expr->Emit());
         }
     }
@@ -479,16 +489,20 @@ Location *SwitchStmt::Emit() {
       // tests from case0 to case(n-1)
       for (int i = 0; i < num; i++)
         {
-          Expr *test = new EqualityExpr(this->expr, new Operator(*(this->expr->GetLocation()), "=="), this->cases->Nth(i)->GetLabel());
-
-          if (i > 0)
-            Program::cg->GenLabel(labels[i - 1]);
-
-          if (test)
+          FnDecl *fndecl = this->GetEnclosFunc(this);
+          if (fndecl)
             {
-              test->SetParent(this);
-              Program::cg->GenIfZ(test->Emit(), labels[i]);
-              Program::cg->GenGoto(labels[num + i]);
+	      int localOffset = fndecl->UpdateFrame();
+	      Location *test = Program::cg->GenBinaryOp("==", this->expr->Emit(), this->cases->Nth(i)->GetLabel()->Emit(), localOffset);
+		
+              if (i > 0)
+	        Program::cg->GenLabel(labels[i - 1]);
+
+	      if (test)
+		{
+		  Program::cg->GenIfZ(test, labels[i]);
+		  Program::cg->GenGoto(labels[num + i]);
+		}
             }
         }
 

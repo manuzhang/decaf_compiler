@@ -65,7 +65,7 @@ class CodeGenerator {
          // where the constant was loaded.
     Location *GenLoadConstant(int value, int localOffset);
     Location *GenLoadConstant(const char *str, int localOffset);
-    Location *GenLoadLabel(const char *label);
+    Location *GenLoadLabel(const char *label, int localOffset);
 
 
          // Generates Tac instructions to copy value from one location to another
@@ -85,7 +85,7 @@ class CodeGenerator {
          // temporary variable where the result was stored. The optional
          // offset argument can be used to offset the addr by a positive or
          // negative number of bytes. If not given, 0 is assumed.
-    Location *GenLoad(Location *addr, int localOffset, int offset = 0);
+    Location *GenLoad(Location *addr, int localOffset, int offset = 0, const char *name = NULL);
 
     
          // Generates Tac instructions to perform one of the binary ops
@@ -119,7 +119,7 @@ class CodeGenerator {
          // described above, in terms of return type.
          // The fnAddr Location is expected to hold the address of
          // the code to jump to (typically it was read from the vtable)
-    Location *GenACall(Location *fnAddr, bool fnHasReturnValue);
+    Location *GenACall(Location *fnAddr, bool fnHasReturnValue, int localOffset = 0);
 
          // Generates the Tac instructions to call one of
          // the built-in functions (Read, Print, Alloc, etc.) Although
@@ -130,7 +130,7 @@ class CodeGenerator {
          // for the new temp var holding the result.  For those
          // built-ins with no return value (Print/Halt), no temporary
          // is created and NULL is returned.
-    Location *GenBuiltInCall(BuiltIn b, Location *arg1 = NULL, Location *arg2 = NULL, int localOffset = 0);
+    Location *GenBuiltInCall(BuiltIn b, Location *arg1 = NULL, Location *arg2 = NULL, int localOffset = 0, const char *name = NULL);
 
     
          // These methods generate the Tac instructions for various

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <iostream>
 #include <typeinfo>
 
 #include "ast_decl.h"
@@ -15,10 +16,14 @@
 #include "errors.h"
 #include "tac.h"
 
+using std::cout;
+using std::endl;
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
   Assert(n != NULL);
   (this->id=n)->SetParent(this); 
+
+  this->memLoc = NULL;
 }
 
 
@@ -40,13 +45,25 @@ void VarDecl::CheckDeclError() {
     this->type->CheckTypeError();
 }
 
-jjjjLocation *VarDecl::Emit() {
+Location *VarDecl::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
+  ClassDecl *classdecl = this->GetEnclosClass(this);
+
   if (fndecl) // local variable
     {
-      int localOffset = fndecl->UpdateFrame();
-
-      this->memLoc = Program::cg->GenVar(fpRelative, localOffset, this->GetID()->GetName());
+      const char *name = this->GetID()->GetName();
+      if (typeid(*this->type) == typeid(NamedType))
+	{
+          int localOffset = fndecl->UpdateFrame();
+	  Location *var_size = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
+	  localOffset = fndecl->UpdateFrame();
+	  this->memLoc = Program::cg->GenBuiltInCall(Alloc, var_size, NULL, localOffset, name);
+	}
+      else
+	{
+          int localOffset = fndecl->UpdateFrame();
+          this->memLoc = Program::cg->GenVar(fpRelative, localOffset, name);
+	}
     }
   else // global variable
     {
@@ -65,6 +82,9 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
   (this->implements=imp)->SetParentAll(this);
   (this->members=m)->SetParentAll(this);
   this->sym_table = new Hashtable<Decl*>;
+
+  this->methodlabels = new List<const char *>;
+  this->fieldlabels = new List<const char *>;
 }
 
 void ClassDecl::CheckStatements() {
@@ -260,6 +280,42 @@ bool ClassDecl::IsCompatibleWith(Decl *decl)
   return false;
 }
 
+Location *ClassDecl::Emit() {
+  if (this->sym_table)
+    {
+      Iterator<Decl*> iter = this->sym_table->GetIterator();
+      Decl *decl;
+      while ((decl = iter.GetNextValue()) != NULL)
+	{
+          if (typeid(*decl) == typeid(ClassDecl))
+            {
+               this->memLoc = Program::cg->GenVar(gpRelative, Program::offset);
+               Program::offset += CodeGenerator::VarSize;
+            }
+          else if (typeid(*decl) == typeid(FnDecl))
+	    {
+              string name = Program::GetClassLabel(this->GetID()->GetName(), decl->GetID()->GetName());
+	      this->methodlabels->Append(strdup(name.c_str()));
+	    }
+	  else if (typeid(*decl) == typeid(VarDecl))
+	    this->fieldlabels->Append(decl->GetID()->GetName());
+	}
+
+      if (this->members)
+        {
+          for (int i = 0; i < this->members->NumElements(); i++)
+            this->members->Nth(i)->Emit();
+        }
+
+
+      Program::cg->GenVTable(this->id->GetName(), methodlabels);
+
+    }
+
+
+  return NULL;
+}
+
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
   Assert(n != NULL && m != NULL);
@@ -364,14 +420,19 @@ void FnDecl::CheckDeclError() {
 }
 
 Location *FnDecl::Emit() {
+  ClassDecl *classdecl = this->GetEnclosClass(this);
   const char *name = this->GetID()->GetName();
   if (!strcmp(name, "main"))
     Program::cg->GenLabel("main");
   else
     {
-      string prefix = "____";
-      string label = prefix + name;
-      this->label = label;
+      string label;
+
+      if (classdecl)
+        label = Program::GetClassLabel(classdecl->GetID()->GetName(), name);
+      else
+        label = Program::GetFuncLabel(name);
+
       Program::cg->GenLabel(label.c_str());
     }
 
@@ -406,14 +467,6 @@ int FnDecl::UpdateFrame() {
   this->frameSize += CodeGenerator::VarSize;
   int offset = this->localOffset;
   this->localOffset -= CodeGenerator::VarSize;
-
-  return offset;
-}
-
-int FnDecl::UpdateFrame(int size) {
-  this->frameSize += CodeGenerator::VarSize * size;
-  int offset = this->localOffset;
-  this->localOffset -= CodeGenerator::VarSize * size;
 
   return offset;
 }

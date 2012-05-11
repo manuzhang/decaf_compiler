@@ -1,0 +1,11 @@
+class A {
+  void fn(int x) {
+    int y;
+    y = x;
+  }
+}
+
+void main() {
+  A a;
+  a.fn(137);
+}

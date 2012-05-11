@@ -62,9 +62,9 @@ Location *CodeGenerator::GenLoadConstant(const char *s, int localOffset)
   return result;
 } 
 
-Location *CodeGenerator::GenLoadLabel(const char *label)
+Location *CodeGenerator::GenLoadLabel(const char *label, int localOffset)
 {
-  Location *result = GenVar();
+  Location *result = GenVar(fpRelative, localOffset);
   code->Append(new LoadLabel(result, label));
   return result;
 }
@@ -76,9 +76,9 @@ void CodeGenerator::GenAssign(Location *dst, Location *src)
 }
 
 
-Location *CodeGenerator::GenLoad(Location *ref, int localOffset, int offset)
+Location *CodeGenerator::GenLoad(Location *ref, int localOffset, int offset, const char*name)
 {
-  Location *result = GenVar(fpRelative, localOffset);
+  Location *result = GenVar(fpRelative, localOffset, name);
   code->Append(new Load(result, ref, offset));
   return result;
 }
@@ -149,9 +149,9 @@ Location *CodeGenerator::GenLCall(const char *label, bool fnHasReturnValue, int 
   return result;
 }
 
-Location *CodeGenerator::GenACall(Location *fnAddr, bool fnHasReturnValue)
+Location *CodeGenerator::GenACall(Location *fnAddr, bool fnHasReturnValue, int localOffset)
 {
-  Location *result = fnHasReturnValue ? GenVar() : NULL;
+  Location *result = fnHasReturnValue ? GenVar(fpRelative, localOffset) : NULL;
   code->Append(new ACall(fnAddr, result));
   return result;
 }
@@ -171,13 +171,13 @@ static struct _builtin {
   {"_PrintBool", 1, false},
   {"_Halt", 0, false}};
 
-Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1, Location *arg2, int localOffset)
+Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1, Location *arg2, int localOffset, const char *name)
 {
   Assert(bn >= 0 && bn < NumBuiltIns);
   struct _builtin *b = &builtins[bn];
   Location *result = NULL;
 
-  if (b->hasReturn) result = GenVar(fpRelative, localOffset);
+  if (b->hasReturn) result = GenVar(fpRelative, localOffset, name);
                 // verify appropriate number of non-NULL arguments given
   Assert((b->numArgs == 0 && !arg1 && !arg2)
 	|| (b->numArgs == 1 && arg1 && !arg2)

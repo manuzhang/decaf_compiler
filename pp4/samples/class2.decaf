@@ -18,9 +18,10 @@ class Point {
   }
 
 
-  bool equals(Point other) {
+  bool equals(Point other) 
+  {
     return (x == other.x && y == other.y);
-}
+  }
 
 }
 

@@ -26,6 +26,7 @@ Node::Node() {
 FnDecl *Node::GetEnclosFunc(Node *node) {
   Node *parent = node->GetParent();
   FnDecl *fndecl = NULL;
+
   while (parent)
     {
       if (typeid(*parent) == typeid(FnDecl))
@@ -35,9 +36,27 @@ FnDecl *Node::GetEnclosFunc(Node *node) {
         }
       parent = parent->GetParent();
     }
+
   return fndecl;
 }
 	 
+ClassDecl *Node::GetEnclosClass(Node *node) {
+  Node *parent = node->GetParent();
+  ClassDecl *classdecl = NULL;
+
+  while(parent)
+    {
+      if (typeid(*parent) == typeid(ClassDecl))
+        {
+          classdecl = dynamic_cast<ClassDecl*>(parent);
+          break;
+        }
+      parent = parent->GetParent();
+    }
+
+  return classdecl;
+}
+
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
   this->name = strdup(n);
 }

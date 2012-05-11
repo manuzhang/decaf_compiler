@@ -31,6 +31,7 @@ class Decl : public Node
 {
  protected:
   Identifier *id;
+  Location *memLoc; // for later FieldAccess
   
  public:
   Decl(Identifier *name);
@@ -38,13 +39,16 @@ class Decl : public Node
   friend ostream& operator<<(ostream &out, Decl *decl) { if (decl) return out << decl->id; else return out; }
   virtual const char *GetTypeName() { return NULL; }
   virtual Type *GetType() { return NULL; }
+
+  Location *GetMemLoc() { return memLoc; }
+  void SetMemLoc(Location *loc) { memLoc = loc; }
 };
 
 class VarDecl : public Decl 
 {
  protected:
   Type *type;
-  Location *memLoc; // for later FieldAccess
+
 
  public:
   VarDecl(Identifier *name, Type *type);
@@ -54,8 +58,6 @@ class VarDecl : public Decl
   void CheckDeclError();
 
   Location *Emit();
-  Location *GetMemLoc() { return memLoc; }
-  void SetMemLoc(Location *loc) { memLoc = loc; }
 };
 
 
@@ -67,16 +69,24 @@ class ClassDecl : public Decl
   List<NamedType*> *implements;
   Hashtable<Decl*> *sym_table;
 
+  List<const char*> *methodlabels;
+  List<const char*> *fieldlabels;
+
  public:
   ClassDecl(Identifier *name, NamedType *extends, 
 	    List<NamedType*> *implements, List<Decl*> *members);
+  List<Decl*> *GetMembers() { return members; }
   NamedType *GetExtends() { return extends; }
   List<NamedType*> *GetImplements() { return implements; }
   void CheckStatements();
   void CheckDeclError();
   bool IsCompatibleWith(Decl *decl);
   Hashtable<Decl*> *GetSymTable() { return sym_table; }
-};
+
+  List<const char *> *GetMethodLabels() { return methodlabels; }
+  List<const char *> *GetFieldLabels() { return fieldlabels; }
+  Location *Emit();
+ };
 
 class InterfaceDecl : public Decl 
 {
@@ -122,7 +132,6 @@ class FnDecl : public Decl
   Location *Emit();
   const char *GetLabel() { return label.c_str(); }
   int UpdateFrame(); // update frame and localOffset by Codegenrator::VarSize, return the previous localOffset
-  int UpdateFrame(int size); // given size, update by size * Codegenrator::VarSize
 };
 
 
