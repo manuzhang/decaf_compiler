@@ -59,6 +59,8 @@ ClassDecl *Node::GetEnclosClass(Node *node) {
 
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
   this->name = strdup(n);
+
+  this->memLoc = NULL;
 }
 
 // look for declaration from inner most scope to global scope

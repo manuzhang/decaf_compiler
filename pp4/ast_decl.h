@@ -31,7 +31,6 @@ class Decl : public Node
 {
  protected:
   Identifier *id;
-  Location *memLoc; // for later FieldAccess
   
  public:
   Decl(Identifier *name);
@@ -39,9 +38,6 @@ class Decl : public Node
   friend ostream& operator<<(ostream &out, Decl *decl) { if (decl) return out << decl->id; else return out; }
   virtual const char *GetTypeName() { return NULL; }
   virtual Type *GetType() { return NULL; }
-
-  Location *GetMemLoc() { return memLoc; }
-  void SetMemLoc(Location *loc) { memLoc = loc; }
 };
 
 class VarDecl : public Decl 
@@ -69,8 +65,8 @@ class ClassDecl : public Decl
   List<NamedType*> *implements;
   Hashtable<Decl*> *sym_table;
 
-  List<const char*> *methodlabels;
-  List<const char*> *fieldlabels;
+  List<const char *> *methodlabels;
+  List<const char *> *fieldlabels;
 
  public:
   ClassDecl(Identifier *name, NamedType *extends, 

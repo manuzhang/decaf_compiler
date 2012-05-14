@@ -75,13 +75,17 @@ class Identifier : public Node
 {
  protected:
   char *name;
-    
+  Location *memLoc;
+
  public:
   Identifier(yyltype loc, const char *name);
   const char *GetName() { return name; }
   Decl *CheckIdDecl();
   Decl *CheckIdDecl(Hashtable<Decl*> *sym_table, const char *name);
   friend ostream& operator<<(ostream& out, Identifier *id) { if (id) return out << id->name; else return out;}
+
+  Location *GetMemLoc() { return memLoc; }
+  void SetMemLoc(Location *loc) { memLoc = loc; }
 };
 
 

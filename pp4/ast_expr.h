@@ -36,6 +36,7 @@ class Expr : public Stmt
     virtual const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL;}
 
     virtual Expr *GetBase() { return NULL; }
+    virtual Identifier *GetField() { return NULL; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -88,6 +89,7 @@ class NullConstant: public Expr
 {
   public:
     NullConstant(yyltype loc);
+    Location *Emit();
 };
 
 class Operator : public Node
@@ -221,7 +223,7 @@ class FieldAccess : public LValue
     Identifier *GetField() { return field; }
     Type *GetType() { return type; }
     const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
-    Expr *GetBase() { return base; }
+    Expr *GetBase();
 
     Location *Emit();
 };
@@ -245,6 +247,8 @@ class Call : public Expr
     const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
 
     Location *Emit();
+    int PushArguments(List<Expr*> *args);
+    Location *RuntimeCall(Location *base_loc, ClassDecl *classdecl, FnDecl *fndecl);
 };
 
 class NewExpr : public Expr

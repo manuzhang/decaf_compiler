@@ -82,6 +82,17 @@ NullConstant::NullConstant(yyltype loc)
   Expr::type = Type::nullType;
 }
 
+Location *NullConstant::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  int localOffset = 0;
+  if (fndecl)
+    {
+      localOffset = fndecl->UpdateFrame();
+      return Program::cg->GenLoadConstant(0, localOffset);
+    }
+  return NULL;
+}
+
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
   Assert(tok != NULL);
   strncpy(this->tokenString, tok, sizeof(this->tokenString));
@@ -375,12 +386,26 @@ void AssignExpr::CheckStatements() {
 }
 
 Location *AssignExpr::Emit() {
+  int localOffset = 0;
   if (this->left && this->right)
     {
-      if (this->left->GetBase() || typeid(*this->right) == typeid(NewExpr))
+
+      if (typeid(*this->right) == typeid(NewExpr))
         {
-          Program::cg->GenStore(this->left->Emit(), this->right->Emit());
+          FnDecl *fndecl = this->GetEnclosFunc(this);
+          if (fndecl)
+            {
+              localOffset = fndecl->UpdateFrame();
+              Location *var = Program::cg->GenVar(fpRelative, localOffset, this->left->GetField()->GetName());
+              Location *right_loc = this->right->Emit();
+
+              Decl *decl = this->left->GetField()->CheckIdDecl();
+
+              Program::cg->GenAssign(var, right_loc);
+            }
         }
+      else if (this->left->GetBase())
+        Program::cg->GenStore(this->left->Emit(), this->right->Emit());
       else
         Program::cg->GenAssign(this->left->Emit(), this->right->Emit());
     }
@@ -556,8 +581,26 @@ void FieldAccess::CheckStatements() {
     this->type = decl->GetType(); 
 }
 
+Expr *FieldAccess::GetBase() {
+  if (this->base)
+    return this->base;
+  else
+    {
+      Decl *decl = this->field->CheckIdDecl();
+      if ((decl->GetEnclosFunc(decl)) == NULL)
+        if ((decl->GetEnclosClass(decl)) != NULL)
+          {
+            this->base = new This(*this->GetLocation());
+            this->base->SetParent(this);
+          }
+      return this->base;
+    }
+}
+
 Location *FieldAccess::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
+  int localOffset = 0;
+
   if (fndecl)
     {
       if (this->base)
@@ -581,8 +624,10 @@ Location *FieldAccess::Emit() {
    		{
    		  if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
    		    {
-		      int localOffset = fndecl->UpdateFrame();
-		      return Program::cg->GenLoad(base_loc, localOffset, (i+1) * CodeGenerator::VarSize);
+                      localOffset = fndecl->UpdateFrame();
+		      Location *offset_loc = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
+                      localOffset = fndecl->UpdateFrame();
+		      return Program::cg->GenBinaryOp("+", base_loc, offset_loc, localOffset);
    		    }
    		}
    	    }
@@ -592,425 +637,422 @@ Location *FieldAccess::Emit() {
 	  Decl *decl = this->field->CheckIdDecl();
      	  if (decl)
      	    {
-     	      if (decl->GetEnclosFunc(decl))
-	        return decl->GetMemLoc();
-     	      else
+     	      if (decl->GetEnclosFunc(decl)) // locals or params
+	        return decl->GetID()->GetMemLoc();
+     	      else // this omitted
      	        {
-     	          ClassDecl *classdecl = decl->GetEnclosClass(decl);
-		  if (classdecl)
-		    {
-		      List<const char *> *fieldlabels = classdecl->GetFieldLabels();
-		      for (int i = 0; i < fieldlabels->NumElements(); i++)
-			{
-			  if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
-			    {
-			      int localOffset = fndecl->UpdateFrame();
-			      Location *base_loc = Program::cg->GenVar(fpRelative, localOffset, "this");
-			      localOffset = fndecl->UpdateFrame();
-			      return Program::cg->GenLoad(base_loc, localOffset, (i+1) * CodeGenerator::VarSize);
-			    }
-			}
-		    }
+     	          if (this->GetBase())
+     	            return this->Emit();
      	        }
 	    }
 	}
     }
-      return NULL;
+  return NULL;
 }
 
-  Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
-    Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
-    this->base = b;
-    if (this->base) base->SetParent(this);
-    (this->field=f)->SetParent(this);
-    (this->actuals=a)->SetParentAll(this);
-  }
+Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
+  Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
+  this->base = b;
+  if (this->base) base->SetParent(this);
+  (this->field=f)->SetParent(this);
+  (this->actuals=a)->SetParentAll(this);
+}
 
-  void Call::CheckArguments(FnDecl *fndecl) {
-    List<VarDecl*> *formals = fndecl->GetFormals();
-    int formals_num = formals->NumElements();
-    int args_num = this->actuals->NumElements();
-    if (formals_num != args_num)
-      {
-	ReportError::NumArgsMismatch(this->field, formals_num, args_num);
-	return;
-      }
-    else
-      {
-	for (int i = 0; i < formals_num; i++)
-	  {
-	    VarDecl *vardecl = formals->Nth(i);
-	    const char *expected = vardecl->GetTypeName();
-	    Expr *expr = this->actuals->Nth(i);
-	    const char *given = expr->GetTypeName();
+void Call::CheckArguments(FnDecl *fndecl) {
+  List<VarDecl*> *formals = fndecl->GetFormals();
+  int formals_num = formals->NumElements();
+  int args_num = this->actuals->NumElements();
+  if (formals_num != args_num)
+    {
+      ReportError::NumArgsMismatch(this->field, formals_num, args_num);
+      return;
+    }
+  else
+    {
+      for (int i = 0; i < formals_num; i++)
+	{
+	  VarDecl *vardecl = formals->Nth(i);
+	  const char *expected = vardecl->GetTypeName();
+	  Expr *expr = this->actuals->Nth(i);
+	  const char *given = expr->GetTypeName();
 
-	    if (given && expected)
-	      {
-		Decl *gdecl = Program::sym_table->Lookup(given);
-		Decl *edecl = Program::sym_table->Lookup(expected);
+	  if (given && expected)
+	    {
+	      Decl *gdecl = Program::sym_table->Lookup(given);
+	      Decl *edecl = Program::sym_table->Lookup(expected);
 
-		if (gdecl && edecl) // objects
-		  {
-		    if (strcmp(given, expected))
-		      if (typeid(*gdecl) == typeid(ClassDecl))
-			{
-			  ClassDecl *gcldecl = dynamic_cast<ClassDecl*>(gdecl);
-			  if (!gcldecl->IsCompatibleWith(edecl))
-			    ReportError::ArgMismatch(expr, (i+1), new Type(given), new Type(expected));
-			}
-		  }
-		else if (edecl && strcmp(given, "null")) // null arguments
-		  ReportError::ArgMismatch(expr, (i+1), new Type(given), new Type(expected));
-		else if (gdecl == NULL && edecl == NULL && strcmp(given, expected)) // non-object arguments
-		  ReportError::ArgMismatch(expr, (i+1), new Type(given), new Type(expected));
-	      }
-	  }
-      }
-  }
-
-  void Call::CheckStatements() {
-    if (this->actuals)
-      {
-	for (int i = 0; i < actuals->NumElements(); i++)
-	  this->actuals->Nth(i)->CheckStatements();
-      }
-
-    Decl *decl = NULL;
-
-    if (this->base)
-      {
-	this->base->CheckStatements();
-	const char *name = this->base->GetTypeName();
-	// all the methods are public
-	// no need to check the accessibility
-	if (name)
-	  {
-	    if ((decl = Program::sym_table->Lookup(name)) != NULL)
-	      {
-		decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName());
-		if ((decl == NULL) || (typeid(*decl) != typeid(FnDecl)))
-		  ReportError::FieldNotFoundInBase(this->field, new Type(name));
-		else
-		  CheckArguments(dynamic_cast<FnDecl*>(decl));
-	      }
-	    else if ((typeid(*this->base->GetType()) == typeid(ArrayType))
-		     && !strcmp(this->field->GetName(), "length")) // arr.length() is supported
-	      {
-		this->type = Type::intType;
-	      }
-	    else
-	      {
-		ReportError::FieldNotFoundInBase(this->field, new Type(name));
-	      }
-	  }
-      }
-    else
-      {
-	// no base, just check whether the field is declared
-	decl = this->field->CheckIdDecl();
-	if ((decl == NULL) || (typeid(*decl) != typeid(FnDecl)))
-	  {
-	    ReportError::IdentifierNotDeclared(this->field, LookingForFunction);
-	    decl = NULL; // to force not to get the type
-	    // and avoid cascading error reports
-	  }
-	else
-	  CheckArguments(dynamic_cast<FnDecl*>(decl));
-      }
-    if (decl != NULL)
-      this->type = decl->GetType(); // returnType
-  }
-
-  Location *Call::Emit() {
-    Location *rtvalue = NULL;
-    if (this->base)
-      {
-
-	FnDecl *fndecl = this->GetEnclosFunc(this);
-
-	if (fndecl)
-	  {
-	    // arr.length()
-	    if (!strcmp(this->field->GetName(), "length"))
-	      {
-		int localOffset = fndecl->UpdateFrame();
-		return Program::cg->GenLoad(this->base->Emit(), localOffset);
-	      }
-
-	    int localOffset = fndecl->UpdateFrame();
-
-	    Location *base_loc = this->base->Emit();
-	    Location *vtable = Program::cg->GenLoad(base_loc, localOffset);
-
-	    const char *classname = this->base->GetTypeName();
-	    const char *methodname = this->field->GetName();
-
-	    Decl *decl = NULL;
-	    Location *func = NULL;
-	    if ((decl = Program::sym_table->Lookup(classname)) != NULL)
-	      {
-		List<const char *> *methodlabels = dynamic_cast<ClassDecl*>(decl)->GetMethodLabels();
-		for (int i = 0; i < methodlabels->NumElements(); i++)
-		  {
-		    string name = Program::GetClassLabel(classname, methodname);
-		    if (!strcmp(methodlabels->Nth(i), name.c_str()))
+	      if (gdecl && edecl) // objects
+		{
+		  if (strcmp(given, expected))
+		    if (typeid(*gdecl) == typeid(ClassDecl))
 		      {
-			localOffset = fndecl->UpdateFrame();
-			func = Program::cg->GenLoad(vtable, localOffset, i * CodeGenerator::VarSize);
-			break;
+			ClassDecl *gcldecl = dynamic_cast<ClassDecl*>(gdecl);
+			if (!gcldecl->IsCompatibleWith(edecl))
+			  ReportError::ArgMismatch(expr, (i+1), new Type(given), new Type(expected));
 		      }
-		  }
-	      }
+		}
+	      else if (edecl && strcmp(given, "null")) // null arguments
+		ReportError::ArgMismatch(expr, (i+1), new Type(given), new Type(expected));
+	      else if (gdecl == NULL && edecl == NULL && strcmp(given, expected)) // non-object arguments
+		ReportError::ArgMismatch(expr, (i+1), new Type(given), new Type(expected));
+	    }
+	}
+    }
+}
 
-	    if (this->actuals)
-	      {
-		for (int i = 0; i < this->actuals->NumElements(); i++)
-		  {
-		    Location *actual = this->actuals->Nth(i)->Emit();
-		    Program::cg->GenPushParam(actual);
-		  }
-	      }
+void Call::CheckStatements() {
+  if (this->actuals)
+    {
+      for (int i = 0; i < actuals->NumElements(); i++)
+	this->actuals->Nth(i)->CheckStatements();
+    }
 
-	    Program::cg->GenPushParam(base_loc);
-	    if (func)
-	      {
-		if (this->GetType() == Type::voidType)
-		  {
-		    Program::cg->GenACall(func, false);
-		  }
-		else
-		  {
-		    localOffset = fndecl->UpdateFrame();
-		    rtvalue = Program::cg->GenACall(func, true, localOffset);
-		  }
-	      }
-	    Program::cg->GenPopParams((this->actuals->NumElements() + 1) * CodeGenerator::VarSize);
+  Decl *decl = NULL;
 
-	    return rtvalue;
-	  }
+  if (this->base)
+    {
+      this->base->CheckStatements();
+      const char *name = this->base->GetTypeName();
+      // all the methods are public
+      // no need to check the accessibility
+      if (name)
+	{
+	  if ((decl = Program::sym_table->Lookup(name)) != NULL)
+	    {
+	      decl = this->field->CheckIdDecl(decl->GetSymTable(), this->field->GetName());
+	      if ((decl == NULL) || (typeid(*decl) != typeid(FnDecl)))
+		ReportError::FieldNotFoundInBase(this->field, new Type(name));
+	      else
+		CheckArguments(dynamic_cast<FnDecl*>(decl));
+	    }
+	  else if ((typeid(*this->base->GetType()) == typeid(ArrayType))
+		   && !strcmp(this->field->GetName(), "length")) // arr.length() is supported
+	    {
+	      this->type = Type::intType;
+	    }
+	  else
+	    {
+	      ReportError::FieldNotFoundInBase(this->field, new Type(name));
+	    }
+	}
+    }
+  else
+    {
+      // no base, just check whether the field is declared
+      decl = this->field->CheckIdDecl();
+      if ((decl == NULL) || (typeid(*decl) != typeid(FnDecl)))
+	{
+	  ReportError::IdentifierNotDeclared(this->field, LookingForFunction);
+	  decl = NULL; // to force not to get the type
+	  // and avoid cascading error reports
+	}
+      else
+	CheckArguments(dynamic_cast<FnDecl*>(decl));
+    }
+  if (decl != NULL)
+    this->type = decl->GetType(); // returnType
+}
+
+Location *Call::Emit() {
+  Location *rtvalue = NULL;
+  int localOffset = 0;
+
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+    {
+      if (this->base)
+	{
+	  // arr.length()
+	  if (!strcmp(this->field->GetName(), "length"))
+	    {
+	      localOffset = fndecl->UpdateFrame();
+	      return Program::cg->GenLoad(this->base->Emit(), localOffset);
+	    }
+
+	  Location *base_loc = this->base->Emit();
+
+	  Decl *decl = NULL;
+
+	  const char *classname = this->base->GetTypeName();
+	  if ((decl = Program::sym_table->Lookup(classname)) != NULL)
+	    {
+              rtvalue = RuntimeCall(base_loc, dynamic_cast<ClassDecl*>(decl), fndecl);
+	    }
+	 
+	  return rtvalue;
+	}
+      else
+	{
+	  Decl *decl = this->field->CheckIdDecl();
+	  if (decl && typeid(*decl) == typeid(FnDecl))
+	    {
+	      ClassDecl *classdecl = decl->GetEnclosClass(decl);
+	      if (classdecl) // "this" is omitted
+		{
+	          localOffset = fndecl->UpdateFrame();
+	    	  rtvalue = RuntimeCall(Program::cg->GenVar(fpRelative, localOffset, "this"), classdecl, fndecl);
+		}
+	      else
+		{
+		  int args_num = PushArguments(this->actuals);
+		  FnDecl *call = dynamic_cast<FnDecl*>(decl);
+		  if (decl->GetType() == Type::voidType)
+		    {
+		      rtvalue = Program::cg->GenLCall(call->GetLabel(), false);
+		    }
+		  else
+		    {
+		      localOffset = fndecl->UpdateFrame();
+		      rtvalue = Program::cg->GenLCall(call->GetLabel(), true, localOffset);
+		    }
+		  Program::cg->GenPopParams(args_num * CodeGenerator::VarSize);
+		}
+	      return rtvalue;
+	    }
+	}
+    }
+  return NULL;
+}
+
+int Call::PushArguments(List<Expr*> *args) {
+  int args_num = 0;
+  if (args)
+    {
+      args_num = args->NumElements();
+      for (int i = 0; i < args_num; i++)
+	{
+	  Expr *arg = args->Nth(i);
+	  Program::cg->GenPushParam(arg->Emit());
+	}
+    }
+  return args_num;
+}
+
+Location *Call::RuntimeCall(Location *base_loc, ClassDecl *classdecl, FnDecl *fndecl) {
+  Location *func = NULL, *rtvalue = NULL;
+
+  int localOffset;
+
+  const char *classname = classdecl->GetID()->GetName();
+  const char *methodname = this->field->GetName();
+
+  localOffset = fndecl->UpdateFrame();
+  Location *vtable = Program::cg->GenLoad(base_loc, localOffset);
+
+  List<const char *> *methodlabels = classdecl->GetMethodLabels();
+  for (int i = 0; i < methodlabels->NumElements(); i++)
+    {
+      string name = Program::GetClassLabel(classname, methodname);
+      if (!strcmp(methodlabels->Nth(i), name.c_str()))
+	{
+	  localOffset = fndecl->UpdateFrame();
+	  func = Program::cg->GenLoad(vtable, localOffset, i * CodeGenerator::VarSize);
+	  break;
+	}
+    }
+
+  // push arguments and the default "this"
+  int args_num = PushArguments(this->actuals);
+  Program::cg->GenPushParam(base_loc);
+
+  if (func)
+    {
+      if (this->GetType() == Type::voidType)
+	{
+	  rtvalue = Program::cg->GenACall(func, false);
+	}
+      else
+	{
+	  localOffset = fndecl->UpdateFrame();
+	  rtvalue = Program::cg->GenACall(func, true, localOffset);
+	}
+    }
+  Program::cg->GenPopParams((args_num + 1) * CodeGenerator::VarSize);
+  return rtvalue;
+}
+
+NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
+  Assert(c != NULL);
+  (this->cType=c)->SetParent(this);
+}
+
+void NewExpr::CheckStatements() {
+  if (this->cType)
+    {
+      const char *name = this->cType->GetTypeName();
+      if (name)
+	{
+	  Decl *decl = Program::sym_table->Lookup(name);
+	  if ((decl == NULL) || (typeid(*decl) != typeid(ClassDecl)))
+	    ReportError::IdentifierNotDeclared(new Identifier(*this->cType->GetLocation(), name), LookingForClass);
+	}
+    }
+}
+
+Location *NewExpr::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  int localOffset = 0;
+
+  if (fndecl)
+    {      
+      localOffset = fndecl->UpdateFrame();
+      Location *var_size = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
+      localOffset = fndecl->UpdateFrame();
+      Location *dst = Program::cg->GenBuiltInCall(Alloc, var_size, NULL, localOffset);
+      localOffset = fndecl->UpdateFrame();
+      Location *src =  Program::cg->GenLoadLabel(this->cType->GetTypeName(), localOffset);
+      Program::cg->GenStore(dst, src);
+      return dst;
+    }
+
+  return NULL;
+}
+
+NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
+  Assert(sz != NULL && et != NULL);
+  (this->size=sz)->SetParent(this); 
+  (this->elemType=et)->SetParent(this);
+}
+
+Location *NewArrayExpr::Emit() {
+  if (this->size && this->elemType)
+    {
+
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl)
+	{
+	  char *label_0 = Program::cg->NewLabel();
+	  char *label_1 = Program::cg->NewLabel();
 
 
+	  Location *size_loc = this->size->Emit();
 
-      }
-    else
-      {
-	Decl *decl = this->field->CheckIdDecl();
-	if (decl && typeid(*decl) == typeid(FnDecl))
-	  {
-	    int args_num = 0;
-	    if (this->actuals)
-	      {
-		args_num = this->actuals->NumElements();
-		for (int i = 0; i < args_num; i++)
-		  {
-		    Expr *arg = this->actuals->Nth(i);
-		    Program::cg->GenPushParam(arg->Emit());
-		  }
-	      }
+	  int localOffset = fndecl->UpdateFrame();
+	  Location *zero = Program::cg->GenLoadConstant(0, localOffset);
 
-	    FnDecl *fndecl = dynamic_cast<FnDecl*>(decl);
+	  localOffset = fndecl->UpdateFrame();
+	  Location *less = Program::cg->GenBinaryOp("<", size_loc, zero, localOffset);
 
-	    if (decl->GetType() == Type::voidType)
-	      {
-		Program::cg->GenLCall(fndecl->GetLabel(), false);
-	      }
-	    else
-	      {
-		FnDecl *enclos = this->GetEnclosFunc(this);
-		if (enclos)
-		  {
-		    int localOffset = enclos->UpdateFrame();
-               
-		    rtvalue = Program::cg->GenLCall(fndecl->GetLabel(), true, localOffset);
-		  }
-	      }
+	  localOffset = fndecl->UpdateFrame();
+	  Location *equal = Program::cg->GenBinaryOp("==", size_loc, zero, localOffset);
 
+	  localOffset = fndecl->UpdateFrame();
+	  Location *test = Program::cg->GenBinaryOp("||", less, equal, localOffset);
+	  Program::cg->GenIfZ(test, label_0);
 
-	    Program::cg->GenPopParams(args_num * CodeGenerator::VarSize);
+	  // if array size is negative or 0, print error messages
+	  const char *error_msg = "Decaf runtime error: Array size is <= 0";
+	  Program::PrintError(error_msg, fndecl);
 
-	    return rtvalue;
-	  }
+	  Program::cg->GenLabel(label_0);
 
+	  // plus one position to store the size of the array
+	  localOffset = fndecl->UpdateFrame();
+	  Location *var_size = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
+	  localOffset = fndecl->UpdateFrame();
+	  Location *bytes = Program::cg->GenBinaryOp("*", size_loc, var_size, localOffset);
+	  localOffset = fndecl->UpdateFrame();
+	  bytes = Program::cg->GenBinaryOp("+", bytes, var_size, localOffset);
 
-      }
+	  localOffset = fndecl->UpdateFrame();
+	  Location  *address = Program::cg->GenBuiltInCall(Alloc, bytes, NULL, localOffset);
+	  // first position for the size of the array
+	  Program::cg->GenStore(address, size_loc);
+	  return address;
+	}
+    }
 
+  return NULL;
+}
+
+const char *NewArrayExpr::GetTypeName() {
+  if (this->elemType)
+    {
+      string delim = "[]";
+      string str = this->elemType->GetTypeName() + delim;
+      return str.c_str();
+    }
+  else
     return NULL;
-  }
+}
 
-  NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
-    Assert(c != NULL);
-    (this->cType=c)->SetParent(this);
-  }
+void NewArrayExpr::CheckStatements() {
+  this->size->CheckStatements();
+  if (strcmp(this->size->GetTypeName(), "int"))
+    ReportError::NewArraySizeNotInteger(this->size);
+  this->elemType->CheckTypeError();
+}
 
-  void NewExpr::CheckStatements() {
-    if (this->cType)
-      {
-	const char *name = this->cType->GetTypeName();
-	if (name)
-	  {
-	    Decl *decl = Program::sym_table->Lookup(name);
-	    if ((decl == NULL) || (typeid(*decl) != typeid(ClassDecl)))
-	      ReportError::IdentifierNotDeclared(new Identifier(*this->cType->GetLocation(), name), LookingForClass);
-	  }
-      }
-  }
+ReadLineExpr::ReadLineExpr(yyltype loc)
+  : Expr(loc) {
+  Expr::type = Type::stringType;
+}
 
-  Location *NewExpr::Emit() {
-    FnDecl *fndecl = this->GetEnclosFunc(this);
-    if (fndecl)
-      {
-	int localOffset = fndecl->UpdateFrame();
-	return Program::cg->GenLoadLabel(this->cType->GetTypeName(), localOffset);
-      }
+Location *ReadLineExpr::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+    {
+      int localOffset = fndecl->UpdateFrame();
+      return Program::cg->GenBuiltInCall(ReadLine, NULL, NULL, localOffset);
+    }
+  return NULL;
+}
 
-    return NULL;
-  }
+ReadIntegerExpr::ReadIntegerExpr(yyltype loc)
+  : Expr(loc) {
+  Expr::type = Type::intType;
+}
 
-  NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
-    Assert(sz != NULL && et != NULL);
-    (this->size=sz)->SetParent(this); 
-    (this->elemType=et)->SetParent(this);
-  }
+Location *ReadIntegerExpr::Emit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+    {
+      int localOffset = fndecl->UpdateFrame();
+      return Program::cg->GenBuiltInCall(ReadInteger, NULL, NULL, localOffset);
+    }
+  return NULL;
+}
 
-  Location *NewArrayExpr::Emit() {
-    if (this->size && this->elemType)
-      {
+PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
+  : Expr(loc) {
+  Assert(lv != NULL && op != NULL);
+  (this->lvalue=lv)->SetParent(this);
+  (this->optr=op)->SetParent(this);
+}
 
-	FnDecl *fndecl = this->GetEnclosFunc(this);
-	if (fndecl)
-	  {
-	    char *label_0 = Program::cg->NewLabel();
-	    char *label_1 = Program::cg->NewLabel();
+void PostfixExpr::CheckStatements() {
+  if (this->lvalue)
+    {
+      this->lvalue->CheckStatements();
+      const char *name = this->lvalue->GetTypeName();
+      if (strcmp(name, "int") && strcmp(name, "double"))
+	ReportError::IncompatibleOperand(this->optr, this->lvalue->GetType());
+    }
+}
 
+Location *PostfixExpr::Emit() {
+  if (this->lvalue)
+    {
+      Expr *expr = new AssignExpr(this->lvalue, new Operator(*this->GetLocation(), "="), new ArithmeticExpr(this->lvalue, new Operator(*this->GetLocation(), "+"), new IntConstant(*this->GetLocation(), 1)));
 
-	    Location *size_loc = this->size->Emit();
+      expr->SetParent(this);
 
-	    int localOffset = fndecl->UpdateFrame();
-	    Location *zero = Program::cg->GenLoadConstant(0, localOffset);
+      FnDecl *fndecl = this->GetEnclosFunc(this);
+      if (fndecl)
+	{
+	  Location *value = this->lvalue->Emit();
 
-	    localOffset = fndecl->UpdateFrame();
-	    Location *less = Program::cg->GenBinaryOp("<", size_loc, zero, localOffset);
+	  int localOffset = fndecl->UpdateFrame();
+	  Location *one = Program::cg->GenLoadConstant(1, localOffset);
 
-	    localOffset = fndecl->UpdateFrame();
-	    Location *equal = Program::cg->GenBinaryOp("==", size_loc, zero, localOffset);
+	  localOffset = fndecl->UpdateFrame();
+	  Location *plus = Program::cg->GenBinaryOp("+", value, one, localOffset);
 
-	    localOffset = fndecl->UpdateFrame();
-	    Location *test = Program::cg->GenBinaryOp("||", less, equal, localOffset);
-	    Program::cg->GenIfZ(test, label_0);
+	  Program::cg->GenAssign(value, plus);
+	}
+    }
 
-	    // if array size is negative or 0, print error messages
-	    const char *error_msg = "Decaf runtime error: Array size is <= 0";
-	    Program::PrintError(error_msg, fndecl);
-
-	    Program::cg->GenLabel(label_0);
-
-	    // plus one position to store the size of the array
-	    localOffset = fndecl->UpdateFrame();
-	    Location *var_size = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
-	    localOffset = fndecl->UpdateFrame();
-	    Location *bytes = Program::cg->GenBinaryOp("*", size_loc, var_size, localOffset);
-	    localOffset = fndecl->UpdateFrame();
-	    bytes = Program::cg->GenBinaryOp("+", bytes, var_size, localOffset);
-
-	    localOffset = fndecl->UpdateFrame();
-	    Location  *address = Program::cg->GenBuiltInCall(Alloc, bytes, NULL, localOffset);
-	    // first position for the size of the array
-	    Program::cg->GenStore(address, size_loc);
-	    return address;
-	  }
-      }
-
-    return NULL;
-  }
-
-  const char *NewArrayExpr::GetTypeName() {
-    if (this->elemType)
-      {
-	string delim = "[]";
-	string str = this->elemType->GetTypeName() + delim;
-	return str.c_str();
-      }
-    else
-      return NULL;
-  }
-
-  void NewArrayExpr::CheckStatements() {
-    this->size->CheckStatements();
-    if (strcmp(this->size->GetTypeName(), "int"))
-      ReportError::NewArraySizeNotInteger(this->size);
-    this->elemType->CheckTypeError();
-  }
-
-  ReadLineExpr::ReadLineExpr(yyltype loc)
-    : Expr(loc) {
-    Expr::type = Type::stringType;
-  }
-
-  Location *ReadLineExpr::Emit() {
-    FnDecl *fndecl = this->GetEnclosFunc(this);
-    if (fndecl)
-      {
-	int localOffset = fndecl->UpdateFrame();
-	return Program::cg->GenBuiltInCall(ReadLine, NULL, NULL, localOffset);
-      }
-    return NULL;
-  }
-
-  ReadIntegerExpr::ReadIntegerExpr(yyltype loc)
-    : Expr(loc) {
-    Expr::type = Type::intType;
-  }
-
-  Location *ReadIntegerExpr::Emit() {
-    FnDecl *fndecl = this->GetEnclosFunc(this);
-    if (fndecl)
-      {
-	int localOffset = fndecl->UpdateFrame();
-	return Program::cg->GenBuiltInCall(ReadInteger, NULL, NULL, localOffset);
-      }
-    return NULL;
-  }
-
-  PostfixExpr::PostfixExpr(yyltype loc, LValue *lv, Operator *op)
-    : Expr(loc) {
-    Assert(lv != NULL && op != NULL);
-    (this->lvalue=lv)->SetParent(this);
-    (this->optr=op)->SetParent(this);
-  }
-
-  void PostfixExpr::CheckStatements() {
-    if (this->lvalue)
-      {
-	this->lvalue->CheckStatements();
-	const char *name = this->lvalue->GetTypeName();
-	if (strcmp(name, "int") && strcmp(name, "double"))
-	  ReportError::IncompatibleOperand(this->optr, this->lvalue->GetType());
-      }
-  }
-
-  Location *PostfixExpr::Emit() {
-    if (this->lvalue)
-      {
-	Expr *expr = new AssignExpr(this->lvalue, new Operator(*this->GetLocation(), "="), new ArithmeticExpr(this->lvalue, new Operator(*this->GetLocation(), "+"), new IntConstant(*this->GetLocation(), 1)));
-
-	expr->SetParent(this);
-
-	FnDecl *fndecl = this->GetEnclosFunc(this);
-	if (fndecl)
-	  {
-	    Location *value = this->lvalue->Emit();
-
-	    int localOffset = fndecl->UpdateFrame();
-	    Location *one = Program::cg->GenLoadConstant(1, localOffset);
-
-	    localOffset = fndecl->UpdateFrame();
-	    Location *plus = Program::cg->GenBinaryOp("+", value, one, localOffset);
-
-	    Program::cg->GenAssign(value, plus);
-	  }
-      }
-
-    return NULL;
-  }
+  return NULL;
+}
 
 

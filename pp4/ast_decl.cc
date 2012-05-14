@@ -22,8 +22,6 @@ using std::endl;
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
   Assert(n != NULL);
   (this->id=n)->SetParent(this); 
-
-  this->memLoc = NULL;
 }
 
 
@@ -48,30 +46,22 @@ void VarDecl::CheckDeclError() {
 Location *VarDecl::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   ClassDecl *classdecl = this->GetEnclosClass(this);
+  int localOffset = 0;
 
   if (fndecl) // local variable
     {
       const char *name = this->GetID()->GetName();
-      if (typeid(*this->type) == typeid(NamedType))
-	{
-          int localOffset = fndecl->UpdateFrame();
-	  Location *var_size = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
-	  localOffset = fndecl->UpdateFrame();
-	  this->memLoc = Program::cg->GenBuiltInCall(Alloc, var_size, NULL, localOffset, name);
-	}
-      else
-	{
-          int localOffset = fndecl->UpdateFrame();
-          this->memLoc = Program::cg->GenVar(fpRelative, localOffset, name);
-	}
+     
+      localOffset = fndecl->UpdateFrame();
+      this->id->SetMemLoc(Program::cg->GenVar(fpRelative, localOffset, name));
     }
   else // global variable
     {
-      this->memLoc = Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName());
+      this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName()));
       Program::offset = Program::offset + CodeGenerator::VarSize;
     }
 
-  return this->memLoc;
+  return NULL;
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
@@ -106,6 +96,7 @@ void ClassDecl::CheckDeclError() {
         {
 	  Decl *cur = this->members->Nth(i);
 	  Decl *prev;
+
 	  const char *name = cur->GetID()->GetName();
 	  if (name)
 	    {
@@ -123,10 +114,10 @@ void ClassDecl::CheckDeclError() {
   NamedType *ex = this->extends;
   while (ex)
     {
-      const char *name = ex->GetID()->GetName();
-      if (name)
+      const char *classname = ex->GetID()->GetName();
+      if (classname)
 	{
-	  Node *node = Program::sym_table->Lookup(name);
+	  Node *node = Program::sym_table->Lookup(classname);
 	  if (node == NULL)
 	    {
 	      ReportError::IdentifierNotDeclared(ex->GetID(), LookingForClass);
@@ -144,6 +135,7 @@ void ClassDecl::CheckDeclError() {
 		    {
 		      Decl *cur = base_members->Nth(i);
 		      Decl *prev;
+
 		      const char *name = cur->GetID()->GetName();
 		      if ((prev = this->sym_table->Lookup(name)) != NULL)
 			{
@@ -197,7 +189,7 @@ void ClassDecl::CheckDeclError() {
 		      FnDecl *cur = dynamic_cast<FnDecl*>(members->Nth(j));
 		      Decl *prev;
 		      const char *name = cur->GetID()->GetName();
-		;
+		      ;
 		      if ((prev = this->sym_table->Lookup(name)) != NULL)
 			{
 			  if (typeid(*prev) != typeid(FnDecl))
@@ -240,14 +232,14 @@ bool ClassDecl::IsCompatibleWith(Decl *decl)
           if (!strcmp(cldecl->GetID()->GetName(), name))
 	    return true;
           else
-           {
-             if (name)
-               {
-                 Decl *exdecl = Program::sym_table->Lookup(name);
-                 if (exdecl && typeid(*exdecl) == typeid(ClassDecl))
-                   return dynamic_cast<ClassDecl*>(exdecl)->IsCompatibleWith(decl);
-               }
-           }
+	    {
+	      if (name)
+		{
+		  Decl *exdecl = Program::sym_table->Lookup(name);
+		  if (exdecl && typeid(*exdecl) == typeid(ClassDecl))
+		    return dynamic_cast<ClassDecl*>(exdecl)->IsCompatibleWith(decl);
+		}
+	    }
         }
     }
   // is B an interface of A
@@ -265,7 +257,7 @@ bool ClassDecl::IsCompatibleWith(Decl *decl)
 		  
 	    }
 	}
-       if (extends)
+      if (extends)
         {
           const char *name = extends->GetTypeName();
           if (name)
@@ -289,12 +281,13 @@ Location *ClassDecl::Emit() {
 	{
           if (typeid(*decl) == typeid(ClassDecl))
             {
-               this->memLoc = Program::cg->GenVar(gpRelative, Program::offset);
-               Program::offset += CodeGenerator::VarSize;
+	      this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName()));
+	      Program::offset += CodeGenerator::VarSize;
             }
           else if (typeid(*decl) == typeid(FnDecl))
 	    {
-              string name = Program::GetClassLabel(this->GetID()->GetName(), decl->GetID()->GetName());
+              ClassDecl *classdecl = decl->GetEnclosClass(decl);
+              string name = Program::GetClassLabel(classdecl->GetID()->GetName(), decl->GetID()->GetName());
 	      this->methodlabels->Append(strdup(name.c_str()));
 	    }
 	  else if (typeid(*decl) == typeid(VarDecl))
@@ -433,6 +426,7 @@ Location *FnDecl::Emit() {
       else
         label = Program::GetFuncLabel(name);
 
+      this->label = label;
       Program::cg->GenLabel(label.c_str());
     }
 
@@ -441,12 +435,12 @@ Location *FnDecl::Emit() {
   // assign locations for params
   if (this->formals)
     {
-       for (int i = 0; i < this->formals->NumElements(); i++)
-         {
-           VarDecl *vardecl = this->formals->Nth(i);
-           vardecl->SetMemLoc(Program::cg->GenVar(fpRelative, this->paramOffset, vardecl->GetID()->GetName()));
-           this->paramOffset += CodeGenerator::VarSize;
-         }
+      for (int i = 0; i < this->formals->NumElements(); i++)
+	{
+	  VarDecl *vardecl = this->formals->Nth(i);
+	  vardecl->GetID()->SetMemLoc(Program::cg->GenVar(fpRelative, this->paramOffset, vardecl->GetID()->GetName()));
+	  this->paramOffset += CodeGenerator::VarSize;
+	}
     }
 
   if (this->body)
@@ -470,3 +464,5 @@ int FnDecl::UpdateFrame() {
 
   return offset;
 }
+
+
