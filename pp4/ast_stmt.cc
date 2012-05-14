@@ -53,6 +53,8 @@ void Program::CheckDeclError() {
 
 Location *Program::Emit() {
   for (int i = 0; i < this->decls->NumElements(); i++)
+    this->decls->Nth(i)->SetLabels();
+  for (int i = 0; i < this->decls->NumElements(); i++)
     this->decls->Nth(i)->Emit();
 
   Program::cg->DoFinalCodeGen();

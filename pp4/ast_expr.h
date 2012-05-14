@@ -37,6 +37,8 @@ class Expr : public Stmt
 
     virtual Expr *GetBase() { return NULL; }
     virtual Identifier *GetField() { return NULL; }
+
+    virtual Location *StoreEmit() { return NULL; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -226,6 +228,7 @@ class FieldAccess : public LValue
     Expr *GetBase();
 
     Location *Emit();
+    Location *StoreEmit();
 };
 
 /* Like field access, call is used both for qualified base.field()

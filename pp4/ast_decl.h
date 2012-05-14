@@ -38,6 +38,8 @@ class Decl : public Node
   friend ostream& operator<<(ostream &out, Decl *decl) { if (decl) return out << decl->id; else return out; }
   virtual const char *GetTypeName() { return NULL; }
   virtual Type *GetType() { return NULL; }
+
+  virtual void SetLabels() {}
 };
 
 class VarDecl : public Decl 
@@ -81,6 +83,7 @@ class ClassDecl : public Decl
 
   List<const char *> *GetMethodLabels() { return methodlabels; }
   List<const char *> *GetFieldLabels() { return fieldlabels; }
+  void SetLabels();
   Location *Emit();
  };
 
@@ -128,6 +131,7 @@ class FnDecl : public Decl
   Location *Emit();
   const char *GetLabel() { return label.c_str(); }
   int UpdateFrame(); // update frame and localOffset by Codegenrator::VarSize, return the previous localOffset
+  void SetLabels();
 };
 
 

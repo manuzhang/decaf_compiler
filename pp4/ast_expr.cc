@@ -405,7 +405,7 @@ Location *AssignExpr::Emit() {
             }
         }
       else if (this->left->GetBase())
-        Program::cg->GenStore(this->left->Emit(), this->right->Emit());
+        Program::cg->GenStore(this->left->StoreEmit(), this->right->Emit());
       else
         Program::cg->GenAssign(this->left->Emit(), this->right->Emit());
     }
@@ -624,10 +624,8 @@ Location *FieldAccess::Emit() {
    		{
    		  if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
    		    {
-                      localOffset = fndecl->UpdateFrame();
-		      Location *offset_loc = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
-                      localOffset = fndecl->UpdateFrame();
-		      return Program::cg->GenBinaryOp("+", base_loc, offset_loc, localOffset);
+   		      localOffset = fndecl->UpdateFrame();
+   		      return Program::cg->GenLoad(base_loc, localOffset, (i + 1) * CodeGenerator::VarSize);
    		    }
    		}
    	    }
@@ -646,6 +644,59 @@ Location *FieldAccess::Emit() {
      	        }
 	    }
 	}
+    }
+  return NULL;
+}
+
+Location *FieldAccess::StoreEmit() {
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  int localOffset = 0;
+
+  if (fndecl)
+    {
+      if (this->base)
+        {
+          Location *base_loc = this->base->Emit();
+
+          ClassDecl *classdecl = NULL;
+          if (typeid(*this->base) == typeid(This))
+            classdecl = this->GetEnclosClass(this);
+          else
+            {
+              Decl *decl = Program::sym_table->Lookup(this->base->GetTypeName());
+              if (decl && typeid(*decl) == typeid(ClassDecl))
+                classdecl = dynamic_cast<ClassDecl*>(decl);
+
+            }
+          if (classdecl)
+            {
+              List<const char *> *fieldlabels = classdecl->GetFieldLabels();
+              for (int i = 0; i < fieldlabels->NumElements(); i++)
+                {
+                  if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
+                    {
+                      localOffset = fndecl->UpdateFrame();
+                      Location *offset_loc = Program::cg->GenLoadConstant((i + 1) * CodeGenerator::VarSize, localOffset);
+                      localOffset = fndecl->UpdateFrame();
+                      return Program::cg->GenBinaryOp("+", base_loc, offset_loc, localOffset);
+                    }
+                }
+            }
+        }
+      else
+        {
+          Decl *decl = this->field->CheckIdDecl();
+          if (decl)
+            {
+              if (decl->GetEnclosFunc(decl)) // locals or params
+                return decl->GetID()->GetMemLoc();
+              else // this omitted
+                {
+                  if (this->GetBase())
+                    return this->Emit();
+                }
+            }
+        }
     }
   return NULL;
 }
@@ -842,8 +893,7 @@ Location *Call::RuntimeCall(Location *base_loc, ClassDecl *classdecl, FnDecl *fn
   List<const char *> *methodlabels = classdecl->GetMethodLabels();
   for (int i = 0; i < methodlabels->NumElements(); i++)
     {
-      string name = Program::GetClassLabel(classname, methodname);
-      if (!strcmp(methodlabels->Nth(i), name.c_str()))
+      if (strstr(methodlabels->Nth(i), methodname) != NULL)
 	{
 	  localOffset = fndecl->UpdateFrame();
 	  func = Program::cg->GenLoad(vtable, localOffset, i * CodeGenerator::VarSize);

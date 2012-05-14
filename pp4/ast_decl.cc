@@ -272,7 +272,32 @@ bool ClassDecl::IsCompatibleWith(Decl *decl)
   return false;
 }
 
+void ClassDecl::SetLabels() {
+  if (this->sym_table)
+      {
+        Iterator<Decl*> iter = this->sym_table->GetIterator();
+        Decl *decl;
+        while ((decl = iter.GetNextValue()) != NULL)
+          {
+            if (typeid(*decl) == typeid(ClassDecl))
+              {
+                this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName()));
+                Program::offset += CodeGenerator::VarSize;
+              }
+            else if (typeid(*decl) == typeid(FnDecl))
+              {
+                ClassDecl *classdecl = decl->GetEnclosClass(decl);
+                string name = Program::GetClassLabel(classdecl->GetID()->GetName(), decl->GetID()->GetName());
+                this->methodlabels->Append(strdup(name.c_str()));
+              }
+            else if (typeid(*decl) == typeid(VarDecl))
+              this->fieldlabels->Append(decl->GetID()->GetName());
+          }
+      }
+}
+
 Location *ClassDecl::Emit() {
+/*
   if (this->sym_table)
     {
       Iterator<Decl*> iter = this->sym_table->GetIterator();
@@ -293,17 +318,21 @@ Location *ClassDecl::Emit() {
 	  else if (typeid(*decl) == typeid(VarDecl))
 	    this->fieldlabels->Append(decl->GetID()->GetName());
 	}
+*/
 
       if (this->members)
         {
+          for (int i = 0; i < this->members->NumElements(); i++)
+            this->members->Nth(i)->SetLabels();
+
           for (int i = 0; i < this->members->NumElements(); i++)
             this->members->Nth(i)->Emit();
         }
 
 
-      Program::cg->GenVTable(this->id->GetName(), methodlabels);
+      Program::cg->GenVTable(this->id->GetName(), this->methodlabels);
 
-    }
+  //  }
 
 
   return NULL;
@@ -419,15 +448,7 @@ Location *FnDecl::Emit() {
     Program::cg->GenLabel("main");
   else
     {
-      string label;
-
-      if (classdecl)
-        label = Program::GetClassLabel(classdecl->GetID()->GetName(), name);
-      else
-        label = Program::GetFuncLabel(name);
-
-      this->label = label;
-      Program::cg->GenLabel(label.c_str());
+      Program::cg->GenLabel((this->label).c_str());
     }
 
   this->beginFunc = Program::cg->GenBeginFunc();
@@ -466,3 +487,18 @@ int FnDecl::UpdateFrame() {
 }
 
 
+void FnDecl::SetLabels() {
+  ClassDecl *classdecl = this->GetEnclosClass(this);
+  const char *name = this->GetID()->GetName();
+  if (strcmp(name, "main"))
+    {
+      string label;
+
+      if (classdecl)
+        label = Program::GetClassLabel(classdecl->GetID()->GetName(), name);
+      else
+        label = Program::GetFuncLabel(name);
+
+      this->label = label;
+    }
+}
