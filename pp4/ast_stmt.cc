@@ -59,6 +59,9 @@ Location *Program::Emit() {
 
   Program::cg->DoFinalCodeGen();
 
+  if (Program::sym_table->Lookup("main") == NULL)
+    ReportError::NoMainFound();
+
   return NULL;
 }
 

@@ -389,22 +389,7 @@ Location *AssignExpr::Emit() {
   int localOffset = 0;
   if (this->left && this->right)
     {
-
-      if (typeid(*this->right) == typeid(NewExpr))
-        {
-          FnDecl *fndecl = this->GetEnclosFunc(this);
-          if (fndecl)
-            {
-              localOffset = fndecl->UpdateFrame();
-              Location *var = Program::cg->GenVar(fpRelative, localOffset, this->left->GetField()->GetName());
-              Location *right_loc = this->right->Emit();
-
-              Decl *decl = this->left->GetField()->CheckIdDecl();
-
-              Program::cg->GenAssign(var, right_loc);
-            }
-        }
-      else if (this->left->GetBase())
+      if (this->left->GetBase())
         Program::cg->GenStore(this->left->StoreEmit(), this->right->Emit());
       else
         Program::cg->GenAssign(this->left->Emit(), this->right->Emit());
@@ -468,15 +453,28 @@ void ArrayAccess::CheckStatements() {
 }
 
 Location *ArrayAccess::Emit() {
+  Location *address = this->StoreEmit();
+  int localOffset;
+  FnDecl *fndecl = this->GetEnclosFunc(this);
+  if (fndecl)
+    {
+      localOffset = fndecl->UpdateFrame();
+      return Program::cg->GenLoad(address, localOffset);
+    }
+  return NULL;
+}
+
+Location *ArrayAccess::StoreEmit() {
   if (this->base && this->subscript)
     {
+      int localOffset = 0;
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl)
         {
-          int localOffset = fndecl->UpdateFrame();
-
           // access array size
           Location *base_loc = this->base->Emit();
+      
+          localOffset = fndecl->UpdateFrame();
           Location *size = Program::cg->GenLoad(base_loc, localOffset);
 
           // whether out of bounds
@@ -485,7 +483,7 @@ Location *ArrayAccess::Emit() {
           Location *subs = this->subscript->Emit();
           Location *test_max = Program::cg->GenBinaryOp("<", subs, size, localOffset);
           localOffset = fndecl->UpdateFrame();
-	  Location *minus = Program::cg->GenLoadConstant(1, localOffset);
+	  Location *minus = Program::cg->GenLoadConstant(-1, localOffset);
 
           localOffset = fndecl->UpdateFrame();
 
@@ -499,12 +497,13 @@ Location *ArrayAccess::Emit() {
 
           Program::cg->GenIfZ(test, label_0);
 
+          // access the element
           localOffset = fndecl->UpdateFrame();
-
           Location *address = Program::cg->GenBinaryOp("+", base_loc, subs, localOffset);
 
           Program::cg->GenGoto(label_1);
 
+	  // report error
           Program::cg->GenLabel(label_0);
           const char *error_msg = "Decaf runtime error: Array script out of bounds";
           Program::PrintError(error_msg, fndecl);
@@ -581,21 +580,21 @@ void FieldAccess::CheckStatements() {
     this->type = decl->GetType(); 
 }
 
-Expr *FieldAccess::GetBase() {
-  if (this->base)
-    return this->base;
-  else
-    {
-      Decl *decl = this->field->CheckIdDecl();
-      if ((decl->GetEnclosFunc(decl)) == NULL)
-        if ((decl->GetEnclosClass(decl)) != NULL)
-          {
-            this->base = new This(*this->GetLocation());
-            this->base->SetParent(this);
-          }
-      return this->base;
-    }
-}
+// Expr *FieldAccess::GetBase() {
+//   if (this->base)
+//     return this->base;
+//   else
+//     {
+//       Decl *decl = this->field->CheckIdDecl();
+//       if ((decl->GetEnclosFunc(decl)) == NULL)
+//         if ((decl->GetEnclosClass(decl)) != NULL)
+//           {
+//             this->base = new This(*this->GetLocation());
+//             this->base->SetParent(this);
+//           }
+//       return this->base;
+//     }
+// }
 
 Location *FieldAccess::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
@@ -972,8 +971,6 @@ Location *NewArrayExpr::Emit() {
       if (fndecl)
 	{
 	  char *label_0 = Program::cg->NewLabel();
-	  char *label_1 = Program::cg->NewLabel();
-
 
 	  Location *size_loc = this->size->Emit();
 

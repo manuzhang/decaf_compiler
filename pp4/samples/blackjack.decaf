@@ -33,6 +33,7 @@ class Deck {
     for (current = 0; current < 52; current = current + 1) {
       cards[current] = (current + 1) % 13;
     }
+    gRnd = new Random;
     while (current > 0) {
       int r;
       int temp;
@@ -71,6 +72,7 @@ class BJDeck {
     int c;
     c = 0;
     if (numdealt >= 8*52) return 11;
+    gRnd = new Random;
     while (c == 0) {
       int d;
       d = gRnd.RndInt(8);

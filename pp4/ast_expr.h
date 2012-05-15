@@ -205,6 +205,7 @@ class ArrayAccess : public LValue
     Expr *GetBase() { return base; }
 
     Location *Emit();
+    Location *StoreEmit();
 };
 
 /* Note that field access is used both for qualified names
@@ -225,7 +226,7 @@ class FieldAccess : public LValue
     Identifier *GetField() { return field; }
     Type *GetType() { return type; }
     const char *GetTypeName() { if (type) return type->GetTypeName(); else return NULL; }
-    Expr *GetBase();
+    Expr *GetBase() { return base; }
 
     Location *Emit();
     Location *StoreEmit();

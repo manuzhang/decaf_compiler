@@ -51,7 +51,7 @@ class Mips {
     void SpillForEndFunction();
 
     void EmitCallInstr(Location *dst, const char *fn, bool isL);
-    
+
     static const char *mipsName[BinaryOp::NumOps];
     static const char *NameForTac(BinaryOp::OpCode code);
 
@@ -88,8 +88,16 @@ class Mips {
     void EmitVTable(const char *label, List<const char*> *methodLabels);
 
     void EmitPreamble();
+
+    void EmitPrintInt();
+    void EmitPrintString();
+    void EmitPrintBool();
+    void EmitAlloc();
+    void EmitStringEqual();
+    void EmitHalt();
+    void EmitReadInteger();
+    void EmitReadLine();
+    void EmitData();
 };
-
-
 #endif
  

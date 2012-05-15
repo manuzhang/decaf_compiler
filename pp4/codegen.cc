@@ -204,6 +204,16 @@ void CodeGenerator::DoFinalCodeGen()
    }  else {
      Mips mips;
      mips.EmitPreamble();
+     mips.EmitPrintInt();
+     mips.EmitPrintBool();
+     mips.EmitPrintString();
+     mips.EmitAlloc();
+     mips.EmitStringEqual();
+     mips.EmitHalt();
+     mips.EmitReadInteger();
+     mips.EmitReadLine();
+
+
      for (int i = 0; i < code->NumElements(); i++)
 	 code->Nth(i)->Emit(&mips);
   }
