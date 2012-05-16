@@ -155,31 +155,85 @@ eloop4:	addi $t1, -1
 	lw $fp, 0($fp)
 	jr $ra
 	
-main:	# BeginFunc 8
+main:	# BeginFunc 40
 	subu $sp, $sp, 8	# decrement sp to make space to save ra, fp
 	sw $fp, 8($sp)	# save fp
 	sw $ra, 4($sp)	# save ra
 	addiu $fp, $sp, 8	# set up new fp
-	subu $sp, $sp, 8	# decrement sp to make space for locals/temps
-	# _tmp0 = 1
-	li $t0, 1		# load constant value 1 into $t0
-	# PushParam _tmp0
+	subu $sp, $sp, 40	# decrement sp to make space for locals/temps
+	# _tmp0 = "not"
+	.data			# create string constant marked with label
+	_string1: .asciiz "not"
+	.text
+	la $t0, _string1	# load label
+	# s = _tmp0
+	move $t1, $t0		# copy value
+	# _tmp1 = "something else"
+	.data			# create string constant marked with label
+	_string2: .asciiz "something else"
+	.text
+	la $t2, _string2	# load label
+	# PushParam _tmp1
 	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t0, 4($sp)	# copy param value to stack
+	sw $t2, 4($sp)	# copy param value to stack
+	# PushParam s
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t1, 4($sp)	# copy param value to stack
+	# _tmp2 = LCall _StringEqual
+	# (save modified registers before flow of control change)
+	sw $t0, -12($fp)	# spill _tmp0 from $t0 to $fp-12
+	sw $t1, -8($fp)	# spill s from $t1 to $fp-8
+	sw $t2, -20($fp)	# spill _tmp1 from $t2 to $fp-20
+	jal _StringEqual   	# jump to function
+	move $t0, $v0		# copy function return value from $v0
+	# PopParams 8
+	add $sp, $sp, 8	# pop params off stack
+	# _tmp3 = 0
+	li $t1, 0		# load constant value 0 into $t1
+	# _tmp4 = _tmp2 == _tmp3
+	seq $t2, $t0, $t1	
+	# PushParam _tmp4
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t2, 4($sp)	# copy param value to stack
 	# LCall _PrintBool
 	# (save modified registers before flow of control change)
-	sw $t0, -8($fp)	# spill _tmp0 from $t0 to $fp-8
+	sw $t0, -16($fp)	# spill _tmp2 from $t0 to $fp-16
+	sw $t1, -24($fp)	# spill _tmp3 from $t1 to $fp-24
+	sw $t2, -28($fp)	# spill _tmp4 from $t2 to $fp-28
 	jal _PrintBool     	# jump to function
 	# PopParams 4
 	add $sp, $sp, 4	# pop params off stack
-	# _tmp1 = 0
-	li $t0, 0		# load constant value 0 into $t0
-	# PushParam _tmp1
+	# _tmp5 = "not"
+	.data			# create string constant marked with label
+	_string3: .asciiz "not"
+	.text
+	la $t0, _string3	# load label
+	# PushParam _tmp5
 	subu $sp, $sp, 4	# decrement sp to make space for param
 	sw $t0, 4($sp)	# copy param value to stack
+	# PushParam s
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	lw $t1, -8($fp)	# load s from $fp-8 into $t1
+	sw $t1, 4($sp)	# copy param value to stack
+	# _tmp6 = LCall _StringEqual
+	# (save modified registers before flow of control change)
+	sw $t0, -36($fp)	# spill _tmp5 from $t0 to $fp-36
+	jal _StringEqual   	# jump to function
+	move $t0, $v0		# copy function return value from $v0
+	# PopParams 8
+	add $sp, $sp, 8	# pop params off stack
+	# _tmp7 = 0
+	li $t1, 0		# load constant value 0 into $t1
+	# _tmp8 = _tmp6 == _tmp7
+	seq $t2, $t0, $t1	
+	# PushParam _tmp8
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t2, 4($sp)	# copy param value to stack
 	# LCall _PrintBool
 	# (save modified registers before flow of control change)
-	sw $t0, -12($fp)	# spill _tmp1 from $t0 to $fp-12
+	sw $t0, -32($fp)	# spill _tmp6 from $t0 to $fp-32
+	sw $t1, -40($fp)	# spill _tmp7 from $t1 to $fp-40
+	sw $t2, -44($fp)	# spill _tmp8 from $t2 to $fp-44
 	jal _PrintBool     	# jump to function
 	# PopParams 4
 	add $sp, $sp, 4	# pop params off stack

@@ -268,13 +268,38 @@ void EqualityExpr::CheckStatements() {
 Location *EqualityExpr::Emit() {
   if (this->left && this->right)
     {
+      int localOffset = 0;
       FnDecl *fndecl = this->GetEnclosFunc(this);
       if (fndecl) // local variable
         {
 	  if (this->left->GetType() == Type::stringType && this->right->GetType() == Type::stringType)
 	    {
-	      int localOffset = fndecl->UpdateFrame();
-	      return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), localOffset);
+	      localOffset = fndecl->UpdateFrame();
+	      Location *result = Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), localOffset);
+
+	      localOffset = fndecl->UpdateFrame();
+	      Location *zero = Program::cg->GenLoadConstant(0, localOffset);
+
+	      localOffset = fndecl->UpdateFrame();
+	      return Program::cg->GenBinaryOp("==", result, zero, localOffset);
+		 /* char *label_0 = Program::cg->NewLabel();
+		  char *label_1 = Program::cg->NewLabel();
+
+		  Program::cg->GenIfZ(result, label_0);
+		  
+                  localOffset = fndecl->UpdateFrame();
+		  Location *zero = Program::cg->GenLoadConstant(0, localOffset);
+
+		  Program::cg->GenBuiltInCall(PrintBool, zero);
+		  Program::cg->GenGoto(label_1);
+
+		  Program::cg->GenLabel(label_0);
+		  localOffset = fndecl->UpdateFrame();
+		  Location *one = Program::cg->GenLoadConstant(1, localOffset);
+
+		  Program::cg->GenBuiltInCall(PrintBool, one);
+		  Program::cg->GenLabel(label_1);*/
+
 	    }
 	  else
 	    {
@@ -289,7 +314,7 @@ Location *EqualityExpr::Emit() {
 	          Location *less = Program::cg->GenBinaryOp("<", left_loc, right_loc, localOffset);
 
 	          localOffset = fndecl->UpdateFrame();
-	          Location *greater = Program::cg->GenBinaryOp(">", left_loc, right_loc, localOffset);
+	          Location *greater = Program::cg->GenBinaryOp("<", right_loc, left_loc, localOffset);
 
 	          localOffset = fndecl->UpdateFrame();
 	          return Program::cg->GenBinaryOp("||", less, greater, localOffset);
@@ -634,7 +659,8 @@ Location *FieldAccess::Emit() {
 	  Decl *decl = this->field->CheckIdDecl();
      	  if (decl)
      	    {
-     	      if (decl->GetEnclosFunc(decl)) // locals or params
+     	      if ((decl->GetEnclosFunc(decl) != NULL) // locals or params
+     	          || (decl->GetEnclosClass(decl) == NULL)) // globals
 	        return decl->GetID()->GetMemLoc();
      	      else // this omitted
      	        {
