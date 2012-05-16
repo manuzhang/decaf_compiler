@@ -515,7 +515,12 @@ Location *ArrayAccess::StoreEmit() {
 
           // access the element
           localOffset = fndecl->UpdateFrame();
-          Location *address = Program::cg->GenBinaryOp("+", base_loc, subs, localOffset);
+          Location *varsize_loc = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
+          localOffset = fndecl->UpdateFrame();
+          Location *tmp = Program::cg->GenBinaryOp("*", subs, varsize_loc, localOffset);
+          localOffset = fndecl->UpdateFrame();
+          Location *offset_loc = Program::cg->GenBinaryOp("+", tmp, varsize_loc, localOffset);
+          Location *address = Program::cg->GenBinaryOp("+", base_loc, offset_loc, localOffset);
 
           Program::cg->GenGoto(label_1);
 
