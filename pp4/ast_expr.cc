@@ -282,24 +282,6 @@ Location *EqualityExpr::Emit() {
 
 	      localOffset = fndecl->UpdateFrame();
 	      return Program::cg->GenBinaryOp("==", result, zero, localOffset);
-		 /* char *label_0 = Program::cg->NewLabel();
-		  char *label_1 = Program::cg->NewLabel();
-
-		  Program::cg->GenIfZ(result, label_0);
-		  
-                  localOffset = fndecl->UpdateFrame();
-		  Location *zero = Program::cg->GenLoadConstant(0, localOffset);
-
-		  Program::cg->GenBuiltInCall(PrintBool, zero);
-		  Program::cg->GenGoto(label_1);
-
-		  Program::cg->GenLabel(label_0);
-		  localOffset = fndecl->UpdateFrame();
-		  Location *one = Program::cg->GenLoadConstant(1, localOffset);
-
-		  Program::cg->GenBuiltInCall(PrintBool, one);
-		  Program::cg->GenLabel(label_1);*/
-
 	    }
 	  else
 	    {
@@ -414,10 +396,19 @@ Location *AssignExpr::Emit() {
   int localOffset = 0;
   if (this->left && this->right)
     {
+      Location *right_loc = this->right->Emit();
       if (this->left->GetBase())
-        Program::cg->GenStore(this->left->StoreEmit(), this->right->Emit());
+        {
+          Location *left_loc = this->left->StoreEmit();
+          Program::cg->GenStore(left_loc, right_loc);
+          return left_loc;
+        }
       else
-        Program::cg->GenAssign(this->left->Emit(), this->right->Emit());
+        {
+          Location *left_loc = this->left->Emit();
+          Program::cg->GenAssign(left_loc, right_loc);
+          return left_loc;
+        }
     }
 
   return NULL;
