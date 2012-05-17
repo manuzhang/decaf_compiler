@@ -55,7 +55,7 @@ Location *Program::Emit() {
   for (int i = 0; i < this->decls->NumElements(); i++)
     this->decls->Nth(i)->SetLabels();
 
-  Decl *main_decl;
+  Decl *main_decl = NULL;
   for (int i = 0; i < this->decls->NumElements(); i++)
     {
       Decl *decl = this->decls->Nth(i);
@@ -64,7 +64,8 @@ Location *Program::Emit() {
       else
         decl->Emit();
     }
-  main_decl->Emit();
+  if (main_decl)
+    main_decl->Emit();
 
   Program::cg->DoFinalCodeGen();
 
