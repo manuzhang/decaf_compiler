@@ -169,115 +169,171 @@ eloop4:
 	lw $fp, 0($fp)
 	jr $ra
 	
-__Cow.Moo:
-	# BeginFunc 20
+__Animal.Method1:
+	# BeginFunc 8
 	subu $sp, $sp, 8	# decrement sp to make space to save ra, fp
 	sw $fp, 8($sp)	# save fp
 	sw $ra, 4($sp)	# save ra
 	addiu $fp, $sp, 8	# set up new fp
-	subu $sp, $sp, 20	# decrement sp to make space for locals/temps
-	# _tmp0 = i + j
-	lw $t0, 8($fp)	# load i from $fp+8 into $t0
-	lw $t1, 12($fp)	# load j from $fp+12 into $t1
-	add $t2, $t0, $t1	
-	# _tmp1 = _tmp0 + k
-	lw $t3, 16($fp)	# load k from $fp+16 into $t3
-	add $t4, $t2, $t3	
-	# _tmp2 = _tmp1 + l
-	lw $t5, 20($fp)	# load l from $fp+20 into $t5
-	add $t6, $t4, $t5	
-	# _tmp3 = _tmp2 + m
-	lw $t7, 24($fp)	# load m from $fp+24 into $t7
-	add $s0, $t6, $t7	
-	# _tmp4 = _tmp3 + n
-	lw $s1, 28($fp)	# load n from $fp+28 into $s1
-	add $s2, $s0, $s1	
-	# Return _tmp4
-	move $v0, $s2		# assign return value into $v0
-	move $sp, $fp		# pop callee frame off stack
-	lw $ra, -4($fp)	# restore saved ra
-	lw $fp, 0($fp)	# restore saved fp
-	jr $ra		# return from function
+	subu $sp, $sp, 8	# decrement sp to make space for locals/temps
+	# _tmp0 = *(this + 4)
+	lw $t0, 4($fp)	# load this from $fp+4 into $t0
+	lw $t1, 4($t0) 	# load with offset
+	# PushParam _tmp0
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t1, 4($sp)	# copy param value to stack
+	# LCall _PrintInt
+	# (save modified registers before flow of control change)
+	sw $t1, -8($fp)	# spill _tmp0 from $t1 to $fp-8
+	jal _PrintInt      	# jump to function
+	# PopParams 4
+	add $sp, $sp, 4	# pop params off stack
+	# _tmp1 = *(this + 8)
+	lw $t0, 4($fp)	# load this from $fp+4 into $t0
+	lw $t1, 8($t0) 	# load with offset
+	# PushParam _tmp1
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t1, 4($sp)	# copy param value to stack
+	# LCall _PrintInt
+	# (save modified registers before flow of control change)
+	sw $t1, -12($fp)	# spill _tmp1 from $t1 to $fp-12
+	jal _PrintInt      	# jump to function
+	# PopParams 4
+	add $sp, $sp, 4	# pop params off stack
 	# EndFunc
 	# (below handles reaching end of fn body with no explicit return)
 	move $sp, $fp		# pop callee frame off stack
 	lw $ra, -4($fp)	# restore saved ra
 	lw $fp, 0($fp)	# restore saved fp
 	jr $ra		# return from function
-__Cow.Method:
+	# VTable for class Animal
+	.data
+	.align 2
+	Animal:		# label for class Animal vtable
+	.word __Animal.Method1
+	.text
+__Cow.Init:
+	# BeginFunc 64
+	subu $sp, $sp, 8	# decrement sp to make space to save ra, fp
+	sw $fp, 8($sp)	# save fp
+	sw $ra, 4($sp)	# save ra
+	addiu $fp, $sp, 8	# set up new fp
+	subu $sp, $sp, 64	# decrement sp to make space for locals/temps
+	# _tmp2 = 10
+	li $t0, 10		# load constant value 10 into $t0
+	# _tmp3 = 4
+	li $t1, 4		# load constant value 4 into $t1
+	# _tmp4 = this + _tmp3
+	lw $t2, 4($fp)	# load this from $fp+4 into $t2
+	add $t3, $t2, $t1	
+	# *(_tmp4) = _tmp2
+	sw $t0, 0($t3) 	# store with offset
+	# _tmp5 = 2
+	li $t4, 2		# load constant value 2 into $t4
+	# _tmp6 = *(this + 4)
+	lw $t5, 4($t2) 	# load with offset
+	# _tmp7 = _tmp6 * _tmp5
+	mul $t6, $t5, $t4	
+	# _tmp8 = 8
+	li $t7, 8		# load constant value 8 into $t7
+	# _tmp9 = this + _tmp8
+	add $s0, $t2, $t7	
+	# *(_tmp9) = _tmp7
+	sw $t6, 0($s0) 	# store with offset
+	# _tmp10 = 28
+	li $s1, 28		# load constant value 28 into $s1
+	# _tmp11 = 12
+	li $s2, 12		# load constant value 12 into $s2
+	# _tmp12 = this + _tmp11
+	add $s3, $t2, $s2	
+	# *(_tmp12) = _tmp10
+	sw $s1, 0($s3) 	# store with offset
+	# _tmp13 = 0
+	li $s4, 0		# load constant value 0 into $s4
+	# _tmp14 = 9
+	li $s5, 9		# load constant value 9 into $s5
+	# _tmp15 = _tmp13 - _tmp14
+	sub $s6, $s4, $s5	
+	# _tmp16 = 16
+	li $s7, 16		# load constant value 16 into $s7
+	# _tmp17 = this + _tmp16
+	add $t8, $t2, $s7	
+	# *(_tmp17) = _tmp15
+	sw $s6, 0($t8) 	# store with offset
+	# EndFunc
+	# (below handles reaching end of fn body with no explicit return)
+	move $sp, $fp		# pop callee frame off stack
+	lw $ra, -4($fp)	# restore saved ra
+	lw $fp, 0($fp)	# restore saved fp
+	jr $ra		# return from function
+__Cow.Method2:
 	# BeginFunc 24
 	subu $sp, $sp, 8	# decrement sp to make space to save ra, fp
 	sw $fp, 8($sp)	# save fp
 	sw $ra, 4($sp)	# save ra
 	addiu $fp, $sp, 8	# set up new fp
 	subu $sp, $sp, 24	# decrement sp to make space for locals/temps
-	# _tmp5 = 0
-	li $t0, 0		# load constant value 0 into $t0
-	# IfZ _tmp5 Goto _L0
-	# (save modified registers before flow of control change)
-	sw $t0, -8($fp)	# spill _tmp5 from $t0 to $fp-8
-	beqz $t0, _L0	# branch if _tmp5 is zero 
-	# _tmp6 = *(this)
+	# _tmp18 = *(this + 4)
 	lw $t0, 4($fp)	# load this from $fp+4 into $t0
-	lw $t1, 0($t0) 	# load with offset
-	# _tmp7 = *(_tmp6 + 4)
-	lw $t2, 4($t1) 	# load with offset
-	# PushParam a
+	lw $t1, 4($t0) 	# load with offset
+	# PushParam _tmp18
 	subu $sp, $sp, 4	# decrement sp to make space for param
-	lw $t3, 8($fp)	# load a from $fp+8 into $t3
-	sw $t3, 4($sp)	# copy param value to stack
-	# PushParam a
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t3, 4($sp)	# copy param value to stack
-	# PushParam a
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t3, 4($sp)	# copy param value to stack
-	# PushParam a
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t3, 4($sp)	# copy param value to stack
-	# PushParam a
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t3, 4($sp)	# copy param value to stack
-	# PushParam a
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t3, 4($sp)	# copy param value to stack
-	# PushParam this
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t0, 4($sp)	# copy param value to stack
-	# _tmp8 = ACall _tmp7
-	# (save modified registers before flow of control change)
-	sw $t1, -12($fp)	# spill _tmp6 from $t1 to $fp-12
-	sw $t2, -16($fp)	# spill _tmp7 from $t2 to $fp-16
-	jalr $t2            	# jump to function
-	move $t0, $v0		# copy function return value from $v0
-	# PopParams 28
-	add $sp, $sp, 28	# pop params off stack
-	# Goto _L1
-	# (save modified registers before flow of control change)
-	sw $t0, -20($fp)	# spill _tmp8 from $t0 to $fp-20
-	b _L1		# unconditional branch
-_L0:
-_L1:
-	# _tmp9 = 3
-	li $t0, 3		# load constant value 3 into $t0
-	# PushParam _tmp9
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t0, 4($sp)	# copy param value to stack
+	sw $t1, 4($sp)	# copy param value to stack
 	# LCall _PrintInt
 	# (save modified registers before flow of control change)
-	sw $t0, -24($fp)	# spill _tmp9 from $t0 to $fp-24
+	sw $t1, -8($fp)	# spill _tmp18 from $t1 to $fp-8
 	jal _PrintInt      	# jump to function
 	# PopParams 4
 	add $sp, $sp, 4	# pop params off stack
-	# _tmp10 = 4
-	li $t0, 4		# load constant value 4 into $t0
-	# PushParam _tmp10
+	# _tmp19 = *(this + 8)
+	lw $t0, 4($fp)	# load this from $fp+4 into $t0
+	lw $t1, 8($t0) 	# load with offset
+	# PushParam _tmp19
 	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t0, 4($sp)	# copy param value to stack
+	sw $t1, 4($sp)	# copy param value to stack
 	# LCall _PrintInt
 	# (save modified registers before flow of control change)
-	sw $t0, -28($fp)	# spill _tmp10 from $t0 to $fp-28
+	sw $t1, -12($fp)	# spill _tmp19 from $t1 to $fp-12
 	jal _PrintInt      	# jump to function
+	# PopParams 4
+	add $sp, $sp, 4	# pop params off stack
+	# _tmp20 = *(this + 12)
+	lw $t0, 4($fp)	# load this from $fp+4 into $t0
+	lw $t1, 12($t0) 	# load with offset
+	# PushParam _tmp20
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t1, 4($sp)	# copy param value to stack
+	# LCall _PrintInt
+	# (save modified registers before flow of control change)
+	sw $t1, -16($fp)	# spill _tmp20 from $t1 to $fp-16
+	jal _PrintInt      	# jump to function
+	# PopParams 4
+	add $sp, $sp, 4	# pop params off stack
+	# _tmp21 = *(this + 16)
+	lw $t0, 4($fp)	# load this from $fp+4 into $t0
+	lw $t1, 16($t0) 	# load with offset
+	# PushParam _tmp21
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t1, 4($sp)	# copy param value to stack
+	# LCall _PrintInt
+	# (save modified registers before flow of control change)
+	sw $t1, -20($fp)	# spill _tmp21 from $t1 to $fp-20
+	jal _PrintInt      	# jump to function
+	# PopParams 4
+	add $sp, $sp, 4	# pop params off stack
+	# _tmp22 = *(this)
+	lw $t0, 4($fp)	# load this from $fp+4 into $t0
+	lw $t1, 0($t0) 	# load with offset
+	# _tmp23 = *(_tmp22 + 4)
+	lw $t2, 4($t1) 	# load with offset
+	# PushParam this
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t0, 4($sp)	# copy param value to stack
+	# ACall _tmp23
+	# (save modified registers before flow of control change)
+	sw $t1, -24($fp)	# spill _tmp22 from $t1 to $fp-24
+	sw $t2, -28($fp)	# spill _tmp23 from $t2 to $fp-28
+	jalr $t2            	# jump to function
 	# PopParams 4
 	add $sp, $sp, 4	# pop params off stack
 	# EndFunc
@@ -290,57 +346,67 @@ _L1:
 	.data
 	.align 2
 	Cow:		# label for class Cow vtable
-	.word __Cow.Method
-	.word __Cow.Moo
+	.word __Cow.Init
+	.word __Animal.Method1
+	.word __Cow.Method2
 	.text
 main:
-	# BeginFunc 28
+	# BeginFunc 32
 	subu $sp, $sp, 8	# decrement sp to make space to save ra, fp
 	sw $fp, 8($sp)	# save fp
 	sw $ra, 4($sp)	# save ra
 	addiu $fp, $sp, 8	# set up new fp
-	subu $sp, $sp, 28	# decrement sp to make space for locals/temps
-	# _tmp11 = 4
-	li $t0, 4		# load constant value 4 into $t0
-	# PushParam _tmp11
+	subu $sp, $sp, 32	# decrement sp to make space for locals/temps
+	# _tmp24 = 20
+	li $t0, 20		# load constant value 20 into $t0
+	# PushParam _tmp24
 	subu $sp, $sp, 4	# decrement sp to make space for param
 	sw $t0, 4($sp)	# copy param value to stack
-	# _tmp12 = LCall _Alloc
+	# _tmp25 = LCall _Alloc
 	# (save modified registers before flow of control change)
-	sw $t0, -12($fp)	# spill _tmp11 from $t0 to $fp-12
+	sw $t0, -12($fp)	# spill _tmp24 from $t0 to $fp-12
 	jal _Alloc         	# jump to function
 	move $t0, $v0		# copy function return value from $v0
 	# PopParams 4
 	add $sp, $sp, 4	# pop params off stack
-	# _tmp13 = Cow
+	# _tmp26 = Cow
 	la $t1, Cow	# load label
-	# *(_tmp12) = _tmp13
+	# *(_tmp25) = _tmp26
 	sw $t1, 0($t0) 	# store with offset
-	# c = _tmp12
+	# b = _tmp25
 	move $t2, $t0		# copy value
-	# _tmp14 = *(c)
+	# _tmp27 = *(b)
 	lw $t3, 0($t2) 	# load with offset
-	# _tmp15 = *(_tmp14)
+	# _tmp28 = *(_tmp27)
 	lw $t4, 0($t3) 	# load with offset
-	# _tmp16 = 6
-	li $t5, 6		# load constant value 6 into $t5
-	# PushParam _tmp16
-	subu $sp, $sp, 4	# decrement sp to make space for param
-	sw $t5, 4($sp)	# copy param value to stack
-	# PushParam c
+	# PushParam b
 	subu $sp, $sp, 4	# decrement sp to make space for param
 	sw $t2, 4($sp)	# copy param value to stack
-	# ACall _tmp15
+	# ACall _tmp28
 	# (save modified registers before flow of control change)
-	sw $t0, -16($fp)	# spill _tmp12 from $t0 to $fp-16
-	sw $t1, -20($fp)	# spill _tmp13 from $t1 to $fp-20
-	sw $t2, -8($fp)	# spill c from $t2 to $fp-8
-	sw $t3, -24($fp)	# spill _tmp14 from $t3 to $fp-24
-	sw $t4, -28($fp)	# spill _tmp15 from $t4 to $fp-28
-	sw $t5, -32($fp)	# spill _tmp16 from $t5 to $fp-32
+	sw $t0, -16($fp)	# spill _tmp25 from $t0 to $fp-16
+	sw $t1, -20($fp)	# spill _tmp26 from $t1 to $fp-20
+	sw $t2, -8($fp)	# spill b from $t2 to $fp-8
+	sw $t3, -24($fp)	# spill _tmp27 from $t3 to $fp-24
+	sw $t4, -28($fp)	# spill _tmp28 from $t4 to $fp-28
 	jalr $t4            	# jump to function
-	# PopParams 8
-	add $sp, $sp, 8	# pop params off stack
+	# PopParams 4
+	add $sp, $sp, 4	# pop params off stack
+	# _tmp29 = *(b)
+	lw $t0, -8($fp)	# load b from $fp-8 into $t0
+	lw $t1, 0($t0) 	# load with offset
+	# _tmp30 = *(_tmp29 + 8)
+	lw $t2, 8($t1) 	# load with offset
+	# PushParam b
+	subu $sp, $sp, 4	# decrement sp to make space for param
+	sw $t0, 4($sp)	# copy param value to stack
+	# ACall _tmp30
+	# (save modified registers before flow of control change)
+	sw $t1, -32($fp)	# spill _tmp29 from $t1 to $fp-32
+	sw $t2, -36($fp)	# spill _tmp30 from $t2 to $fp-36
+	jalr $t2            	# jump to function
+	# PopParams 4
+	add $sp, $sp, 4	# pop params off stack
 	# EndFunc
 	# (below handles reaching end of fn body with no explicit return)
 	move $sp, $fp		# pop callee frame off stack

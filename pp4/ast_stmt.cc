@@ -54,8 +54,17 @@ void Program::CheckDeclError() {
 Location *Program::Emit() {
   for (int i = 0; i < this->decls->NumElements(); i++)
     this->decls->Nth(i)->SetLabels();
+
+  Decl *main_decl;
   for (int i = 0; i < this->decls->NumElements(); i++)
-    this->decls->Nth(i)->Emit();
+    {
+      Decl *decl = this->decls->Nth(i);
+      if (!strcmp(decl->GetID()->GetName(), "main"))
+        main_decl = decl;
+      else
+        decl->Emit();
+    }
+  main_decl->Emit();
 
   Program::cg->DoFinalCodeGen();
 

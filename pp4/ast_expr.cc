@@ -868,9 +868,8 @@ Location *Call::Emit() {
 
 	  const char *classname = this->base->GetTypeName();
 	  if ((decl = Program::sym_table->Lookup(classname)) != NULL)
-	    {
-              rtvalue = RuntimeCall(base_loc, dynamic_cast<ClassDecl*>(decl), fndecl);
-	    }
+	    rtvalue = RuntimeCall(base_loc, dynamic_cast<ClassDecl*>(decl), fndecl);
+
 	 
 	  return rtvalue;
 	}
@@ -879,13 +878,11 @@ Location *Call::Emit() {
 	  Decl *decl = this->field->CheckIdDecl();
 	  if (decl && typeid(*decl) == typeid(FnDecl))
 	    {
-	      ClassDecl *classdecl = decl->GetEnclosClass(decl);
+	      ClassDecl *classdecl = decl->GetEnclosClass(decl); // could be base class
 	      if (classdecl) // "this" is omitted
 		{
-		  //	          localOffset = fndecl->UpdateFrame();
-		  //		  Location *base_loc = Program::cg->GenLoadLabel(classdecl->GetID()->GetName(), localOffset);
-		  Location *base_loc = fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
-		  rtvalue = RuntimeCall(base_loc, classdecl, fndecl);
+	          Location *base_loc = fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
+	          rtvalue = RuntimeCall(base_loc, this->GetEnclosClass(this), fndecl);
 		}
 	      else
 		{
@@ -929,16 +926,14 @@ Location *Call::RuntimeCall(Location *base_loc, ClassDecl *classdecl, FnDecl *fn
 
   int localOffset;
 
-  const char *classname = classdecl->GetID()->GetName();
-  const char *methodname = this->field->GetName();
-
   localOffset = fndecl->UpdateFrame();
   Location *vtable = Program::cg->GenLoad(base_loc, localOffset);
 
   List<const char *> *methodlabels = classdecl->GetMethodLabels();
   for (int i = 0; i < methodlabels->NumElements(); i++)
     {
-      if (strstr(methodlabels->Nth(i), methodname) != NULL)
+      const char *methodname = strchr(methodlabels->Nth(i), '.') + 1;
+      if (!strcmp(methodname, this->field->GetName()))
 	{
 	  localOffset = fndecl->UpdateFrame();
 	  func = Program::cg->GenLoad(vtable, localOffset, i * CodeGenerator::VarSize);
