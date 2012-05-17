@@ -69,6 +69,7 @@ class ClassDecl : public Decl
 
   List<const char *> *methodlabels;
   List<const char *> *fieldlabels;
+  int instanceOffset;
 
  public:
   ClassDecl(Identifier *name, NamedType *extends, 
@@ -85,6 +86,8 @@ class ClassDecl : public Decl
   List<const char *> *GetFieldLabels() { return fieldlabels; }
   void SetLabels();
   Location *Emit();
+  int UpdateInstanceOffset();
+  int GetInstanceOffset();
  };
 
 class InterfaceDecl : public Decl 

@@ -37,6 +37,7 @@ class Expr : public Stmt
 
     virtual Expr *GetBase() { return NULL; }
     virtual Identifier *GetField() { return NULL; }
+    virtual bool HasBase();
 
     virtual Location *StoreEmit() { return NULL; }
 };
@@ -206,6 +207,7 @@ class ArrayAccess : public LValue
 
     Location *Emit();
     Location *StoreEmit();
+
 };
 
 /* Note that field access is used both for qualified names
@@ -229,7 +231,9 @@ class FieldAccess : public LValue
     Expr *GetBase() { return base; }
 
     Location *Emit();
+    Location *LoadField(Location *base_loc, ClassDecl *classdecl, FnDecl *fndecl);
     Location *StoreEmit();
+    Location *StoreField(Location *base_loc, ClassDecl *classdecl, FnDecl *fndecl);
 };
 
 /* Like field access, call is used both for qualified base.field()

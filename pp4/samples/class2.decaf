@@ -20,7 +20,7 @@ class Point {
 
   bool equals(Point other) 
   {
-    return (x == other.x && y == other.y);
+    return (x == other.x && y == other.y);  // sibling access
   }
 
 }

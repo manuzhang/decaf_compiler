@@ -209,7 +209,7 @@ void Mips::Emit(const char *fmt, ...)
   if (last != ':') printf("\t"); // don't tab in labels
   //  if (buf[0] != '#') printf("  ");   // outdent comments a little
   printf("%s", buf);
-  if (last != ':' && last != '\n') printf("\n"); // end with a newline
+  if (last != '\n') printf("\n"); // end with a newline
 }
 
 
@@ -534,7 +534,6 @@ void Mips::EmitPreamble()
 void Mips::EmitPrintInt()
 {
   Emit("%s:", "_PrintInt");
-  Emit("\n");
   Emit("subu $sp, $sp, 8\t# decrement so to make space to save ra, fp");
   Emit("sw $fp, 8($sp)  \t# save fp");
   Emit("sw $ra, 4($sp)  \t# save ra");
@@ -552,7 +551,6 @@ void Mips::EmitPrintInt()
 void Mips::EmitPrintString()
 {
   Emit("%s:", "_PrintString");
-  Emit("\n");
   Emit("subu $sp, $sp, 8");
   Emit("sw $fp, 8($sp)");
   Emit("sw $ra, 4($sp)");
@@ -570,7 +568,6 @@ void Mips::EmitPrintString()
 void Mips::EmitPrintBool()
 {
   Emit("%s:", "_PrintBool");
-  Emit("\n");
   Emit("subu $sp, $sp, 8");
   Emit("sw $fp, 8($sp)");
   Emit("sw $ra, 4($sp)");
@@ -596,7 +593,6 @@ void Mips::EmitPrintBool()
 void Mips::EmitAlloc()
 {
   Emit("%s:", "_Alloc");
-  Emit("\n");
   Emit("subu $sp, $sp, 8");
   Emit("sw $fp, 8($sp)");
   Emit("sw $ra, 4($sp)");
@@ -614,7 +610,6 @@ void Mips::EmitAlloc()
 void Mips::EmitStringEqual()
 {
   Emit("%s:", "_StringEqual");
-  Emit("\n");
   Emit("subu $sp, $sp, 8");
   Emit("sw $fp, 8($sp)");
   Emit("sw $ra, 4($sp)");
@@ -666,7 +661,6 @@ void Mips::EmitStringEqual()
 void Mips::EmitHalt() 
 {
   Emit("%s:", "_Halt");
-  Emit("\n");
   Emit("li $v0, 10");
   Emit("syscall");
   Emit("\n");
@@ -675,7 +669,6 @@ void Mips::EmitHalt()
 void Mips::EmitReadInteger() 
 {
   Emit("%s:", "_ReadInteger");
-  Emit("\n");
   Emit("subu $sp, $sp, 8");
   Emit("sw $fp, 8($sp)");
   Emit("sw $ra, 4($sp)");
@@ -693,7 +686,6 @@ void Mips::EmitReadInteger()
 void Mips::EmitReadLine()
 {
   Emit("%s:", "_ReadLine");
-  Emit("\n");
   Emit("subu $sp, $sp, 8");
   Emit("sw $fp, 8($sp)");
   Emit("sw $ra, 4($sp)");

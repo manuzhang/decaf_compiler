@@ -18,6 +18,22 @@
 using std::cout;
 using std::endl;
 
+bool Expr::HasBase() {
+  if (this->GetBase())
+    return true;
+  else
+    {
+      Decl *decl = this->GetField()->CheckIdDecl();
+      if (decl)
+        {
+	  if (decl->GetEnclosFunc(decl) == NULL
+              && decl->GetEnclosClass(decl) != NULL)
+            return true;
+        }
+    }
+  return false;
+}
+
 IntConstant::IntConstant(yyltype loc, int val)
   : Expr(loc) {
   this->value = val;
@@ -397,7 +413,7 @@ Location *AssignExpr::Emit() {
   if (this->left && this->right)
     {
       Location *right_loc = this->right->Emit();
-      if (this->left->GetBase())
+      if (this->left->HasBase())
         {
           Location *left_loc = this->left->StoreEmit();
           Program::cg->GenStore(left_loc, right_loc);
@@ -431,10 +447,7 @@ void This::CheckStatements() {
 Location *This::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   if (fndecl)
-    {
-      int localOffset = fndecl->UpdateFrame();
-      return Program::cg->GenVar(fpRelative, localOffset, "this");
-    }
+    return fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
   return NULL;
 }
 
@@ -502,7 +515,6 @@ Location *ArrayAccess::StoreEmit() {
 	  Location *minus = Program::cg->GenLoadConstant(-1, localOffset);
 
           localOffset = fndecl->UpdateFrame();
-
           Location *test_min = Program::cg->GenBinaryOp("<", minus, subs, localOffset);
 
           char *label_0 = Program::cg->NewLabel();
@@ -601,22 +613,6 @@ void FieldAccess::CheckStatements() {
     this->type = decl->GetType(); 
 }
 
-// Expr *FieldAccess::GetBase() {
-//   if (this->base)
-//     return this->base;
-//   else
-//     {
-//       Decl *decl = this->field->CheckIdDecl();
-//       if ((decl->GetEnclosFunc(decl)) == NULL)
-//         if ((decl->GetEnclosClass(decl)) != NULL)
-//           {
-//             this->base = new This(*this->GetLocation());
-//             this->base->SetParent(this);
-//           }
-//       return this->base;
-//     }
-// }
-
 Location *FieldAccess::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   int localOffset = 0;
@@ -634,34 +630,28 @@ Location *FieldAccess::Emit() {
 	    {
 	      Decl *decl = Program::sym_table->Lookup(this->base->GetTypeName());
 	      if (decl && typeid(*decl) == typeid(ClassDecl))
-                classdecl = dynamic_cast<ClassDecl*>(decl);
-	
-            }
+	        classdecl = dynamic_cast<ClassDecl*>(decl);
+	    }
 	  if (classdecl)
-   	    {
-   	      List<const char *> *fieldlabels = classdecl->GetFieldLabels();
-   	      for (int i = 0; i < fieldlabels->NumElements(); i++)
-   		{
-   		  if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
-   		    {
-   		      localOffset = fndecl->UpdateFrame();
-   		      return Program::cg->GenLoad(base_loc, localOffset, (i + 1) * CodeGenerator::VarSize);
-   		    }
-   		}
-   	    }
+	    return this->LoadField(base_loc, classdecl, fndecl);
  	}
       else
 	{
 	  Decl *decl = this->field->CheckIdDecl();
      	  if (decl)
      	    {
-     	      if ((decl->GetEnclosFunc(decl) != NULL) // locals or params
-     	          || (decl->GetEnclosClass(decl) == NULL)) // globals
+     	      ClassDecl *classdecl = decl->GetEnclosClass(decl);
+    	      if ((decl->GetEnclosFunc(decl) != NULL) // locals or params
+     	          || classdecl == NULL) // globals
 	        return decl->GetID()->GetMemLoc();
      	      else // this omitted
      	        {
-     	          if (this->GetBase())
-     	            return this->Emit();
+		  //  ClassDecl *classdecl = decl->GetEnclosClass(decl);
+		  //     	          localOffset = fndecl->UpdateFrame();
+		  //     	          Location *base_loc = Program::cg->GenVar(fpRelative, localOffset, "this");
+		  // Location *base_loc = classdecl->GetID()->GetMemLoc();
+		  Location *base_loc = fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
+     	          return this->LoadField(base_loc, classdecl, fndecl);
      	        }
 	    }
 	}
@@ -690,37 +680,68 @@ Location *FieldAccess::StoreEmit() {
 
             }
           if (classdecl)
-            {
-              List<const char *> *fieldlabels = classdecl->GetFieldLabels();
-              for (int i = 0; i < fieldlabels->NumElements(); i++)
-                {
-                  if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
-                    {
-                      localOffset = fndecl->UpdateFrame();
-                      Location *offset_loc = Program::cg->GenLoadConstant((i + 1) * CodeGenerator::VarSize, localOffset);
-                      localOffset = fndecl->UpdateFrame();
-                      return Program::cg->GenBinaryOp("+", base_loc, offset_loc, localOffset);
-                    }
-                }
-            }
+            return this->StoreField(base_loc, classdecl, fndecl);
         }
       else
         {
           Decl *decl = this->field->CheckIdDecl();
           if (decl)
             {
-              if (decl->GetEnclosFunc(decl)) // locals or params
+              ClassDecl *classdecl = decl->GetEnclosClass(decl);
+              if (decl->GetEnclosFunc(decl) != NULL
+                  || classdecl == NULL) // locals or params
                 return decl->GetID()->GetMemLoc();
               else // this omitted
                 {
-                  if (this->GetBase())
-                    return this->Emit();
+		  //          ClassDecl *classdecl = decl->GetEnclosClass(decl);
+		  //      localOffset = fndecl->UpdateFrame();
+		  //                  Location *base_loc = Program::cg->GenVar(fpRelative, localOffset, "this");
+		  //		  Location *base_loc = classdecl->GetID()->GetMemLoc();
+        	  Location *base_loc = fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
+                  return this->StoreField(base_loc, classdecl, fndecl);
                 }
             }
         }
     }
   return NULL;
 }
+
+Location *FieldAccess::LoadField(Location *base_loc, ClassDecl *classdecl, FnDecl *fndecl) {
+  if (classdecl)
+    {
+      int localOffset = 0;
+      List<const char *> *fieldlabels = classdecl->GetFieldLabels();
+      for (int i = 0; i < fieldlabels->NumElements(); i++)
+        {
+          if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
+            {
+              localOffset = fndecl->UpdateFrame();
+              return Program::cg->GenLoad(base_loc, localOffset, (i + 1) * CodeGenerator::VarSize);
+            }
+        }
+    }
+  return NULL;
+}
+
+Location *FieldAccess::StoreField(Location *base_loc, ClassDecl *classdecl, FnDecl *fndecl) {
+  if (classdecl)
+    {
+      int localOffset = 0;
+      List<const char *> *fieldlabels = classdecl->GetFieldLabels();
+      for (int i = 0; i < fieldlabels->NumElements(); i++)
+        {
+          if (!strcmp(fieldlabels->Nth(i), this->field->GetName()))
+            {
+              localOffset = fndecl->UpdateFrame();
+              Location *offset_loc = Program::cg->GenLoadConstant((i + 1) * CodeGenerator::VarSize, localOffset);
+              localOffset = fndecl->UpdateFrame();
+              return Program::cg->GenBinaryOp("+", base_loc, offset_loc, localOffset);
+            }
+        }
+    }
+  return NULL;
+}
+
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
   Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
@@ -835,7 +856,7 @@ Location *Call::Emit() {
       if (this->base)
 	{
 	  // arr.length()
-	  if (!strcmp(this->field->GetName(), "length"))
+	  if (typeid(*this->base->GetType()) == typeid(ArrayType) && !strcmp(this->field->GetName(), "length"))
 	    {
 	      localOffset = fndecl->UpdateFrame();
 	      return Program::cg->GenLoad(this->base->Emit(), localOffset);
@@ -861,8 +882,10 @@ Location *Call::Emit() {
 	      ClassDecl *classdecl = decl->GetEnclosClass(decl);
 	      if (classdecl) // "this" is omitted
 		{
-	          localOffset = fndecl->UpdateFrame();
-	    	  rtvalue = RuntimeCall(Program::cg->GenVar(fpRelative, localOffset, "this"), classdecl, fndecl);
+		  //	          localOffset = fndecl->UpdateFrame();
+		  //		  Location *base_loc = Program::cg->GenLoadLabel(classdecl->GetID()->GetName(), localOffset);
+		  Location *base_loc = fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
+		  rtvalue = RuntimeCall(base_loc, classdecl, fndecl);
 		}
 	      else
 		{
@@ -891,7 +914,8 @@ int Call::PushArguments(List<Expr*> *args) {
   if (args)
     {
       args_num = args->NumElements();
-      for (int i = 0; i < args_num; i++)
+      //for (int i = 0; i < args_num; i++)
+      for (int i = args_num - 1; i >= 0; i--)
 	{
 	  Expr *arg = args->Nth(i);
 	  Program::cg->GenPushParam(arg->Emit());
@@ -966,14 +990,22 @@ Location *NewExpr::Emit() {
 
   if (fndecl)
     {      
-      localOffset = fndecl->UpdateFrame();
-      Location *var_size = Program::cg->GenLoadConstant(CodeGenerator::VarSize, localOffset);
-      localOffset = fndecl->UpdateFrame();
-      Location *dst = Program::cg->GenBuiltInCall(Alloc, var_size, NULL, localOffset);
-      localOffset = fndecl->UpdateFrame();
-      Location *src =  Program::cg->GenLoadLabel(this->cType->GetTypeName(), localOffset);
-      Program::cg->GenStore(dst, src);
-      return dst;
+      const char *name = this->cType->GetTypeName();
+      Decl *decl = Program::sym_table->Lookup(name);
+      if (decl && typeid(*decl) == typeid(ClassDecl))
+        {
+	  ClassDecl *classdecl = dynamic_cast<ClassDecl*>(decl);
+	  List<const char *> *fieldlabels = classdecl->GetFieldLabels();
+	  int field_num = fieldlabels->NumElements();
+	  localOffset = fndecl->UpdateFrame();
+	  Location *var_size = Program::cg->GenLoadConstant(CodeGenerator::VarSize * (field_num + 1), localOffset);
+	  localOffset = fndecl->UpdateFrame();
+	  Location *dst = Program::cg->GenBuiltInCall(Alloc, var_size, NULL, localOffset);
+	  localOffset = fndecl->UpdateFrame();
+	  Location *src =  Program::cg->GenLoadLabel(this->cType->GetTypeName(), localOffset);
+	  Program::cg->GenStore(dst, src);
+	  return dst;
+        }
     }
 
   return NULL;

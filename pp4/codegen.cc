@@ -43,7 +43,6 @@ Location *CodeGenerator::GenVar(Segment segment, int localOffset, const char *na
       result = new Location(segment, localOffset, temp);
     }
 
- // Assert(result != NULL);
   return result;
 }
 
@@ -190,10 +189,11 @@ Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1, Location *ar
 }
 
 
-void CodeGenerator::GenVTable(const char *className, List<const char *> *methodLabels)
+void CodeGenerator::GenVTable(const char *className, List<const char *> *methodlabels)
 {
-  code->Append(new VTable(className, methodLabels));
+  code->Append(new VTable(className, methodlabels));
 }
+
 
 
 void CodeGenerator::DoFinalCodeGen()
@@ -202,6 +202,7 @@ void CodeGenerator::DoFinalCodeGen()
     for (int i = 0; i < code->NumElements(); i++)
 	code->Nth(i)->Print();
    }  else {
+
      Mips mips;
      mips.EmitPreamble();
      mips.EmitPrintInt();

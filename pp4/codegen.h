@@ -155,8 +155,7 @@ class CodeGenerator {
          // methods in the order they should be laid out.  The vtable
          // is tagged with a label of the class name, so when you later
          // need access to the vtable, you use LoadLabel of class name.
-    void GenVTable(const char *className, List<const char*> *methodLabels);
-
+    void GenVTable(const char *className, List<const char *> *methodlabels);
 
          // Emits the final "object code" for the program by
          // translating the sequence of Tac instructions into their mips

@@ -47,17 +47,23 @@ Location *VarDecl::Emit() {
   FnDecl *fndecl = this->GetEnclosFunc(this);
   ClassDecl *classdecl = this->GetEnclosClass(this);
   int localOffset = 0;
+  const char *name = this->GetID()->GetName();
 
   if (fndecl) // local variable
     {
-      const char *name = this->GetID()->GetName();
-     
       localOffset = fndecl->UpdateFrame();
       this->id->SetMemLoc(Program::cg->GenVar(fpRelative, localOffset, name));
     }
+  // else if (classdecl)  // instance variable
+  //   {
+  //     int instanceOffset = classdecl->UpdateInstanceOffset();
+  //     Location *instance = Program::cg->GenVar(fpRelative, instanceOffset, name);
+  //     this->SetMemLoc(instance);
+  //     Program::cg->GenStore(classdecl->GetMemLoc(), instance, instanceOffset);
+  //   }
   else // global variable
     {
-      this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName()));
+      this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, name));
       Program::offset = Program::offset + CodeGenerator::VarSize;
     }
 
@@ -75,6 +81,7 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 
   this->methodlabels = new List<const char *>;
   this->fieldlabels = new List<const char *>;
+  this->instanceOffset = CodeGenerator::VarSize;
 }
 
 void ClassDecl::CheckStatements() {
@@ -277,14 +284,15 @@ void ClassDecl::SetLabels() {
       {
         Iterator<Decl*> iter = this->sym_table->GetIterator();
         Decl *decl;
+
         while ((decl = iter.GetNextValue()) != NULL)
           {
-            if (typeid(*decl) == typeid(ClassDecl))
+           /* if (typeid(*decl) == typeid(ClassDecl))
               {
-                this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName()));
+                this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, "this"));
                 Program::offset += CodeGenerator::VarSize;
               }
-            else if (typeid(*decl) == typeid(FnDecl))
+            else*/ if (typeid(*decl) == typeid(FnDecl))
               {
                 ClassDecl *classdecl = decl->GetEnclosClass(decl);
                 string name = Program::GetClassLabel(classdecl->GetID()->GetName(), decl->GetID()->GetName());
@@ -292,52 +300,32 @@ void ClassDecl::SetLabels() {
               }
             else if (typeid(*decl) == typeid(VarDecl))
               this->fieldlabels->Append(decl->GetID()->GetName());
-          }
+         }
+
+
       }
 }
 
 Location *ClassDecl::Emit() {
-/*
-  if (this->sym_table)
-    {
-      Iterator<Decl*> iter = this->sym_table->GetIterator();
-      Decl *decl;
-      while ((decl = iter.GetNextValue()) != NULL)
-	{
-          if (typeid(*decl) == typeid(ClassDecl))
-            {
-	      this->id->SetMemLoc(Program::cg->GenVar(gpRelative, Program::offset, this->GetID()->GetName()));
-	      Program::offset += CodeGenerator::VarSize;
-            }
-          else if (typeid(*decl) == typeid(FnDecl))
-	    {
-              ClassDecl *classdecl = decl->GetEnclosClass(decl);
-              string name = Program::GetClassLabel(classdecl->GetID()->GetName(), decl->GetID()->GetName());
-	      this->methodlabels->Append(strdup(name.c_str()));
-	    }
-	  else if (typeid(*decl) == typeid(VarDecl))
-	    this->fieldlabels->Append(decl->GetID()->GetName());
-	}
-*/
+  if (this->members)
+      {
+        for (int i = 0; i < this->members->NumElements(); i++)
+          this->members->Nth(i)->SetLabels();
 
-      if (this->members)
-        {
-          for (int i = 0; i < this->members->NumElements(); i++)
-            this->members->Nth(i)->SetLabels();
+        for (int i = 0; i < this->members->NumElements(); i++)
+          this->members->Nth(i)->Emit();
+      }
 
-          for (int i = 0; i < this->members->NumElements(); i++)
-            this->members->Nth(i)->Emit();
-        }
-
-
-      Program::cg->GenVTable(this->id->GetName(), this->methodlabels);
-
-  //  }
-
+  Program::cg->GenVTable(this->id->GetName(), this->methodlabels);
 
   return NULL;
 }
 
+int ClassDecl::UpdateInstanceOffset() {
+  int offset = this->instanceOffset;
+  this->instanceOffset += CodeGenerator::VarSize;
+  return offset;
+}
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
   Assert(n != NULL && m != NULL);
@@ -442,7 +430,6 @@ void FnDecl::CheckDeclError() {
 }
 
 Location *FnDecl::Emit() {
-  ClassDecl *classdecl = this->GetEnclosClass(this);
   const char *name = this->GetID()->GetName();
   if (!strcmp(name, "main"))
     Program::cg->GenLabel("main");
@@ -456,12 +443,29 @@ Location *FnDecl::Emit() {
   // assign locations for params
   if (this->formals)
     {
+      List<VarDecl*> *newformals = new List<VarDecl*>;
+      ClassDecl *classdecl = this->GetEnclosClass(this);
+      if (classdecl)
+	{
+	  VarDecl *this_var = new VarDecl(new Identifier(*this->GetLocation(), "this"), Type::nullType);
+	  this_var->GetID()->SetMemLoc(Program::cg->GenVar(fpRelative, this->paramOffset, "this"));
+	  this->paramOffset += CodeGenerator::VarSize;
+	  newformals->Append(this_var);
+	}
       for (int i = 0; i < this->formals->NumElements(); i++)
 	{
 	  VarDecl *vardecl = this->formals->Nth(i);
 	  vardecl->GetID()->SetMemLoc(Program::cg->GenVar(fpRelative, this->paramOffset, vardecl->GetID()->GetName()));
 	  this->paramOffset += CodeGenerator::VarSize;
+	  newformals->Append(vardecl);
 	}
+      if (classdecl)
+	{
+          this->formals = newformals;
+          this->formals->SetParentAll(this);
+	}
+      else
+	delete newformals;
     }
 
   if (this->body)

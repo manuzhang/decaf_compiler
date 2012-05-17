@@ -77,6 +77,8 @@ void Program::PrintError(const char *error_msg, FnDecl *fndecl) {
     }
 }
 
+
+
 string Program::GetClassLabel(const char *classname, const char *name) {
   string label = Program::prefix + classname + "." + name;
   return label;
