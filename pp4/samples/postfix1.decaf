@@ -11,5 +11,6 @@ int main()
 //  if (i == arr[j]--)
     j++;
 
+  Print(i, j);
   return 0;
 }

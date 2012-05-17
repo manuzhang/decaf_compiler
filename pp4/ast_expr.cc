@@ -1141,10 +1141,18 @@ Location *PostfixExpr::Emit() {
 	  int localOffset = fndecl->UpdateFrame();
 	  Location *one = Program::cg->GenLoadConstant(1, localOffset);
 
-	  localOffset = fndecl->UpdateFrame();
-	  Location *plus = Program::cg->GenBinaryOp("+", value, one, localOffset);
-
-	  Program::cg->GenAssign(value, plus);
+          localOffset = fndecl->UpdateFrame();
+	  if (!strcmp(this->optr->GetToken(), "++"))
+	    {
+	      Location *plus = Program::cg->GenBinaryOp("+", value, one, localOffset);
+	      Program::cg->GenAssign(value, plus);
+	    }
+	  else
+	    {
+	      Location *minus = Program::cg->GenBinaryOp("-", value, one, localOffset);
+	      Program::cg->GenAssign(value, minus);
+	    }
+	  return value;
 	}
     }
 

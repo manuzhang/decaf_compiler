@@ -7,9 +7,10 @@ int main()
   i = 1;
   j = 2;
   arr = NewArray(10, int);
+  arr[j] = i + 2;
   i++;
   if (i == arr[j]--)
     j++;
-
+  Print(i, j);
   return 0;
 }
