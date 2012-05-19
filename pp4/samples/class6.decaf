@@ -1,17 +1,38 @@
-class Deck {
-	void Shuffle() {Print("Shuffle");}
-}
-
 class Player {
-	Deck d;
-	void Init(Deck dj) { d = dj;}
-	Deck GetDeck() { return d;}
+	string name;
+	int id; 
+	
+	void Init() {
+	  Print("please input your name\n");
+	  name = ReadLine(); 
+	  Print("please input your id\n");
+	  id = ReadInteger();
+	}
+	
+	void PrintName() { 
+	  Print(id, name); 
+	}
+	
+	void PrintOtherName(Player other) {
+	  Print(other.id, other.name);
+	}
 }
 
 void main()
 {
-	Player p;
-	p = new Player;
-	p.Init(new Deck);
-	p.GetDeck().Shuffle();
+	Player p1;
+	Player p2;
+	
+
+	p1 = new Player;
+	p1.Init();
+
+	p2 = new Player;
+	p2.Init();
+	
+	ReadLine();
+	  
+	p1.PrintName();
+	p2.PrintName();
+	p2.PrintOtherName(p1);
 }

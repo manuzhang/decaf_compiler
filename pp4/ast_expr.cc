@@ -291,13 +291,7 @@ Location *EqualityExpr::Emit() {
 	  if (this->left->GetType() == Type::stringType && this->right->GetType() == Type::stringType)
 	    {
 	      localOffset = fndecl->UpdateFrame();
-	      Location *result = Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), localOffset);
-
-	      localOffset = fndecl->UpdateFrame();
-	      Location *zero = Program::cg->GenLoadConstant(0, localOffset);
-
-	      localOffset = fndecl->UpdateFrame();
-	      return Program::cg->GenBinaryOp("==", result, zero, localOffset);
+	      return Program::cg->GenBuiltInCall(StringEqual, this->left->Emit(), this->right->Emit(), localOffset);
 	    }
 	  else
 	    {
@@ -412,6 +406,11 @@ Location *AssignExpr::Emit() {
   int localOffset = 0;
   if (this->left && this->right)
     {
+      if (typeid(*this->right) == typeid(ReadLineExpr)) // make a copy; otherwise could be changed by following call
+        {
+
+        }
+
       Location *right_loc = this->right->Emit();
       if (this->left->HasBase())
         {
@@ -646,10 +645,6 @@ Location *FieldAccess::Emit() {
 	        return decl->GetID()->GetMemLoc();
      	      else // this omitted
      	        {
-		  //  ClassDecl *classdecl = decl->GetEnclosClass(decl);
-		  //     	          localOffset = fndecl->UpdateFrame();
-		  //     	          Location *base_loc = Program::cg->GenVar(fpRelative, localOffset, "this");
-		  // Location *base_loc = classdecl->GetID()->GetMemLoc();
 		  Location *base_loc = fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
      	          return this->LoadField(base_loc, classdecl, fndecl);
      	        }
@@ -693,10 +688,6 @@ Location *FieldAccess::StoreEmit() {
                 return decl->GetID()->GetMemLoc();
               else // this omitted
                 {
-		  //          ClassDecl *classdecl = decl->GetEnclosClass(decl);
-		  //      localOffset = fndecl->UpdateFrame();
-		  //                  Location *base_loc = Program::cg->GenVar(fpRelative, localOffset, "this");
-		  //		  Location *base_loc = classdecl->GetID()->GetMemLoc();
         	  Location *base_loc = fndecl->GetFormals()->Nth(0)->GetID()->GetMemLoc();
                   return this->StoreField(base_loc, classdecl, fndecl);
                 }

@@ -1,272 +1,1681 @@
-__Point.Init:
-	BeginFunc 24 ;
+__Random.Init:
+	BeginFunc 8 ;
 	_tmp0 = 4 ;
 	_tmp1 = this + _tmp0 ;
-	*(_tmp1) = xVal ;
-	_tmp2 = 8 ;
-	_tmp3 = this + _tmp2 ;
-	*(_tmp3) = yVal ;
+	*(_tmp1) = seedVal ;
 	EndFunc ;
-__Point.PrintSelf:
-	BeginFunc 28 ;
-	_tmp4 = "[" ;
-	PushParam _tmp4 ;
-	LCall _PrintString ;
-	PopParams 4 ;
+__Random.GenRandom:
+	BeginFunc 48 ;
+	_tmp2 = 65536 ;
+	_tmp3 = 22221 ;
+	_tmp4 = 10000 ;
 	_tmp5 = *(this + 4) ;
-	PushParam _tmp5 ;
-	LCall _PrintInt ;
-	PopParams 4 ;
-	_tmp6 = ", " ;
-	PushParam _tmp6 ;
-	LCall _PrintString ;
-	PopParams 4 ;
-	_tmp7 = *(this + 8) ;
-	PushParam _tmp7 ;
-	LCall _PrintInt ;
-	PopParams 4 ;
-	_tmp8 = "]\n" ;
-	PushParam _tmp8 ;
-	LCall _PrintString ;
-	PopParams 4 ;
+	_tmp6 = _tmp5 % _tmp4 ;
+	_tmp7 = 15625 ;
+	_tmp8 = _tmp7 * _tmp6 ;
+	_tmp9 = _tmp8 + _tmp3 ;
+	_tmp10 = _tmp9 % _tmp2 ;
+	_tmp11 = 4 ;
+	_tmp12 = this + _tmp11 ;
+	*(_tmp12) = _tmp10 ;
+	_tmp13 = *(this + 4) ;
+	Return _tmp13 ;
 	EndFunc ;
-VTable Point =
-	__Point.Init,
-	__Point.PrintSelf,
+__Random.RndInt:
+	BeginFunc 16 ;
+	_tmp14 = *(this) ;
+	_tmp15 = *(_tmp14) ;
+	PushParam this ;
+	_tmp16 = ACall _tmp15 ;
+	PopParams 4 ;
+	_tmp17 = _tmp16 % max ;
+	Return _tmp17 ;
+	EndFunc ;
+VTable Random =
+	__Random.GenRandom,
+	__Random.Init,
+	__Random.RndInt,
 ; 
-__Rect.Init:
-	BeginFunc 300 ;
-	_tmp9 = 2 ;
-	_tmp10 = 0 ;
-	_tmp11 = _tmp9 < _tmp10 ;
-	_tmp12 = _tmp9 == _tmp10 ;
-	_tmp13 = _tmp11 || _tmp12 ;
-	IfZ _tmp13 Goto _L0 ;
-	_tmp14 = "Decaf runtime error: Array size is <= 0" ;
-	PushParam _tmp14 ;
+__Deck.Init:
+	BeginFunc 48 ;
+	_tmp18 = 52 ;
+	_tmp19 = 0 ;
+	_tmp20 = _tmp18 < _tmp19 ;
+	_tmp21 = _tmp18 == _tmp19 ;
+	_tmp22 = _tmp20 || _tmp21 ;
+	IfZ _tmp22 Goto _L0 ;
+	_tmp23 = "Decaf runtime error: Array size is <= 0" ;
+	PushParam _tmp23 ;
 	LCall _PrintString ;
 	PopParams 4 ;
 	LCall _Halt ;
 _L0:
-	_tmp15 = 4 ;
-	_tmp16 = _tmp9 * _tmp15 ;
-	_tmp17 = _tmp16 + _tmp15 ;
-	PushParam _tmp17 ;
-	_tmp18 = LCall _Alloc ;
+	_tmp24 = 4 ;
+	_tmp25 = _tmp18 * _tmp24 ;
+	_tmp26 = _tmp25 + _tmp24 ;
+	PushParam _tmp26 ;
+	_tmp27 = LCall _Alloc ;
 	PopParams 4 ;
-	*(_tmp18) = _tmp9 ;
-	_tmp19 = 4 ;
-	_tmp20 = this + _tmp19 ;
-	*(_tmp20) = _tmp18 ;
-	_tmp21 = 4 ;
-	PushParam _tmp21 ;
-	_tmp22 = LCall _Alloc ;
-	PopParams 4 ;
-	_tmp23 = Point ;
-	*(_tmp22) = _tmp23 ;
-	_tmp24 = *(this + 4) ;
-	_tmp25 = *(_tmp24) ;
-	_tmp26 = 0 ;
-	_tmp27 = _tmp26 < _tmp25 ;
-	_tmp28 = -1 ;
-	_tmp29 = _tmp28 < _tmp26 ;
-	_tmp30 = _tmp29 && _tmp27 ;
-	IfZ _tmp30 Goto _L1 ;
-	_tmp31 = 4 ;
-	_tmp32 = _tmp26 * _tmp31 ;
-	_tmp33 = _tmp32 + _tmp31 ;
-	_tmp34 = _tmp24 + _tmp33 ;
-	Goto _L2 ;
+	*(_tmp27) = _tmp18 ;
+	_tmp28 = 4 ;
+	_tmp29 = this + _tmp28 ;
+	*(_tmp29) = _tmp27 ;
+	EndFunc ;
+__Deck.Shuffle:
+	BeginFunc 352 ;
+	_tmp30 = 0 ;
+	_tmp31 = 8 ;
+	_tmp32 = this + _tmp31 ;
+	*(_tmp32) = _tmp30 ;
 _L1:
-	_tmp35 = "Decaf runtime error: Array script out of bounds" ;
-	PushParam _tmp35 ;
-	LCall _PrintString ;
-	PopParams 4 ;
-	LCall _Halt ;
-_L2:
-	*(_tmp34) = _tmp22 ;
-	_tmp36 = *(this + 4) ;
-	_tmp37 = *(_tmp36) ;
-	_tmp38 = 0 ;
-	_tmp39 = _tmp38 < _tmp37 ;
-	_tmp40 = -1 ;
-	_tmp41 = _tmp40 < _tmp38 ;
-	_tmp42 = _tmp41 && _tmp39 ;
-	IfZ _tmp42 Goto _L3 ;
-	_tmp43 = 4 ;
-	_tmp44 = _tmp38 * _tmp43 ;
-	_tmp45 = _tmp44 + _tmp43 ;
-	_tmp46 = _tmp36 + _tmp45 ;
+	_tmp33 = *(this + 8) ;
+	_tmp34 = 52 ;
+	_tmp35 = _tmp33 < _tmp34 ;
+	IfZ _tmp35 Goto _L2 ;
+	_tmp36 = 13 ;
+	_tmp37 = 1 ;
+	_tmp38 = *(this + 8) ;
+	_tmp39 = _tmp38 + _tmp37 ;
+	_tmp40 = _tmp39 % _tmp36 ;
+	_tmp41 = *(this + 4) ;
+	_tmp42 = *(_tmp41) ;
+	_tmp43 = *(this + 8) ;
+	_tmp44 = _tmp43 < _tmp42 ;
+	_tmp45 = -1 ;
+	_tmp46 = _tmp45 < _tmp43 ;
+	_tmp47 = _tmp46 && _tmp44 ;
+	IfZ _tmp47 Goto _L3 ;
+	_tmp48 = 4 ;
+	_tmp49 = _tmp43 * _tmp48 ;
+	_tmp50 = _tmp49 + _tmp48 ;
+	_tmp51 = _tmp41 + _tmp50 ;
 	Goto _L4 ;
 _L3:
-	_tmp47 = "Decaf runtime error: Array script out of bounds" ;
-	PushParam _tmp47 ;
+	_tmp52 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp52 ;
 	LCall _PrintString ;
 	PopParams 4 ;
 	LCall _Halt ;
 _L4:
-	_tmp48 = *(_tmp46) ;
-	_tmp49 = *(_tmp48) ;
-	_tmp50 = *(_tmp49) ;
-	PushParam x ;
-	PushParam y ;
-	PushParam _tmp48 ;
-	ACall _tmp50 ;
-	PopParams 12 ;
-	_tmp51 = 4 ;
-	PushParam _tmp51 ;
-	_tmp52 = LCall _Alloc ;
+	*(_tmp51) = _tmp40 ;
+	_tmp53 = 1 ;
+	_tmp54 = *(this + 8) ;
+	_tmp55 = _tmp54 + _tmp53 ;
+	_tmp56 = 8 ;
+	_tmp57 = this + _tmp56 ;
+	*(_tmp57) = _tmp55 ;
+	Goto _L1 ;
+_L2:
+	_tmp58 = 8 ;
+	PushParam _tmp58 ;
+	_tmp59 = LCall _Alloc ;
 	PopParams 4 ;
-	_tmp53 = Point ;
-	*(_tmp52) = _tmp53 ;
-	_tmp54 = *(this + 4) ;
-	_tmp55 = *(_tmp54) ;
-	_tmp56 = 1 ;
-	_tmp57 = _tmp56 < _tmp55 ;
-	_tmp58 = -1 ;
-	_tmp59 = _tmp58 < _tmp56 ;
-	_tmp60 = _tmp59 && _tmp57 ;
-	IfZ _tmp60 Goto _L5 ;
-	_tmp61 = 4 ;
-	_tmp62 = _tmp56 * _tmp61 ;
-	_tmp63 = _tmp62 + _tmp61 ;
-	_tmp64 = _tmp54 + _tmp63 ;
-	Goto _L6 ;
+	_tmp60 = Random ;
+	*(_tmp59) = _tmp60 ;
+	gRnd = _tmp59 ;
 _L5:
-	_tmp65 = "Decaf runtime error: Array script out of bounds" ;
-	PushParam _tmp65 ;
-	LCall _PrintString ;
-	PopParams 4 ;
-	LCall _Halt ;
-_L6:
-	*(_tmp64) = _tmp52 ;
-	_tmp66 = *(this + 4) ;
-	_tmp67 = *(_tmp66) ;
+	_tmp61 = *(this + 8) ;
+	_tmp62 = 0 ;
+	_tmp63 = _tmp62 < _tmp61 ;
+	IfZ _tmp63 Goto _L6 ;
+	_tmp64 = *(gRnd) ;
+	_tmp65 = *(_tmp64 + 8) ;
+	_tmp66 = *(this + 8) ;
+	PushParam _tmp66 ;
+	PushParam gRnd ;
+	_tmp67 = ACall _tmp65 ;
+	PopParams 8 ;
+	r = _tmp67 ;
 	_tmp68 = 1 ;
-	_tmp69 = _tmp68 < _tmp67 ;
-	_tmp70 = -1 ;
-	_tmp71 = _tmp70 < _tmp68 ;
-	_tmp72 = _tmp71 && _tmp69 ;
-	IfZ _tmp72 Goto _L7 ;
-	_tmp73 = 4 ;
-	_tmp74 = _tmp68 * _tmp73 ;
-	_tmp75 = _tmp74 + _tmp73 ;
-	_tmp76 = _tmp66 + _tmp75 ;
+	_tmp69 = *(this + 8) ;
+	_tmp70 = _tmp69 - _tmp68 ;
+	_tmp71 = 8 ;
+	_tmp72 = this + _tmp71 ;
+	*(_tmp72) = _tmp70 ;
+	_tmp73 = *(this + 4) ;
+	_tmp74 = *(_tmp73) ;
+	_tmp75 = *(this + 8) ;
+	_tmp76 = _tmp75 < _tmp74 ;
+	_tmp77 = -1 ;
+	_tmp78 = _tmp77 < _tmp75 ;
+	_tmp79 = _tmp78 && _tmp76 ;
+	IfZ _tmp79 Goto _L7 ;
+	_tmp80 = 4 ;
+	_tmp81 = _tmp75 * _tmp80 ;
+	_tmp82 = _tmp81 + _tmp80 ;
+	_tmp83 = _tmp73 + _tmp82 ;
 	Goto _L8 ;
 _L7:
-	_tmp77 = "Decaf runtime error: Array script out of bounds" ;
-	PushParam _tmp77 ;
+	_tmp84 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp84 ;
 	LCall _PrintString ;
 	PopParams 4 ;
 	LCall _Halt ;
 _L8:
-	_tmp78 = *(_tmp76) ;
-	_tmp79 = *(_tmp78) ;
-	_tmp80 = *(_tmp79) ;
-	_tmp81 = x + w ;
-	PushParam _tmp81 ;
-	_tmp82 = y + h ;
-	PushParam _tmp82 ;
-	PushParam _tmp78 ;
-	ACall _tmp80 ;
-	PopParams 12 ;
-	EndFunc ;
-__Rect.PrintSelf:
-	BeginFunc 132 ;
-	_tmp83 = "{\n lower left = " ;
-	PushParam _tmp83 ;
-	LCall _PrintString ;
-	PopParams 4 ;
-	_tmp84 = *(this + 4) ;
-	_tmp85 = *(_tmp84) ;
-	_tmp86 = 0 ;
-	_tmp87 = _tmp86 < _tmp85 ;
-	_tmp88 = -1 ;
-	_tmp89 = _tmp88 < _tmp86 ;
-	_tmp90 = _tmp89 && _tmp87 ;
-	IfZ _tmp90 Goto _L9 ;
-	_tmp91 = 4 ;
-	_tmp92 = _tmp86 * _tmp91 ;
-	_tmp93 = _tmp92 + _tmp91 ;
-	_tmp94 = _tmp84 + _tmp93 ;
+	_tmp85 = *(_tmp83) ;
+	temp = _tmp85 ;
+	_tmp86 = *(this + 4) ;
+	_tmp87 = *(_tmp86) ;
+	_tmp88 = r < _tmp87 ;
+	_tmp89 = -1 ;
+	_tmp90 = _tmp89 < r ;
+	_tmp91 = _tmp90 && _tmp88 ;
+	IfZ _tmp91 Goto _L9 ;
+	_tmp92 = 4 ;
+	_tmp93 = r * _tmp92 ;
+	_tmp94 = _tmp93 + _tmp92 ;
+	_tmp95 = _tmp86 + _tmp94 ;
 	Goto _L10 ;
 _L9:
-	_tmp95 = "Decaf runtime error: Array script out of bounds" ;
-	PushParam _tmp95 ;
+	_tmp96 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp96 ;
 	LCall _PrintString ;
 	PopParams 4 ;
 	LCall _Halt ;
 _L10:
-	_tmp96 = *(_tmp94) ;
-	_tmp97 = *(_tmp96) ;
-	_tmp98 = *(_tmp97 + 4) ;
-	PushParam _tmp96 ;
-	ACall _tmp98 ;
-	PopParams 4 ;
-	_tmp99 = " upper right = " ;
-	PushParam _tmp99 ;
-	LCall _PrintString ;
-	PopParams 4 ;
-	_tmp100 = *(this + 4) ;
-	_tmp101 = *(_tmp100) ;
-	_tmp102 = 1 ;
-	_tmp103 = _tmp102 < _tmp101 ;
-	_tmp104 = -1 ;
-	_tmp105 = _tmp104 < _tmp102 ;
-	_tmp106 = _tmp105 && _tmp103 ;
-	IfZ _tmp106 Goto _L11 ;
-	_tmp107 = 4 ;
-	_tmp108 = _tmp102 * _tmp107 ;
-	_tmp109 = _tmp108 + _tmp107 ;
-	_tmp110 = _tmp100 + _tmp109 ;
+	_tmp97 = *(_tmp95) ;
+	_tmp98 = *(this + 4) ;
+	_tmp99 = *(_tmp98) ;
+	_tmp100 = *(this + 8) ;
+	_tmp101 = _tmp100 < _tmp99 ;
+	_tmp102 = -1 ;
+	_tmp103 = _tmp102 < _tmp100 ;
+	_tmp104 = _tmp103 && _tmp101 ;
+	IfZ _tmp104 Goto _L11 ;
+	_tmp105 = 4 ;
+	_tmp106 = _tmp100 * _tmp105 ;
+	_tmp107 = _tmp106 + _tmp105 ;
+	_tmp108 = _tmp98 + _tmp107 ;
 	Goto _L12 ;
 _L11:
-	_tmp111 = "Decaf runtime error: Array script out of bounds" ;
-	PushParam _tmp111 ;
+	_tmp109 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp109 ;
 	LCall _PrintString ;
 	PopParams 4 ;
 	LCall _Halt ;
 _L12:
-	_tmp112 = *(_tmp110) ;
-	_tmp113 = *(_tmp112) ;
-	_tmp114 = *(_tmp113 + 4) ;
-	PushParam _tmp112 ;
-	ACall _tmp114 ;
+	*(_tmp108) = _tmp97 ;
+	_tmp110 = *(this + 4) ;
+	_tmp111 = *(_tmp110) ;
+	_tmp112 = r < _tmp111 ;
+	_tmp113 = -1 ;
+	_tmp114 = _tmp113 < r ;
+	_tmp115 = _tmp114 && _tmp112 ;
+	IfZ _tmp115 Goto _L13 ;
+	_tmp116 = 4 ;
+	_tmp117 = r * _tmp116 ;
+	_tmp118 = _tmp117 + _tmp116 ;
+	_tmp119 = _tmp110 + _tmp118 ;
+	Goto _L14 ;
+_L13:
+	_tmp120 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp120 ;
+	LCall _PrintString ;
 	PopParams 4 ;
-	_tmp115 = "}\n" ;
-	PushParam _tmp115 ;
+	LCall _Halt ;
+_L14:
+	*(_tmp119) = temp ;
+	Goto _L5 ;
+_L6:
+	EndFunc ;
+__Deck.GetCard:
+	BeginFunc 96 ;
+	_tmp121 = *(this + 8) ;
+	_tmp122 = 52 ;
+	_tmp123 = _tmp122 < _tmp121 ;
+	_tmp124 = _tmp121 == _tmp122 ;
+	_tmp125 = _tmp123 || _tmp124 ;
+	IfZ _tmp125 Goto _L15 ;
+	_tmp126 = 0 ;
+	Return _tmp126 ;
+	Goto _L16 ;
+_L15:
+_L16:
+	_tmp127 = *(this + 4) ;
+	_tmp128 = *(_tmp127) ;
+	_tmp129 = *(this + 8) ;
+	_tmp130 = _tmp129 < _tmp128 ;
+	_tmp131 = -1 ;
+	_tmp132 = _tmp131 < _tmp129 ;
+	_tmp133 = _tmp132 && _tmp130 ;
+	IfZ _tmp133 Goto _L17 ;
+	_tmp134 = 4 ;
+	_tmp135 = _tmp129 * _tmp134 ;
+	_tmp136 = _tmp135 + _tmp134 ;
+	_tmp137 = _tmp127 + _tmp136 ;
+	Goto _L18 ;
+_L17:
+	_tmp138 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp138 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L18:
+	_tmp139 = *(_tmp137) ;
+	result = _tmp139 ;
+	_tmp140 = 1 ;
+	_tmp141 = *(this + 8) ;
+	_tmp142 = _tmp141 + _tmp140 ;
+	_tmp143 = 8 ;
+	_tmp144 = this + _tmp143 ;
+	*(_tmp144) = _tmp142 ;
+	Return result ;
+	EndFunc ;
+VTable Deck =
+	__Deck.GetCard,
+	__Deck.Init,
+	__Deck.Shuffle,
+; 
+__BJDeck.Init:
+	BeginFunc 176 ;
+	_tmp145 = 8 ;
+	_tmp146 = 0 ;
+	_tmp147 = _tmp145 < _tmp146 ;
+	_tmp148 = _tmp145 == _tmp146 ;
+	_tmp149 = _tmp147 || _tmp148 ;
+	IfZ _tmp149 Goto _L19 ;
+	_tmp150 = "Decaf runtime error: Array size is <= 0" ;
+	PushParam _tmp150 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L19:
+	_tmp151 = 4 ;
+	_tmp152 = _tmp145 * _tmp151 ;
+	_tmp153 = _tmp152 + _tmp151 ;
+	PushParam _tmp153 ;
+	_tmp154 = LCall _Alloc ;
+	PopParams 4 ;
+	*(_tmp154) = _tmp145 ;
+	_tmp155 = 4 ;
+	_tmp156 = this + _tmp155 ;
+	*(_tmp156) = _tmp154 ;
+	_tmp157 = 0 ;
+	i = _tmp157 ;
+_L20:
+	_tmp158 = 8 ;
+	_tmp159 = i < _tmp158 ;
+	IfZ _tmp159 Goto _L21 ;
+	_tmp160 = 12 ;
+	PushParam _tmp160 ;
+	_tmp161 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp162 = Deck ;
+	*(_tmp161) = _tmp162 ;
+	_tmp163 = *(this + 4) ;
+	_tmp164 = *(_tmp163) ;
+	_tmp165 = i < _tmp164 ;
+	_tmp166 = -1 ;
+	_tmp167 = _tmp166 < i ;
+	_tmp168 = _tmp167 && _tmp165 ;
+	IfZ _tmp168 Goto _L22 ;
+	_tmp169 = 4 ;
+	_tmp170 = i * _tmp169 ;
+	_tmp171 = _tmp170 + _tmp169 ;
+	_tmp172 = _tmp163 + _tmp171 ;
+	Goto _L23 ;
+_L22:
+	_tmp173 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp173 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L23:
+	*(_tmp172) = _tmp161 ;
+	_tmp174 = *(this + 4) ;
+	_tmp175 = *(_tmp174) ;
+	_tmp176 = i < _tmp175 ;
+	_tmp177 = -1 ;
+	_tmp178 = _tmp177 < i ;
+	_tmp179 = _tmp178 && _tmp176 ;
+	IfZ _tmp179 Goto _L24 ;
+	_tmp180 = 4 ;
+	_tmp181 = i * _tmp180 ;
+	_tmp182 = _tmp181 + _tmp180 ;
+	_tmp183 = _tmp174 + _tmp182 ;
+	Goto _L25 ;
+_L24:
+	_tmp184 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp184 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L25:
+	_tmp185 = *(_tmp183) ;
+	_tmp186 = *(_tmp185) ;
+	_tmp187 = *(_tmp186 + 4) ;
+	PushParam _tmp185 ;
+	ACall _tmp187 ;
+	PopParams 4 ;
+	_tmp188 = 1 ;
+	_tmp189 = i + _tmp188 ;
+	i = _tmp189 ;
+	Goto _L20 ;
+_L21:
+	EndFunc ;
+__BJDeck.DealCard:
+	BeginFunc 180 ;
+	_tmp190 = 0 ;
+	c = _tmp190 ;
+	_tmp191 = *(this + 8) ;
+	_tmp192 = 52 ;
+	_tmp193 = 8 ;
+	_tmp194 = _tmp193 * _tmp192 ;
+	_tmp195 = _tmp194 < _tmp191 ;
+	_tmp196 = _tmp191 == _tmp194 ;
+	_tmp197 = _tmp195 || _tmp196 ;
+	IfZ _tmp197 Goto _L26 ;
+	_tmp198 = 11 ;
+	Return _tmp198 ;
+	Goto _L27 ;
+_L26:
+_L27:
+	_tmp199 = 8 ;
+	PushParam _tmp199 ;
+	_tmp200 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp201 = Random ;
+	*(_tmp200) = _tmp201 ;
+	gRnd = _tmp200 ;
+_L28:
+	_tmp202 = 0 ;
+	_tmp203 = c == _tmp202 ;
+	IfZ _tmp203 Goto _L29 ;
+	_tmp204 = *(gRnd) ;
+	_tmp205 = *(_tmp204 + 8) ;
+	_tmp206 = 8 ;
+	PushParam _tmp206 ;
+	PushParam gRnd ;
+	_tmp207 = ACall _tmp205 ;
+	PopParams 8 ;
+	d = _tmp207 ;
+	_tmp208 = *(this + 4) ;
+	_tmp209 = *(_tmp208) ;
+	_tmp210 = d < _tmp209 ;
+	_tmp211 = -1 ;
+	_tmp212 = _tmp211 < d ;
+	_tmp213 = _tmp212 && _tmp210 ;
+	IfZ _tmp213 Goto _L30 ;
+	_tmp214 = 4 ;
+	_tmp215 = d * _tmp214 ;
+	_tmp216 = _tmp215 + _tmp214 ;
+	_tmp217 = _tmp208 + _tmp216 ;
+	Goto _L31 ;
+_L30:
+	_tmp218 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp218 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L31:
+	_tmp219 = *(_tmp217) ;
+	_tmp220 = *(_tmp219) ;
+	_tmp221 = *(_tmp220) ;
+	PushParam _tmp219 ;
+	_tmp222 = ACall _tmp221 ;
+	PopParams 4 ;
+	c = _tmp222 ;
+	Goto _L28 ;
+_L29:
+	_tmp223 = 10 ;
+	_tmp224 = _tmp223 < c ;
+	IfZ _tmp224 Goto _L32 ;
+	_tmp225 = 10 ;
+	c = _tmp225 ;
+	Goto _L33 ;
+_L32:
+	_tmp226 = 1 ;
+	_tmp227 = c == _tmp226 ;
+	IfZ _tmp227 Goto _L34 ;
+	_tmp228 = 11 ;
+	c = _tmp228 ;
+	Goto _L35 ;
+_L34:
+_L35:
+_L33:
+	_tmp229 = 1 ;
+	_tmp230 = *(this + 8) ;
+	_tmp231 = _tmp230 + _tmp229 ;
+	_tmp232 = 8 ;
+	_tmp233 = this + _tmp232 ;
+	*(_tmp233) = _tmp231 ;
+	Return c ;
+	EndFunc ;
+__BJDeck.Shuffle:
+	BeginFunc 96 ;
+	_tmp234 = "Shuffling..." ;
+	PushParam _tmp234 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp235 = 0 ;
+	i = _tmp235 ;
+_L36:
+	_tmp236 = 8 ;
+	_tmp237 = i < _tmp236 ;
+	IfZ _tmp237 Goto _L37 ;
+	_tmp238 = *(this + 4) ;
+	_tmp239 = *(_tmp238) ;
+	_tmp240 = i < _tmp239 ;
+	_tmp241 = -1 ;
+	_tmp242 = _tmp241 < i ;
+	_tmp243 = _tmp242 && _tmp240 ;
+	IfZ _tmp243 Goto _L38 ;
+	_tmp244 = 4 ;
+	_tmp245 = i * _tmp244 ;
+	_tmp246 = _tmp245 + _tmp244 ;
+	_tmp247 = _tmp238 + _tmp246 ;
+	Goto _L39 ;
+_L38:
+	_tmp248 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp248 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L39:
+	_tmp249 = *(_tmp247) ;
+	_tmp250 = *(_tmp249) ;
+	_tmp251 = *(_tmp250 + 8) ;
+	PushParam _tmp249 ;
+	ACall _tmp251 ;
+	PopParams 4 ;
+	_tmp252 = 1 ;
+	_tmp253 = i + _tmp252 ;
+	i = _tmp253 ;
+	Goto _L36 ;
+_L37:
+	_tmp254 = 0 ;
+	_tmp255 = 8 ;
+	_tmp256 = this + _tmp255 ;
+	*(_tmp256) = _tmp254 ;
+	_tmp257 = "done.\n" ;
+	PushParam _tmp257 ;
 	LCall _PrintString ;
 	PopParams 4 ;
 	EndFunc ;
-VTable Rect =
-	__Rect.Init,
-	__Rect.PrintSelf,
+__BJDeck.NumCardsRemaining:
+	BeginFunc 20 ;
+	_tmp258 = *(this + 8) ;
+	_tmp259 = 52 ;
+	_tmp260 = 8 ;
+	_tmp261 = _tmp260 * _tmp259 ;
+	_tmp262 = _tmp261 - _tmp258 ;
+	Return _tmp262 ;
+	EndFunc ;
+VTable BJDeck =
+	__BJDeck.DealCard,
+	__BJDeck.Init,
+	__BJDeck.NumCardsRemaining,
+	__BJDeck.Shuffle,
 ; 
-main:
-	BeginFunc 48 ;
-	_tmp116 = 4 ;
-	PushParam _tmp116 ;
-	_tmp117 = LCall _Alloc ;
+__Player.Init:
+	BeginFunc 32 ;
+	_tmp263 = 1000 ;
+	_tmp264 = 12 ;
+	_tmp265 = this + _tmp264 ;
+	*(_tmp265) = _tmp263 ;
+	_tmp266 = "What is the name of player #" ;
+	PushParam _tmp266 ;
+	LCall _PrintString ;
 	PopParams 4 ;
-	_tmp118 = Rect ;
-	*(_tmp117) = _tmp118 ;
-	r = _tmp117 ;
-	_tmp119 = *(r) ;
-	_tmp120 = *(_tmp119) ;
-	_tmp121 = 10 ;
-	PushParam _tmp121 ;
-	_tmp122 = 10 ;
-	PushParam _tmp122 ;
-	_tmp123 = 5 ;
-	PushParam _tmp123 ;
-	_tmp124 = 28 ;
-	PushParam _tmp124 ;
-	PushParam r ;
-	ACall _tmp120 ;
-	PopParams 20 ;
-	_tmp125 = *(r) ;
-	_tmp126 = *(_tmp125 + 4) ;
-	PushParam r ;
-	ACall _tmp126 ;
+	PushParam num ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp267 = "? " ;
+	PushParam _tmp267 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp268 = LCall _ReadLine ;
+	_tmp269 = 16 ;
+	_tmp270 = this + _tmp269 ;
+	*(_tmp270) = _tmp268 ;
+	EndFunc ;
+__Player.PrintName:
+	BeginFunc 4 ;
+	_tmp271 = *(this + 16) ;
+	PushParam _tmp271 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+__Player.Hit:
+	BeginFunc 160 ;
+	_tmp272 = *(deck) ;
+	_tmp273 = *(_tmp272) ;
+	PushParam deck ;
+	_tmp274 = ACall _tmp273 ;
+	PopParams 4 ;
+	card = _tmp274 ;
+	_tmp275 = *(this + 16) ;
+	PushParam _tmp275 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp276 = " was dealt a " ;
+	PushParam _tmp276 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	PushParam card ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp277 = ".\n" ;
+	PushParam _tmp277 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp278 = *(this + 24) ;
+	_tmp279 = _tmp278 + card ;
+	_tmp280 = 24 ;
+	_tmp281 = this + _tmp280 ;
+	*(_tmp281) = _tmp279 ;
+	_tmp282 = 1 ;
+	_tmp283 = *(this + 20) ;
+	_tmp284 = _tmp283 + _tmp282 ;
+	_tmp285 = 20 ;
+	_tmp286 = this + _tmp285 ;
+	*(_tmp286) = _tmp284 ;
+	_tmp287 = 11 ;
+	_tmp288 = card == _tmp287 ;
+	IfZ _tmp288 Goto _L40 ;
+	_tmp289 = 1 ;
+	_tmp290 = *(this + 4) ;
+	_tmp291 = _tmp290 + _tmp289 ;
+	_tmp292 = 4 ;
+	_tmp293 = this + _tmp292 ;
+	*(_tmp293) = _tmp291 ;
+	Goto _L41 ;
+_L40:
+_L41:
+_L42:
+	_tmp294 = *(this + 4) ;
+	_tmp295 = 0 ;
+	_tmp296 = _tmp295 < _tmp294 ;
+	_tmp297 = *(this + 24) ;
+	_tmp298 = 21 ;
+	_tmp299 = _tmp298 < _tmp297 ;
+	_tmp300 = _tmp299 && _tmp296 ;
+	IfZ _tmp300 Goto _L43 ;
+	_tmp301 = 10 ;
+	_tmp302 = *(this + 24) ;
+	_tmp303 = _tmp302 - _tmp301 ;
+	_tmp304 = 24 ;
+	_tmp305 = this + _tmp304 ;
+	*(_tmp305) = _tmp303 ;
+	_tmp306 = 1 ;
+	_tmp307 = *(this + 4) ;
+	_tmp308 = _tmp307 - _tmp306 ;
+	_tmp309 = 4 ;
+	_tmp310 = this + _tmp309 ;
+	*(_tmp310) = _tmp308 ;
+	Goto _L42 ;
+_L43:
+	EndFunc ;
+__Player.DoubleDown:
+	BeginFunc 112 ;
+	_tmp311 = *(this + 24) ;
+	_tmp312 = 11 ;
+	_tmp313 = _tmp311 < _tmp312 ;
+	_tmp314 = _tmp312 < _tmp311 ;
+	_tmp315 = _tmp313 || _tmp314 ;
+	_tmp316 = *(this + 24) ;
+	_tmp317 = 10 ;
+	_tmp318 = _tmp316 < _tmp317 ;
+	_tmp319 = _tmp317 < _tmp316 ;
+	_tmp320 = _tmp318 || _tmp319 ;
+	_tmp321 = _tmp320 && _tmp315 ;
+	IfZ _tmp321 Goto _L44 ;
+	_tmp322 = 0 ;
+	Return _tmp322 ;
+	Goto _L45 ;
+_L44:
+_L45:
+	_tmp323 = "Would you like to double down?" ;
+	PushParam _tmp323 ;
+	_tmp324 = LCall __GetYesOrNo ;
+	PopParams 4 ;
+	IfZ _tmp324 Goto _L46 ;
+	_tmp325 = 2 ;
+	_tmp326 = *(this + 8) ;
+	_tmp327 = _tmp326 * _tmp325 ;
+	_tmp328 = 8 ;
+	_tmp329 = this + _tmp328 ;
+	*(_tmp329) = _tmp327 ;
+	_tmp330 = *(this) ;
+	_tmp331 = *(_tmp330 + 12) ;
+	PushParam deck ;
+	PushParam this ;
+	ACall _tmp331 ;
+	PopParams 8 ;
+	_tmp332 = *(this + 16) ;
+	PushParam _tmp332 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp333 = ", your total is " ;
+	PushParam _tmp333 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp334 = *(this + 24) ;
+	PushParam _tmp334 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp335 = ".\n" ;
+	PushParam _tmp335 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp336 = 1 ;
+	Return _tmp336 ;
+	Goto _L47 ;
+_L46:
+_L47:
+	_tmp337 = 0 ;
+	Return _tmp337 ;
+	EndFunc ;
+__Player.TakeTurn:
+	BeginFunc 192 ;
+	_tmp338 = "\n" ;
+	PushParam _tmp338 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp339 = *(this + 16) ;
+	PushParam _tmp339 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp340 = "'s turn.\n" ;
+	PushParam _tmp340 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp341 = 0 ;
+	_tmp342 = 24 ;
+	_tmp343 = this + _tmp342 ;
+	*(_tmp343) = _tmp341 ;
+	_tmp344 = 0 ;
+	_tmp345 = 4 ;
+	_tmp346 = this + _tmp345 ;
+	*(_tmp346) = _tmp344 ;
+	_tmp347 = 0 ;
+	_tmp348 = 20 ;
+	_tmp349 = this + _tmp348 ;
+	*(_tmp349) = _tmp347 ;
+	_tmp350 = *(this) ;
+	_tmp351 = *(_tmp350 + 12) ;
+	PushParam deck ;
+	PushParam this ;
+	ACall _tmp351 ;
+	PopParams 8 ;
+	_tmp352 = *(this) ;
+	_tmp353 = *(_tmp352 + 12) ;
+	PushParam deck ;
+	PushParam this ;
+	ACall _tmp353 ;
+	PopParams 8 ;
+	_tmp354 = 1 ;
+	_tmp355 = *(this) ;
+	_tmp356 = *(_tmp355) ;
+	PushParam deck ;
+	PushParam this ;
+	_tmp357 = ACall _tmp356 ;
+	PopParams 8 ;
+	_tmp358 = _tmp354 - _tmp357 ;
+	IfZ _tmp358 Goto _L48 ;
+	_tmp359 = 1 ;
+	stillGoing = _tmp359 ;
+_L50:
+	_tmp360 = *(this + 24) ;
+	_tmp361 = 21 ;
+	_tmp362 = _tmp360 < _tmp361 ;
+	_tmp363 = _tmp360 == _tmp361 ;
+	_tmp364 = _tmp362 || _tmp363 ;
+	_tmp365 = _tmp364 && stillGoing ;
+	IfZ _tmp365 Goto _L51 ;
+	_tmp366 = *(this + 16) ;
+	PushParam _tmp366 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp367 = ", your total is " ;
+	PushParam _tmp367 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp368 = *(this + 24) ;
+	PushParam _tmp368 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp369 = ".\n" ;
+	PushParam _tmp369 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp370 = "Would you like a hit?" ;
+	PushParam _tmp370 ;
+	_tmp371 = LCall __GetYesOrNo ;
+	PopParams 4 ;
+	stillGoing = _tmp371 ;
+	IfZ stillGoing Goto _L52 ;
+	_tmp372 = *(this) ;
+	_tmp373 = *(_tmp372 + 12) ;
+	PushParam deck ;
+	PushParam this ;
+	ACall _tmp373 ;
+	PopParams 8 ;
+	Goto _L53 ;
+_L52:
+_L53:
+	Goto _L50 ;
+_L51:
+	Goto _L49 ;
+_L48:
+_L49:
+	_tmp374 = *(this + 24) ;
+	_tmp375 = 21 ;
+	_tmp376 = _tmp375 < _tmp374 ;
+	IfZ _tmp376 Goto _L54 ;
+	_tmp377 = *(this + 16) ;
+	PushParam _tmp377 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp378 = " busts with the big " ;
+	PushParam _tmp378 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp379 = *(this + 24) ;
+	PushParam _tmp379 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp380 = "!\n" ;
+	PushParam _tmp380 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	Goto _L55 ;
+_L54:
+	_tmp381 = *(this + 16) ;
+	PushParam _tmp381 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp382 = " stays at " ;
+	PushParam _tmp382 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp383 = *(this + 24) ;
+	PushParam _tmp383 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp384 = ".\n" ;
+	PushParam _tmp384 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+_L55:
+	EndFunc ;
+__Player.HasMoney:
+	BeginFunc 12 ;
+	_tmp385 = *(this + 12) ;
+	_tmp386 = 0 ;
+	_tmp387 = _tmp386 < _tmp385 ;
+	Return _tmp387 ;
+	EndFunc ;
+__Player.PrintMoney:
+	BeginFunc 16 ;
+	_tmp388 = *(this + 16) ;
+	PushParam _tmp388 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp389 = ", you have $" ;
+	PushParam _tmp389 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp390 = *(this + 12) ;
+	PushParam _tmp390 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp391 = ".\n" ;
+	PushParam _tmp391 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+__Player.PlaceBet:
+	BeginFunc 72 ;
+	_tmp392 = 0 ;
+	_tmp393 = 8 ;
+	_tmp394 = this + _tmp393 ;
+	*(_tmp394) = _tmp392 ;
+	_tmp395 = *(this) ;
+	_tmp396 = *(_tmp395 + 24) ;
+	PushParam this ;
+	ACall _tmp396 ;
+	PopParams 4 ;
+_L56:
+	_tmp397 = *(this + 8) ;
+	_tmp398 = *(this + 12) ;
+	_tmp399 = _tmp398 < _tmp397 ;
+	_tmp400 = *(this + 8) ;
+	_tmp401 = 0 ;
+	_tmp402 = _tmp400 < _tmp401 ;
+	_tmp403 = _tmp400 == _tmp401 ;
+	_tmp404 = _tmp402 || _tmp403 ;
+	_tmp405 = _tmp404 || _tmp399 ;
+	IfZ _tmp405 Goto _L57 ;
+	_tmp406 = "How much would you like to bet? " ;
+	PushParam _tmp406 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp407 = LCall _ReadInteger ;
+	_tmp408 = 8 ;
+	_tmp409 = this + _tmp408 ;
+	*(_tmp409) = _tmp407 ;
+	Goto _L56 ;
+_L57:
+	EndFunc ;
+__Player.GetTotal:
+	BeginFunc 4 ;
+	_tmp410 = *(this + 24) ;
+	Return _tmp410 ;
+	EndFunc ;
+__Player.Resolve:
+	BeginFunc 208 ;
+	_tmp411 = 0 ;
+	win = _tmp411 ;
+	_tmp412 = 0 ;
+	lose = _tmp412 ;
+	_tmp413 = *(this + 20) ;
+	_tmp414 = 2 ;
+	_tmp415 = _tmp413 == _tmp414 ;
+	_tmp416 = *(this + 24) ;
+	_tmp417 = 21 ;
+	_tmp418 = _tmp416 == _tmp417 ;
+	_tmp419 = _tmp418 && _tmp415 ;
+	IfZ _tmp419 Goto _L58 ;
+	_tmp420 = 2 ;
+	win = _tmp420 ;
+	Goto _L59 ;
+_L58:
+	_tmp421 = *(this + 24) ;
+	_tmp422 = 21 ;
+	_tmp423 = _tmp422 < _tmp421 ;
+	IfZ _tmp423 Goto _L60 ;
+	_tmp424 = 1 ;
+	lose = _tmp424 ;
+	Goto _L61 ;
+_L60:
+	_tmp425 = 21 ;
+	_tmp426 = _tmp425 < dealer ;
+	IfZ _tmp426 Goto _L62 ;
+	_tmp427 = 1 ;
+	win = _tmp427 ;
+	Goto _L63 ;
+_L62:
+	_tmp428 = *(this + 24) ;
+	_tmp429 = dealer < _tmp428 ;
+	IfZ _tmp429 Goto _L64 ;
+	_tmp430 = 1 ;
+	win = _tmp430 ;
+	Goto _L65 ;
+_L64:
+	_tmp431 = *(this + 24) ;
+	_tmp432 = _tmp431 < dealer ;
+	IfZ _tmp432 Goto _L66 ;
+	_tmp433 = 1 ;
+	lose = _tmp433 ;
+	Goto _L67 ;
+_L66:
+_L67:
+_L65:
+_L63:
+_L61:
+_L59:
+	_tmp434 = 1 ;
+	_tmp435 = _tmp434 < win ;
+	_tmp436 = win == _tmp434 ;
+	_tmp437 = _tmp435 || _tmp436 ;
+	IfZ _tmp437 Goto _L68 ;
+	_tmp438 = *(this + 16) ;
+	PushParam _tmp438 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp439 = ", you won $" ;
+	PushParam _tmp439 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp440 = *(this + 8) ;
+	PushParam _tmp440 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp441 = ".\n" ;
+	PushParam _tmp441 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	Goto _L69 ;
+_L68:
+	_tmp442 = 1 ;
+	_tmp443 = _tmp442 < lose ;
+	_tmp444 = lose == _tmp442 ;
+	_tmp445 = _tmp443 || _tmp444 ;
+	IfZ _tmp445 Goto _L70 ;
+	_tmp446 = *(this + 16) ;
+	PushParam _tmp446 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp447 = ", you lost $" ;
+	PushParam _tmp447 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp448 = *(this + 8) ;
+	PushParam _tmp448 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp449 = ".\n" ;
+	PushParam _tmp449 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	Goto _L71 ;
+_L70:
+	_tmp450 = *(this + 16) ;
+	PushParam _tmp450 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp451 = ", you push!\n" ;
+	PushParam _tmp451 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+_L71:
+_L69:
+	_tmp452 = *(this + 8) ;
+	_tmp453 = win * _tmp452 ;
+	win = _tmp453 ;
+	_tmp454 = *(this + 8) ;
+	_tmp455 = lose * _tmp454 ;
+	lose = _tmp455 ;
+	_tmp456 = *(this + 12) ;
+	_tmp457 = _tmp456 + win ;
+	_tmp458 = _tmp457 - lose ;
+	_tmp459 = 12 ;
+	_tmp460 = this + _tmp459 ;
+	*(_tmp460) = _tmp458 ;
+	EndFunc ;
+VTable Player =
+	__Player.DoubleDown,
+	__Player.GetTotal,
+	__Player.HasMoney,
+	__Player.Hit,
+	__Player.Init,
+	__Player.PlaceBet,
+	__Player.PrintMoney,
+	__Player.PrintName,
+	__Player.Resolve,
+	__Player.TakeTurn,
+; 
+__Dealer.Init:
+	BeginFunc 48 ;
+	_tmp461 = 0 ;
+	_tmp462 = 24 ;
+	_tmp463 = this + _tmp462 ;
+	*(_tmp463) = _tmp461 ;
+	_tmp464 = 0 ;
+	_tmp465 = 4 ;
+	_tmp466 = this + _tmp465 ;
+	*(_tmp466) = _tmp464 ;
+	_tmp467 = 0 ;
+	_tmp468 = 20 ;
+	_tmp469 = this + _tmp468 ;
+	*(_tmp469) = _tmp467 ;
+	_tmp470 = "Dealer" ;
+	_tmp471 = 16 ;
+	_tmp472 = this + _tmp471 ;
+	*(_tmp472) = _tmp470 ;
+	EndFunc ;
+__Dealer.TakeTurn:
+	BeginFunc 84 ;
+	_tmp473 = "\n" ;
+	PushParam _tmp473 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp474 = *(this + 16) ;
+	PushParam _tmp474 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp475 = "'s turn.\n" ;
+	PushParam _tmp475 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+_L72:
+	_tmp476 = *(this + 24) ;
+	_tmp477 = 16 ;
+	_tmp478 = _tmp476 < _tmp477 ;
+	_tmp479 = _tmp476 == _tmp477 ;
+	_tmp480 = _tmp478 || _tmp479 ;
+	IfZ _tmp480 Goto _L73 ;
+	_tmp481 = *(this) ;
+	_tmp482 = *(_tmp481 + 12) ;
+	PushParam deck ;
+	PushParam this ;
+	ACall _tmp482 ;
+	PopParams 8 ;
+	Goto _L72 ;
+_L73:
+	_tmp483 = *(this + 24) ;
+	_tmp484 = 21 ;
+	_tmp485 = _tmp484 < _tmp483 ;
+	IfZ _tmp485 Goto _L74 ;
+	_tmp486 = *(this + 16) ;
+	PushParam _tmp486 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp487 = " busts with the big " ;
+	PushParam _tmp487 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp488 = *(this + 24) ;
+	PushParam _tmp488 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp489 = "!\n" ;
+	PushParam _tmp489 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	Goto _L75 ;
+_L74:
+	_tmp490 = *(this + 16) ;
+	PushParam _tmp490 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp491 = " stays at " ;
+	PushParam _tmp491 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp492 = *(this + 24) ;
+	PushParam _tmp492 ;
+	LCall _PrintInt ;
+	PopParams 4 ;
+	_tmp493 = ".\n" ;
+	PushParam _tmp493 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+_L75:
+	EndFunc ;
+VTable Dealer =
+	__Player.DoubleDown,
+	__Player.GetTotal,
+	__Player.HasMoney,
+	__Player.Hit,
+	__Dealer.Init,
+	__Player.PlaceBet,
+	__Player.PrintMoney,
+	__Player.PrintName,
+	__Player.Resolve,
+	__Dealer.TakeTurn,
+; 
+__House.SetupGame:
+	BeginFunc 100 ;
+	_tmp494 = "\nWelcome to CS143 BlackJack!\n" ;
+	PushParam _tmp494 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp495 = "---------------------------\n" ;
+	PushParam _tmp495 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp496 = 8 ;
+	PushParam _tmp496 ;
+	_tmp497 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp498 = Random ;
+	*(_tmp497) = _tmp498 ;
+	gRnd = _tmp497 ;
+	_tmp499 = "Please enter a random number seed: " ;
+	PushParam _tmp499 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp500 = *(gRnd) ;
+	_tmp501 = *(_tmp500 + 4) ;
+	_tmp502 = LCall _ReadInteger ;
+	PushParam _tmp502 ;
+	PushParam gRnd ;
+	ACall _tmp501 ;
+	PopParams 8 ;
+	_tmp503 = 12 ;
+	PushParam _tmp503 ;
+	_tmp504 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp505 = BJDeck ;
+	*(_tmp504) = _tmp505 ;
+	_tmp506 = 8 ;
+	_tmp507 = this + _tmp506 ;
+	*(_tmp507) = _tmp504 ;
+	_tmp508 = 28 ;
+	PushParam _tmp508 ;
+	_tmp509 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp510 = Dealer ;
+	*(_tmp509) = _tmp510 ;
+	_tmp511 = 4 ;
+	_tmp512 = this + _tmp511 ;
+	*(_tmp512) = _tmp509 ;
+	_tmp513 = *(this + 8) ;
+	_tmp514 = *(_tmp513) ;
+	_tmp515 = *(_tmp514 + 4) ;
+	PushParam _tmp513 ;
+	ACall _tmp515 ;
+	PopParams 4 ;
+	_tmp516 = *(this + 8) ;
+	_tmp517 = *(_tmp516) ;
+	_tmp518 = *(_tmp517 + 12) ;
+	PushParam _tmp516 ;
+	ACall _tmp518 ;
+	PopParams 4 ;
+	EndFunc ;
+__House.SetupPlayers:
+	BeginFunc 196 ;
+	_tmp519 = "How many players do we have today? " ;
+	PushParam _tmp519 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp520 = LCall _ReadInteger ;
+	numPlayers = _tmp520 ;
+	_tmp521 = 0 ;
+	_tmp522 = numPlayers < _tmp521 ;
+	_tmp523 = numPlayers == _tmp521 ;
+	_tmp524 = _tmp522 || _tmp523 ;
+	IfZ _tmp524 Goto _L76 ;
+	_tmp525 = "Decaf runtime error: Array size is <= 0" ;
+	PushParam _tmp525 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L76:
+	_tmp526 = 4 ;
+	_tmp527 = numPlayers * _tmp526 ;
+	_tmp528 = _tmp527 + _tmp526 ;
+	PushParam _tmp528 ;
+	_tmp529 = LCall _Alloc ;
+	PopParams 4 ;
+	*(_tmp529) = numPlayers ;
+	_tmp530 = 12 ;
+	_tmp531 = this + _tmp530 ;
+	*(_tmp531) = _tmp529 ;
+	_tmp532 = 0 ;
+	i = _tmp532 ;
+_L77:
+	_tmp533 = *(this + 12) ;
+	_tmp534 = *(_tmp533) ;
+	_tmp535 = i < _tmp534 ;
+	IfZ _tmp535 Goto _L78 ;
+	_tmp536 = 28 ;
+	PushParam _tmp536 ;
+	_tmp537 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp538 = Player ;
+	*(_tmp537) = _tmp538 ;
+	_tmp539 = *(this + 12) ;
+	_tmp540 = *(_tmp539) ;
+	_tmp541 = i < _tmp540 ;
+	_tmp542 = -1 ;
+	_tmp543 = _tmp542 < i ;
+	_tmp544 = _tmp543 && _tmp541 ;
+	IfZ _tmp544 Goto _L79 ;
+	_tmp545 = 4 ;
+	_tmp546 = i * _tmp545 ;
+	_tmp547 = _tmp546 + _tmp545 ;
+	_tmp548 = _tmp539 + _tmp547 ;
+	Goto _L80 ;
+_L79:
+	_tmp549 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp549 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L80:
+	*(_tmp548) = _tmp537 ;
+	_tmp550 = *(this + 12) ;
+	_tmp551 = *(_tmp550) ;
+	_tmp552 = i < _tmp551 ;
+	_tmp553 = -1 ;
+	_tmp554 = _tmp553 < i ;
+	_tmp555 = _tmp554 && _tmp552 ;
+	IfZ _tmp555 Goto _L81 ;
+	_tmp556 = 4 ;
+	_tmp557 = i * _tmp556 ;
+	_tmp558 = _tmp557 + _tmp556 ;
+	_tmp559 = _tmp550 + _tmp558 ;
+	Goto _L82 ;
+_L81:
+	_tmp560 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp560 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L82:
+	_tmp561 = *(_tmp559) ;
+	_tmp562 = *(_tmp561) ;
+	_tmp563 = *(_tmp562 + 16) ;
+	_tmp564 = 1 ;
+	_tmp565 = i + _tmp564 ;
+	PushParam _tmp565 ;
+	PushParam _tmp561 ;
+	ACall _tmp563 ;
+	PopParams 8 ;
+	_tmp566 = 1 ;
+	_tmp567 = i + _tmp566 ;
+	i = _tmp567 ;
+	Goto _L77 ;
+_L78:
+	EndFunc ;
+__House.TakeAllBets:
+	BeginFunc 140 ;
+	_tmp568 = "\nFirst, let's take bets.\n" ;
+	PushParam _tmp568 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp569 = 0 ;
+	i = _tmp569 ;
+_L83:
+	_tmp570 = *(this + 12) ;
+	_tmp571 = *(_tmp570) ;
+	_tmp572 = i < _tmp571 ;
+	IfZ _tmp572 Goto _L84 ;
+	_tmp573 = *(this + 12) ;
+	_tmp574 = *(_tmp573) ;
+	_tmp575 = i < _tmp574 ;
+	_tmp576 = -1 ;
+	_tmp577 = _tmp576 < i ;
+	_tmp578 = _tmp577 && _tmp575 ;
+	IfZ _tmp578 Goto _L87 ;
+	_tmp579 = 4 ;
+	_tmp580 = i * _tmp579 ;
+	_tmp581 = _tmp580 + _tmp579 ;
+	_tmp582 = _tmp573 + _tmp581 ;
+	Goto _L88 ;
+_L87:
+	_tmp583 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp583 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L88:
+	_tmp584 = *(_tmp582) ;
+	_tmp585 = *(_tmp584) ;
+	_tmp586 = *(_tmp585 + 8) ;
+	PushParam _tmp584 ;
+	_tmp587 = ACall _tmp586 ;
+	PopParams 4 ;
+	IfZ _tmp587 Goto _L85 ;
+	_tmp588 = *(this + 12) ;
+	_tmp589 = *(_tmp588) ;
+	_tmp590 = i < _tmp589 ;
+	_tmp591 = -1 ;
+	_tmp592 = _tmp591 < i ;
+	_tmp593 = _tmp592 && _tmp590 ;
+	IfZ _tmp593 Goto _L89 ;
+	_tmp594 = 4 ;
+	_tmp595 = i * _tmp594 ;
+	_tmp596 = _tmp595 + _tmp594 ;
+	_tmp597 = _tmp588 + _tmp596 ;
+	Goto _L90 ;
+_L89:
+	_tmp598 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp598 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L90:
+	_tmp599 = *(_tmp597) ;
+	_tmp600 = *(_tmp599) ;
+	_tmp601 = *(_tmp600 + 20) ;
+	PushParam _tmp599 ;
+	ACall _tmp601 ;
+	PopParams 4 ;
+	Goto _L86 ;
+_L85:
+_L86:
+	_tmp602 = 1 ;
+	_tmp603 = i + _tmp602 ;
+	i = _tmp603 ;
+	Goto _L83 ;
+_L84:
+	EndFunc ;
+__House.TakeAllTurns:
+	BeginFunc 140 ;
+	_tmp604 = 0 ;
+	i = _tmp604 ;
+_L91:
+	_tmp605 = *(this + 12) ;
+	_tmp606 = *(_tmp605) ;
+	_tmp607 = i < _tmp606 ;
+	IfZ _tmp607 Goto _L92 ;
+	_tmp608 = *(this + 12) ;
+	_tmp609 = *(_tmp608) ;
+	_tmp610 = i < _tmp609 ;
+	_tmp611 = -1 ;
+	_tmp612 = _tmp611 < i ;
+	_tmp613 = _tmp612 && _tmp610 ;
+	IfZ _tmp613 Goto _L95 ;
+	_tmp614 = 4 ;
+	_tmp615 = i * _tmp614 ;
+	_tmp616 = _tmp615 + _tmp614 ;
+	_tmp617 = _tmp608 + _tmp616 ;
+	Goto _L96 ;
+_L95:
+	_tmp618 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp618 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L96:
+	_tmp619 = *(_tmp617) ;
+	_tmp620 = *(_tmp619) ;
+	_tmp621 = *(_tmp620 + 8) ;
+	PushParam _tmp619 ;
+	_tmp622 = ACall _tmp621 ;
+	PopParams 4 ;
+	IfZ _tmp622 Goto _L93 ;
+	_tmp623 = *(this + 12) ;
+	_tmp624 = *(_tmp623) ;
+	_tmp625 = i < _tmp624 ;
+	_tmp626 = -1 ;
+	_tmp627 = _tmp626 < i ;
+	_tmp628 = _tmp627 && _tmp625 ;
+	IfZ _tmp628 Goto _L97 ;
+	_tmp629 = 4 ;
+	_tmp630 = i * _tmp629 ;
+	_tmp631 = _tmp630 + _tmp629 ;
+	_tmp632 = _tmp623 + _tmp631 ;
+	Goto _L98 ;
+_L97:
+	_tmp633 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp633 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L98:
+	_tmp634 = *(_tmp632) ;
+	_tmp635 = *(_tmp634) ;
+	_tmp636 = *(_tmp635 + 36) ;
+	_tmp637 = *(this + 8) ;
+	PushParam _tmp637 ;
+	PushParam _tmp634 ;
+	ACall _tmp636 ;
+	PopParams 8 ;
+	Goto _L94 ;
+_L93:
+_L94:
+	_tmp638 = 1 ;
+	_tmp639 = i + _tmp638 ;
+	i = _tmp639 ;
+	Goto _L91 ;
+_L92:
+	EndFunc ;
+__House.ResolveAllPlayers:
+	BeginFunc 156 ;
+	_tmp640 = "\nTime to resolve bets.\n" ;
+	PushParam _tmp640 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp641 = 0 ;
+	i = _tmp641 ;
+_L99:
+	_tmp642 = *(this + 12) ;
+	_tmp643 = *(_tmp642) ;
+	_tmp644 = i < _tmp643 ;
+	IfZ _tmp644 Goto _L100 ;
+	_tmp645 = *(this + 12) ;
+	_tmp646 = *(_tmp645) ;
+	_tmp647 = i < _tmp646 ;
+	_tmp648 = -1 ;
+	_tmp649 = _tmp648 < i ;
+	_tmp650 = _tmp649 && _tmp647 ;
+	IfZ _tmp650 Goto _L103 ;
+	_tmp651 = 4 ;
+	_tmp652 = i * _tmp651 ;
+	_tmp653 = _tmp652 + _tmp651 ;
+	_tmp654 = _tmp645 + _tmp653 ;
+	Goto _L104 ;
+_L103:
+	_tmp655 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp655 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L104:
+	_tmp656 = *(_tmp654) ;
+	_tmp657 = *(_tmp656) ;
+	_tmp658 = *(_tmp657 + 8) ;
+	PushParam _tmp656 ;
+	_tmp659 = ACall _tmp658 ;
+	PopParams 4 ;
+	IfZ _tmp659 Goto _L101 ;
+	_tmp660 = *(this + 12) ;
+	_tmp661 = *(_tmp660) ;
+	_tmp662 = i < _tmp661 ;
+	_tmp663 = -1 ;
+	_tmp664 = _tmp663 < i ;
+	_tmp665 = _tmp664 && _tmp662 ;
+	IfZ _tmp665 Goto _L105 ;
+	_tmp666 = 4 ;
+	_tmp667 = i * _tmp666 ;
+	_tmp668 = _tmp667 + _tmp666 ;
+	_tmp669 = _tmp660 + _tmp668 ;
+	Goto _L106 ;
+_L105:
+	_tmp670 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp670 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L106:
+	_tmp671 = *(_tmp669) ;
+	_tmp672 = *(_tmp671) ;
+	_tmp673 = *(_tmp672 + 32) ;
+	_tmp674 = *(this + 4) ;
+	_tmp675 = *(_tmp674) ;
+	_tmp676 = *(_tmp675 + 4) ;
+	PushParam _tmp674 ;
+	_tmp677 = ACall _tmp676 ;
+	PopParams 4 ;
+	PushParam _tmp677 ;
+	PushParam _tmp671 ;
+	ACall _tmp673 ;
+	PopParams 8 ;
+	Goto _L102 ;
+_L101:
+_L102:
+	_tmp678 = 1 ;
+	_tmp679 = i + _tmp678 ;
+	i = _tmp679 ;
+	Goto _L99 ;
+_L100:
+	EndFunc ;
+__House.PrintAllMoney:
+	BeginFunc 80 ;
+	_tmp680 = 0 ;
+	i = _tmp680 ;
+_L107:
+	_tmp681 = *(this + 12) ;
+	_tmp682 = *(_tmp681) ;
+	_tmp683 = i < _tmp682 ;
+	IfZ _tmp683 Goto _L108 ;
+	_tmp684 = *(this + 12) ;
+	_tmp685 = *(_tmp684) ;
+	_tmp686 = i < _tmp685 ;
+	_tmp687 = -1 ;
+	_tmp688 = _tmp687 < i ;
+	_tmp689 = _tmp688 && _tmp686 ;
+	IfZ _tmp689 Goto _L109 ;
+	_tmp690 = 4 ;
+	_tmp691 = i * _tmp690 ;
+	_tmp692 = _tmp691 + _tmp690 ;
+	_tmp693 = _tmp684 + _tmp692 ;
+	Goto _L110 ;
+_L109:
+	_tmp694 = "Decaf runtime error: Array script out of bounds" ;
+	PushParam _tmp694 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	LCall _Halt ;
+_L110:
+	_tmp695 = *(_tmp693) ;
+	_tmp696 = *(_tmp695) ;
+	_tmp697 = *(_tmp696 + 24) ;
+	PushParam _tmp695 ;
+	ACall _tmp697 ;
+	PopParams 4 ;
+	_tmp698 = 1 ;
+	_tmp699 = i + _tmp698 ;
+	i = _tmp699 ;
+	Goto _L107 ;
+_L108:
+	EndFunc ;
+__House.PlayOneGame:
+	BeginFunc 112 ;
+	_tmp700 = *(this + 8) ;
+	_tmp701 = *(_tmp700) ;
+	_tmp702 = *(_tmp701 + 8) ;
+	PushParam _tmp700 ;
+	_tmp703 = ACall _tmp702 ;
+	PopParams 4 ;
+	_tmp704 = 26 ;
+	_tmp705 = _tmp703 < _tmp704 ;
+	IfZ _tmp705 Goto _L111 ;
+	_tmp706 = *(this + 8) ;
+	_tmp707 = *(_tmp706) ;
+	_tmp708 = *(_tmp707 + 12) ;
+	PushParam _tmp706 ;
+	ACall _tmp708 ;
+	PopParams 4 ;
+	Goto _L112 ;
+_L111:
+_L112:
+	_tmp709 = *(this) ;
+	_tmp710 = *(_tmp709 + 20) ;
+	PushParam this ;
+	ACall _tmp710 ;
+	PopParams 4 ;
+	_tmp711 = "\nDealer starts. " ;
+	PushParam _tmp711 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp712 = *(this + 4) ;
+	_tmp713 = *(_tmp712) ;
+	_tmp714 = *(_tmp713 + 16) ;
+	_tmp715 = 0 ;
+	PushParam _tmp715 ;
+	PushParam _tmp712 ;
+	ACall _tmp714 ;
+	PopParams 8 ;
+	_tmp716 = *(this + 4) ;
+	_tmp717 = *(_tmp716) ;
+	_tmp718 = *(_tmp717 + 12) ;
+	_tmp719 = *(this + 8) ;
+	PushParam _tmp719 ;
+	PushParam _tmp716 ;
+	ACall _tmp718 ;
+	PopParams 8 ;
+	_tmp720 = *(this) ;
+	_tmp721 = *(_tmp720 + 24) ;
+	PushParam this ;
+	ACall _tmp721 ;
+	PopParams 4 ;
+	_tmp722 = *(this + 4) ;
+	_tmp723 = *(_tmp722) ;
+	_tmp724 = *(_tmp723 + 36) ;
+	_tmp725 = *(this + 8) ;
+	PushParam _tmp725 ;
+	PushParam _tmp722 ;
+	ACall _tmp724 ;
+	PopParams 8 ;
+	_tmp726 = *(this) ;
+	_tmp727 = *(_tmp726 + 8) ;
+	PushParam this ;
+	ACall _tmp727 ;
+	PopParams 4 ;
+	EndFunc ;
+VTable House =
+	__House.PlayOneGame,
+	__House.PrintAllMoney,
+	__House.ResolveAllPlayers,
+	__House.SetupGame,
+	__House.SetupPlayers,
+	__House.TakeAllBets,
+	__House.TakeAllTurns,
+; 
+__GetYesOrNo:
+	BeginFunc 64 ;
+	PushParam prompt ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp728 = " (y/n) " ;
+	PushParam _tmp728 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp729 = LCall _ReadLine ;
+	answer = _tmp729 ;
+	_tmp730 = "y" ;
+	PushParam _tmp730 ;
+	PushParam answer ;
+	_tmp731 = LCall _StringEqual ;
+	PopParams 8 ;
+	_tmp732 = 0 ;
+	_tmp733 = _tmp731 == _tmp732 ;
+	PushParam _tmp733 ;
+	LCall _PrintBool ;
+	PopParams 4 ;
+	_tmp734 = "Y" ;
+	PushParam _tmp734 ;
+	PushParam answer ;
+	_tmp735 = LCall _StringEqual ;
+	PopParams 8 ;
+	_tmp736 = 0 ;
+	_tmp737 = _tmp735 == _tmp736 ;
+	_tmp738 = "y" ;
+	PushParam _tmp738 ;
+	PushParam answer ;
+	_tmp739 = LCall _StringEqual ;
+	PopParams 8 ;
+	_tmp740 = 0 ;
+	_tmp741 = _tmp739 == _tmp740 ;
+	_tmp742 = _tmp741 || _tmp737 ;
+	Return _tmp742 ;
+	EndFunc ;
+main:
+	BeginFunc 76 ;
+	_tmp743 = 1 ;
+	keepPlaying = _tmp743 ;
+	_tmp744 = 16 ;
+	PushParam _tmp744 ;
+	_tmp745 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp746 = House ;
+	*(_tmp745) = _tmp746 ;
+	house = _tmp745 ;
+	_tmp747 = *(house) ;
+	_tmp748 = *(_tmp747 + 12) ;
+	PushParam house ;
+	ACall _tmp748 ;
+	PopParams 4 ;
+	_tmp749 = *(house) ;
+	_tmp750 = *(_tmp749 + 16) ;
+	PushParam house ;
+	ACall _tmp750 ;
+	PopParams 4 ;
+_L113:
+	IfZ keepPlaying Goto _L114 ;
+	_tmp751 = *(house) ;
+	_tmp752 = *(_tmp751) ;
+	PushParam house ;
+	ACall _tmp752 ;
+	PopParams 4 ;
+	_tmp753 = "\nDo you want to play another hand?" ;
+	PushParam _tmp753 ;
+	_tmp754 = LCall __GetYesOrNo ;
+	PopParams 4 ;
+	keepPlaying = _tmp754 ;
+	Goto _L113 ;
+_L114:
+	_tmp755 = *(house) ;
+	_tmp756 = *(_tmp755 + 4) ;
+	PushParam house ;
+	ACall _tmp756 ;
+	PopParams 4 ;
+	_tmp757 = "Thank you for playing...come again soon.\n" ;
+	PushParam _tmp757 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp758 = "\nCS143 BlackJack Copyright (c) 1999 by Peter Mor..." ;
+	PushParam _tmp758 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp759 = "(2001 mods by jdz)\n" ;
+	PushParam _tmp759 ;
+	LCall _PrintString ;
 	PopParams 4 ;
 	EndFunc ;

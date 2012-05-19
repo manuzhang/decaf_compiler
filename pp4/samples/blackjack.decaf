@@ -114,6 +114,10 @@ class Player {
     Print("What is the name of player #", num, "? ");
     name = ReadLine();
   }
+  
+  void PrintName() {
+    Print(name);
+  }
 
   void Hit(BJDeck deck) {
     int card;

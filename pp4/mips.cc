@@ -690,22 +690,26 @@ void Mips::EmitReadLine()
   Emit("sw $fp, 8($sp)");
   Emit("sw $ra, 4($sp)");
   Emit("addiu $fp, $sp, 8");
+  Emit("li $t0, 40");
   Emit("subu $sp, $sp, 4");
+  Emit("sw $t0, 4($sp)");
+  Emit("jal _Alloc");
+  Emit("move $t0, $v0");
   Emit("li $a1, 40");
-  Emit("la $a0, SPACE");
+  Emit("move $a0, $t0");
   Emit("li $v0, 8");
   Emit("syscall");
-  Emit("la $t1, SPACE");
+  Emit("move $t1, $t0");
   Emit("%s:", "bloop4");
   Emit("lb $t5, ($t1)");
   Emit("beqz $t5, eloop4");
   Emit("addi $t1, 1");
   Emit("b bloop4");
   Emit("%s:", "eloop4");
-  Emit("addi $t1, -1");
+  Emit("addi $t1, -1"); // erase newline
   Emit("li $t6, 0");
   Emit("sb $t6, ($t1)");
-  Emit("la $v0, SPACE");
+  Emit("move $v0, $t0");
   Emit("move $sp, $fp");
   Emit("lw $ra, -4($fp)");
   Emit("lw $fp, 0($fp)");
@@ -720,8 +724,6 @@ void Mips::EmitData()
   Emit(".asciiz \"true\"");
   Emit("%s:", "FALSE");
   Emit(".asciiz \"false\"");
-  Emit("%s:", "SPACE");
-  Emit(".asciiz \"Making space for inputed values is fun.\"");
   Emit("\n");
 }
 
