@@ -142,17 +142,6 @@ ReadLine               { return T_ReadLine; }
                            yylval.integerConstant = strtol(yytext, NULL, 10); return T_IntConstant; 
 			 }
 {HEXADECIMAL}            {
-                           /* int i; */
-			   /* int number = 0; */
-			   /* for (i = 2; i < yyleng; i++)  */
-			   /*  { */
-			   /*    int c = toupper(yytext[i]); */
-			   /*    if (c >= 'A' && c <= 'F') */
-			   /*      number = number * 16 + c - 'A' + 10; */
-			   /*    else  */
-			   /*      number = number * 16 + c -'0'; */
-			   /*  } */
-			  /* yylval.integerConstant = number;  */
                           yylval.integerConstant = strtol(yytext, NULL, 16); 
 			  return T_IntConstant;
                          }

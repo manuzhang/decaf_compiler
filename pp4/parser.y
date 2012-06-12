@@ -45,9 +45,9 @@ void yyerror(const char *msg); // standard error-handling routine
     const char *stringConstant;
     double doubleConstant;
     char identifier[MaxIdentLen+1]; // +1 for terminating null
-    Decl *decl;
-  
 
+
+    Decl *decl;
     VarDecl *vardecl;
     FnDecl *fndecl;
     ClassDecl *classdecl;
@@ -60,7 +60,7 @@ void yyerror(const char *msg); // standard error-handling routine
     List<NamedType*> *implements;
     List<Decl*> *declList;
     List<VarDecl*> *vardecls;
-      
+
    
     StmtBlock *stmtblock;
     Stmt *stmt;
@@ -163,7 +163,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <casestmts>     Cases
 %type <casestmt>      Case
 %type <defaultstmt>   Default
-%type <pntstmt>	  PrintStmt
+%type <pntstmt>	      PrintStmt
 %type <expr>          Expr
 %type <expr>          OptExpr
 %type <exprs>         Exprs
@@ -196,8 +196,6 @@ void yyerror(const char *msg); // standard error-handling routine
 %left     '*' '/' '%'
 %nonassoc '!' UMINUS T_Increment T_Decrement
 %nonassoc '[' '.'
- /* this solved the S/R conflict on Type -> Identifier 
-    but there might be a better solution  */
 
 %%
 /* Rules
@@ -224,6 +222,8 @@ Program   :    DeclList              {
                                        * yacc to set up yylloc. You can remove
                                        * it once you have other uses of @n*/
                                       $$ = new Program($1);
+
+                                     
                                       // if no errors, advance to next phase
                                       if (ReportError::NumErrors() == 0)
                                         {

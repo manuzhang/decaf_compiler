@@ -1,0 +1,40 @@
+Design Issues:
+
+This is a four-pass compiler 
+
+In the first pass, our parser checks for lexical and syntax errors, meanwhile trying to build an abstract syntax tree(AST).  
+If no errors are reported, then the tree is built and we are ready to move to next pass. 
+We do semantic analysis in the second(declaration check) and third(statement check) passes. 
+It is split into two phases because declarations in the global scope are accessible anywhere 
+in the program and we won't know whether a variable is declared or not until we've added all declared variables to our symbol table. 
+In the final pass, we emit MIPS assembly and we are able to run a legal Decaf program on spim.
+
+First pass:
+  Lexical and syntax analyses are mainly done by Flex and Bison. We just need to put down regular expressions and context free grammars.
+  Also, postfix actions are needed to build the AST. Remark that we won't be able to move on if we encounter problems here.
+  
+Second pass:
+  We traverse down the AST in preorder, add legally declared variable to our symbol table and report errors if we run into trouble. 
+  Unlike in the previous pass, we continue our task here although the errorneous variable is not added to symbol table
+  (and cause following "IdentifierNotDeclared" errors). 
+
+  We keep a global symbol table. Each local scope(class scope) keeps its own symbol table and there is no linking of tables 
+  from inner to outer scope. It is straight-forward that identifiers redeclared with a nested scope shadow the version in the outer scope,   
+  simply because they are recorded in different symbol tables.
+
+  We have a word to say on declaration check in the class scope. 
+  First of all, the class itself is added to its symbol table. Secondly, we turn to its members.
+  Then comes its base class and finally implemented interface. We go to base class recursively ahead of interface in case that methods 
+  overriding prototypes in interface are inherited from base class. 
+
+Third pass:
+  As in the second pass, we conduct a preorder tree walk and report errors in statements, which won't choke our checking procedure.
+  
+  Type checking is a major issue in this pass. We could compare against the public constants for the built-in base types as well as
+  type names. 
+
+  To see whether a variable is already declared, we either look for its declaration from inner to outer scope or in a specified scope. 
+  Remember that we have built an AST where every node(except program, the root node) could easily find its parent node. 
+
+Fourth pass:
+  

@@ -129,11 +129,11 @@ void ClassDecl::CheckDeclError() {
 			  inherited->Append(cur);
 			}
 		    }
-		  for (int i = 0; i < inherited->NumElements(); i++)
-		    {
-		      Decl *decl = inherited->Nth(i);
-		      this->sym_table->Enter(decl->GetID()->GetName(), decl);
-		    }
+		   for (int i = 0; i < inherited->NumElements(); i++)
+		     {
+		       Decl *decl = inherited->Nth(i);
+		       this->sym_table->Enter(decl->GetID()->GetName(), decl);
+		     }
 		}
 	      ex = base->GetExtends();
 	    }

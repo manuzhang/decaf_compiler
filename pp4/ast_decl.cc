@@ -158,7 +158,8 @@ void ClassDecl::CheckDeclError() {
 			}
 		      else // methods that override implemented methods may come from base class
 			// but we cannot add it to symbol table here
-			// otherwise we may have an undesirable overridemismatch error
+			// otherwise we may have an undesirable overridemismatch error 
+                        // if there is already an function declconflict in the base
 			{
 			  inherited->Append(cur);
 			}

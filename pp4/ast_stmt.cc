@@ -44,9 +44,11 @@ void Program::CheckDeclError() {
 		sym_table->Enter(name, cur);
 	    }
 	}
+
+      // now traverse down the tree and search for declaration errors in local scope(class scope)
       for (int i = 0; i < this->decls->NumElements(); i++)
 	this->decls->Nth(i)->CheckDeclError();
-      // all the declarations should be added to hashtables of their scopes
+      // all the declarations should be added to hashtables of their scopes now
     }
 
 }
